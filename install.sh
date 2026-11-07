@@ -34,18 +34,20 @@ if command -v claude >/dev/null; then
   claude mcp add egx-mcp --scope user -- "$UV" --directory "$EGX_DIR" run main.py
 else echo "   Claude Code CLI not found; skipped."; fi
 
-echo "4/4 Registering egx-mcp with Claude Desktop"
+echo "4/4 Registering egx-mcp and beedo-trade with Claude Desktop"
 case "$(uname)" in
   Darwin) CFG="$HOME/Library/Application Support/Claude/claude_desktop_config.json" ;;
   *)      CFG="$HOME/.config/Claude/claude_desktop_config.json" ;;
 esac
 mkdir -p "$(dirname "$CFG")"; [ -f "$CFG" ] || echo '{}' > "$CFG"
 cp "$CFG" "$CFG.bak"
-uv run --no-project python - "$CFG" "$UV" "$EGX_DIR" <<'EOF'
+uv run --no-project python - "$CFG" "$UV" "$EGX_DIR" "$SKILL_DIR" <<'EOF'
 import json, sys
-cfg, uv, d = sys.argv[1:]
+cfg, uv, d, skill = sys.argv[1:]
 data = json.load(open(cfg))
-data.setdefault("mcpServers", {})["egx-mcp"] = {"command": uv, "args": ["--directory", d, "run", "main.py"]}
+servers = data.setdefault("mcpServers", {})
+servers["egx-mcp"] = {"command": uv, "args": ["--directory", d, "run", "main.py"]}
+servers["beedo-trade"] = {"command": uv, "args": ["run", "--script", skill + "/scripts/mcp_server.py"]}
 json.dump(data, open(cfg, "w"), indent=2)
 EOF
 echo "   Updated $CFG (backup: $CFG.bak). Fully quit and reopen Claude Desktop."

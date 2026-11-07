@@ -30,6 +30,7 @@ The full rules are in [`skills/beedo-trade/references/course-rules.md`](skills/b
 |---|---|
 | `skills/beedo-trade/SKILL.md` | The method and the report format Claude follows |
 | `skills/beedo-trade/scripts/analyze.py` | Downloads a year of daily prices (Yahoo Finance, e.g. `COMI.CA`) and calculates the MA crossovers, RSI, swing points, levels, volume, candles and gaps. Uses only Python's standard library. |
+| `skills/beedo-trade/scripts/mcp_server.py` | Beedo-Trade as its own MCP server for Claude Desktop, with the tools `beedo_method` (the method and course rules) and `beedo_analyze` (the indicators for one stock), plus a ready-made prompt `beedo_trade_analysis`. Claude Code uses the skill instead. |
 | EGX MCP server (installed by the script) | Today's TradingView snapshot for EGX stocks, plus gold and silver prices in EGP. Third-party project: [M-Abdelmegeed/EGX-Data-MCP-Server](https://github.com/M-Abdelmegeed/EGX-Data-MCP-Server). It is downloaded at install time, not included in this package. |
 
 ## Install
@@ -57,7 +58,7 @@ The installer:
 1. Copies the skill to `~/.claude/skills/beedo-trade`.
 2. Downloads the EGX server to `~/mcp-servers/EGX-Data-MCP-Server` (the tested version) and installs its packages.
 3. Registers the EGX server with Claude Code, if installed.
-4. Adds the EGX server to Claude Desktop's config. It saves a backup first.
+4. Adds two local MCP servers to Claude Desktop's config, `egx-mcp` and `beedo-trade`. It saves a backup first.
 
 Then start a new Claude Code session, or fully quit and reopen Claude Desktop.
 
@@ -75,7 +76,7 @@ If you also have Anthropic's `trader-budget` and `trader-risk` skills, Beedo-Tra
 claude mcp remove egx-mcp -s user
 ```
 
-Then delete `~/.claude/skills/beedo-trade` and `~/mcp-servers/EGX-Data-MCP-Server`, and remove the `egx-mcp` entry from Claude Desktop's config.
+Then delete `~/.claude/skills/beedo-trade` and `~/mcp-servers/EGX-Data-MCP-Server`, and remove the `egx-mcp` and `beedo-trade` entries from Claude Desktop's config.
 
 ## Disclaimer
 

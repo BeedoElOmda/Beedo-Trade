@@ -38,6 +38,8 @@ if ($GoldApiKey) { "GOLDAPI_KEY=$GoldApiKey" | Set-Content (Join-Path $EgxDir ".
 
 $uvPath = (Get-Command uv).Source
 $server = [ordered]@{ command = $uvPath; args = @("--directory", $EgxDir, "run", "main.py") }
+# Beedo-Trade's own MCP server, for Claude Desktop chat (Claude Code uses the skill instead).
+$beedo  = [ordered]@{ command = $uvPath; args = @("run", "--script", (Join-Path $SkillDir "scripts\mcp_server.py")) }
 
 Write-Host "3/4 Registering egx-mcp with Claude Code"
 if (Get-Command claude -ErrorAction SilentlyContinue) {
@@ -46,7 +48,7 @@ if (Get-Command claude -ErrorAction SilentlyContinue) {
   claude mcp add egx-mcp --scope user -- $uvPath --directory $EgxDir run main.py
 } else { Write-Host "   Claude Code CLI not found; skipped." }
 
-Write-Host "4/4 Registering egx-mcp with Claude Desktop"
+Write-Host "4/4 Registering egx-mcp and beedo-trade with Claude Desktop"
 if (-not $SkipDesktop) {
   # Standard install, then the Microsoft Store install location.
   $cfgs = @(Join-Path $env:APPDATA "Claude\claude_desktop_config.json") +
@@ -57,6 +59,7 @@ if (-not $SkipDesktop) {
   $json = Get-Content $cfg -Raw | ConvertFrom-Json
   if (-not $json.mcpServers) { $json | Add-Member -NotePropertyName mcpServers -NotePropertyValue ([pscustomobject]@{}) }
   $json.mcpServers | Add-Member -NotePropertyName "egx-mcp" -NotePropertyValue ([pscustomobject]$server) -Force
+  $json.mcpServers | Add-Member -NotePropertyName "beedo-trade" -NotePropertyValue ([pscustomobject]$beedo) -Force
   Write-Utf8 $cfg ($json | ConvertTo-Json -Depth 32)
   Write-Host "   Updated $cfg (backup: $cfg.bak). Fully quit and reopen Claude Desktop."
 }
