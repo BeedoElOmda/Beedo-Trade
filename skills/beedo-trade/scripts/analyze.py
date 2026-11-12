@@ -118,12 +118,15 @@ def crosses(fast, slow, bars, lookback=40):
 def swings(bars, k=3):
     """Fractal swing points: a high/low that is the extreme of k bars on each side."""
     pts = []
+    def add(i, t, p):  # a flat top/bottom (same price on nearby days) is one swing, not several
+        if not any(t == t2 and p == p2 and i - j <= k for j, t2, p2 in pts[-4:]):
+            pts.append((i, t, p))
     for i in range(k, len(bars) - k):
         win = bars[i - k:i + k + 1]
         if bars[i]["h"] == max(b["h"] for b in win):
-            pts.append((i, "H", bars[i]["h"]))
+            add(i, "H", bars[i]["h"])
         if bars[i]["l"] == min(b["l"] for b in win):
-            pts.append((i, "L", bars[i]["l"]))
+            add(i, "L", bars[i]["l"])
     return pts
 
 def candle(b, prev_trend):
@@ -181,7 +184,7 @@ def analyze(bars):
     def run(xs, rising):  # consecutive steps (not points) ending at the latest swing
         n = 0
         for a, b in zip(xs[::-1][1:], xs[::-1]):
-            if (b > a) == rising: n += 1
+            if (b > a) if rising else (b < a): n += 1  # equal swings are neither higher nor lower
             else: break
         return n
     r["trend_swings"] = {
