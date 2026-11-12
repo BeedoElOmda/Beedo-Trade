@@ -1,0 +1,181 @@
+"""Beedo-Trade desktop app: a native window (Edge WebView2) around the course engine."""
+import json, os, sys, threading, webbrowser
+from concurrent.futures import ThreadPoolExecutor
+from pathlib import Path
+
+import webview
+
+if getattr(sys, "frozen", False):  # PyInstaller bundle
+    BASE = Path(sys._MEIPASS)
+else:
+    BASE = Path(__file__).resolve().parent
+    sys.path.insert(0, str(BASE.parents[1] / "skills" / "beedo-trade" / "scripts"))
+    sys.path.insert(0, str(BASE.parent))
+
+import analyze  # noqa: E402  (shared with the Claude skill, so numbers always match)
+from beedo_app import engine  # noqa: E402
+
+from beedo_app import __version__ as VERSION  # noqa: E402  (single source: beedo_app/__init__.py)
+DATA_DIR = Path(os.environ.get("APPDATA", Path.home())) / "BeedoTrade"
+SETTINGS = DATA_DIR / "settings.json"
+DEFAULTS = {"watchlist": ["COMI", "TMGH", "SWDY", "ETEL", "EAST", "EGAL"], "cash": 50000, "risk_pct": 2,
+            "role": "cash", "theme": "dark"}
+
+
+def _series(bars):
+    closes = [b["c"] for b in bars]
+    rsi = analyze.rsi_wilder(closes)
+    line = lambda xs: [{"time": b["d"], "value": round(x, 2)} for b, x in zip(bars, xs) if x is not None]
+    return {
+        "candles": [{"time": b["d"], "open": b["o"], "high": b["h"], "low": b["l"], "close": b["c"]} for b in bars],
+        "volume": [{"time": b["d"], "value": b["v"], "up": b["c"] >= b["o"]} for b in bars],
+        "ma5": line(analyze.sma(closes, 5)), "ma9": line(analyze.sma(closes, 9)), "ma18": line(analyze.sma(closes, 18)),
+        "rsi": line(rsi),
+        "swings": [{"time": bars[i]["d"], "type": t, "price": p} for i, t, p in analyze.swings(bars) if i >= len(bars) - 120],
+    }
+
+
+class Api:
+    def __init__(self):
+        self._cache = {}
+        self._lock = threading.Lock()
+        self.window = None
+
+    # ---------- settings ----------
+    def get_settings(self):
+        try:
+            return {**DEFAULTS, **json.loads(SETTINGS.read_text(encoding="utf-8"))}
+        except (OSError, ValueError):
+            return dict(DEFAULTS)
+
+    def save_settings(self, patch):
+        s = {**self.get_settings(), **(patch or {})}
+        try:
+            DATA_DIR.mkdir(parents=True, exist_ok=True)
+            SETTINGS.write_text(json.dumps(s, indent=1), encoding="utf-8")
+        except OSError as e:
+            return {"error": f"Could not save settings: {e}"}
+        return s
+
+    # ---------- analysis ----------
+    def _build(self, bars, symbol, name, source):
+        rep = analyze.report(bars, symbol, name)
+        out = {"symbol": symbol.upper(), "name": name, "source": source, "last_bar": rep["last_bar"],
+               "levels": rep["levels"], "rsi": rep["rsi14"], "ma": {k: rep["moving_averages"][k] for k in ("MA5", "MA9", "MA18")},
+               "volume_ratio": rep["volume"]["ratio_vs_avg20"], **engine.evaluate(rep), "chart": _series(bars)}
+        with self._lock:
+            self._cache[symbol.upper()] = rep
+        return out
+
+    def analyze(self, symbol):
+        sym = (symbol or "").strip().upper()
+        if not sym.isalnum() or not 2 <= len(sym) <= 6:
+            return {"error": "Enter an EGX code such as COMI, TMGH or SWDY."}
+        try:
+            bars, name = analyze.fetch(sym)
+            return self._build(bars, sym, name, "Yahoo Finance (daily)")
+        except Exception as e:  # shown in the UI, never a crash
+            return {"error": str(e), "symbol": sym}
+
+    def analyze_csv(self, symbol=""):
+        paths = self.window.create_file_dialog(webview.OPEN_DIALOG, file_types=("CSV files (*.csv)", "All files (*.*)"))
+        if not paths:
+            return {"cancelled": True}
+        path = paths[0]
+        sym = (symbol or Path(path).stem.split("_")[0]).strip().upper()[:12] or "CSV"
+        try:
+            return self._build(analyze.load_csv(path), sym, f"{sym} (from {Path(path).name})", f"CSV: {Path(path).name}")
+        except Exception as e:
+            return {"error": f"Could not read the CSV: {e}"}
+
+    def plan(self, symbol, cash, risk_pct):
+        rep = self._cache.get((symbol or "").upper())
+        if not rep:
+            return {"error": "Analyse the stock first."}
+        try:
+            cash = float(cash) if cash not in (None, "") else None
+            risk_pct = float(risk_pct or 2)
+        except ValueError:
+            return {"error": "Cash and risk must be numbers."}
+        if cash is not None and cash <= 0 or not 0 < risk_pct <= 20:
+            return {"error": "Cash must be positive and risk between 0 and 20%."}
+        return engine.trade_plan(rep, cash, risk_pct)
+
+    def scan(self, symbols):
+        def one(sym):
+            try:
+                bars, name = analyze.fetch(sym)
+                rep = analyze.report(bars, sym, name)
+                ev = engine.evaluate(rep)
+                with self._lock:
+                    self._cache[sym] = rep
+                return {"symbol": sym, "name": name, "close": rep["last_bar"]["c"], "date": rep["last_bar"]["d"],
+                        "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"]}
+            except Exception as e:
+                return {"symbol": sym, "error": str(e)}
+        syms = [s.strip().upper() for s in symbols or [] if s.strip()][:40]
+        with ThreadPoolExecutor(max_workers=6) as ex:
+            return list(ex.map(one, syms))
+
+    def open_url(self, url):
+        if str(url).startswith("https://"):
+            webbrowser.open(url)
+
+    def open_guide(self):
+        # Installed: <app>\docs\...pdf (put there by the installer). Developer checkout: app\packaging\guide\...pdf
+        here = Path(sys.executable).parent if getattr(sys, "frozen", False) else BASE.parent / "packaging" / "guide"
+        for p in (here / "docs" / "Beedo-Trade User Guide.pdf", here / "Beedo-Trade User Guide.pdf"):
+            if p.exists():
+                os.startfile(p)
+                return {"ok": True}
+        webbrowser.open("https://github.com/BeedoElOmda/Beedo-Trade#standalone-windows-app-no-claude-needed")
+        return {"ok": True, "online": True}
+
+    def info(self):
+        return {"version": VERSION, "data_dir": str(DATA_DIR)}
+
+
+def serve(port=8765):
+    """Developer mode: the same UI in a normal browser at http://127.0.0.1:<port> (no file dialog)."""
+    from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
+    api = Api()
+    api.window = None
+
+    class H(SimpleHTTPRequestHandler):
+        def __init__(self, *a, **kw):
+            super().__init__(*a, directory=str(BASE / "web"), **kw)
+
+        def do_POST(self):
+            name = self.path.removeprefix("/api/")
+            fn = getattr(api, name, None) if not name.startswith("_") else None
+            args = json.loads(self.rfile.read(int(self.headers.get("Content-Length", 0))) or "[]")
+            try:
+                body = fn(*args) if fn and name != "analyze_csv" else {"error": "Not available in developer mode."}
+            except Exception as e:
+                body = {"error": str(e)}
+            data = json.dumps(body, default=str).encode()
+            self.send_response(200); self.send_header("Content-Type", "application/json")
+            self.send_header("Content-Length", str(len(data))); self.end_headers(); self.wfile.write(data)
+
+    print(f"Beedo-Trade developer mode: http://127.0.0.1:{port}")
+    ThreadingHTTPServer(("127.0.0.1", port), H).serve_forever()
+
+
+def main():
+    if "--serve" in sys.argv:
+        return serve()
+    api = Api()
+    api.window = webview.create_window("Beedo-Trade", str(BASE / "web" / "index.html"), js_api=api,
+                                       width=1360, height=880, min_size=(1024, 680), background_color="#0B1220")
+    try:  # the launcher's splash screen (packaged build only) stays up until the window is ready
+        import pyi_splash
+        close = lambda *_: pyi_splash.is_alive() and pyi_splash.close()
+        api.window.events.shown += close
+        threading.Timer(30, close).start()  # never leave the splash up if the window event is missed
+    except ImportError:
+        pass
+    webview.start(debug="--debug" in sys.argv)
+
+
+if __name__ == "__main__":
+    main()
