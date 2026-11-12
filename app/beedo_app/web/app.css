@@ -95,6 +95,21 @@ button.small { padding: 6px 10px; font-size: 12px; }
 .stat .k { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; font-weight: 600; }
 .stat .v { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; margin-top: 2px; }
 .stat .s { font-size: 12px; color: var(--muted); }
+.verdict { margin-top: 14px; padding: 10px 14px; border-radius: 10px; font-weight: 600; border-left: 4px solid var(--c, var(--r0));
+  background: color-mix(in srgb, var(--c, var(--r0)) 12%, transparent); }
+.verdict .k { display: block; font-size: 11px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; margin-bottom: 2px; }
+.tone-good { --c: var(--r3); } .tone-neutral { --c: var(--accent); } .tone-warn { --c: var(--rm1); } .tone-bad { --c: var(--rm3); }
+.q2 { --c: var(--r3); } .q1 { --c: var(--rm1); } .q0 { --c: var(--rm3); } .qn { --c: var(--r0); }
+.fund-head { display: flex; gap: 10px; align-items: center; }
+.fund-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; margin: 8px 0 10px; }
+.metric { background: var(--panel-2); border-radius: 12px; padding: 12px 14px; border-top: 3px solid var(--c, var(--r0)); }
+.metric .t { font-size: 12px; color: var(--muted); font-weight: 600; display: flex; justify-content: space-between; gap: 8px; }
+.metric .v { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; margin: 4px 0 2px; }
+.metric .w { font-size: 12px; color: var(--muted); }
+.metric .chip-s { font-size: 11px; font-weight: 700; color: var(--c); }
+.filters { display: flex; gap: 14px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 12px; }
+.filters label { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--muted); font-weight: 600; }
+.filters select { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; color: var(--text); min-width: 200px; font: inherit; }
 .r3 { --c: var(--r3); } .r2 { --c: var(--r2); } .r1 { --c: var(--r1); } .r0 { --c: var(--r0); }
 .rm1 { --c: var(--rm1); } .rm2 { --c: var(--rm2); } .rm3 { --c: var(--rm3); }
 

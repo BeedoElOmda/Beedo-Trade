@@ -18,6 +18,7 @@
     <nav>
       <button class="nav-item active" data-page="analyze"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg>Analyze</button>
       <button class="nav-item" data-page="watchlist"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>Watchlist</button>
+      <button class="nav-item" data-page="screener"><svg viewBox="0 0 24 24"><path d="M4 5h16l-6 7v6l-4 2v-8z"/></svg>Screener</button>
       <button class="nav-item" data-page="about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>About</button>
     </nav>
     <div class="sidebar-foot">
@@ -78,6 +79,7 @@
             </div>
             <div class="ladder" id="ladder" aria-label="Signal ladder"></div>
             <div class="stats" id="stats"></div>
+            <div class="verdict" id="verdict"></div>
           </div>
           <div class="card actions">
             <h3>What to do</h3>
@@ -99,6 +101,16 @@
             <div id="priceChart" class="chart"></div>
             <div class="rsi-head"><span>RSI 14</span><span class="muted tiny">30 / 50 / 70</span></div>
             <div id="rsiChart" class="chart rsi"></div>
+          </div>
+
+          <div class="card span3">
+            <div class="card-head">
+              <h3>Company fundamentals</h3>
+              <div class="fund-head"><span class="muted tiny" id="fundMeta"></span><span id="fundBadge"></span></div>
+            </div>
+            <p class="muted" id="fundWhy"></p>
+            <div class="fund-grid" id="fundGrid"></div>
+            <p class="muted tiny" id="fundNote">Standard rules on the last 12 months of reported results (TradingView). Each figure is compared with similar companies. Not part of the Beedo technical course.</p>
           </div>
 
           <div class="card span2">
@@ -139,8 +151,30 @@
       <div id="wChips" class="chips editable"></div>
       <div class="card">
         <table class="table" id="wTable">
-          <thead><tr><th>Stock</th><th>Close</th><th>Signal</th><th>RSI</th><th>Moving averages</th><th>Why</th></tr></thead>
+          <thead><tr><th>Stock</th><th>Close</th><th>Signal</th><th>Company</th><th>RSI</th><th>Combined view</th></tr></thead>
           <tbody><tr><td colspan="6" class="muted center">Press "Scan all" to check every stock on your list.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= SCREENER ================= -->
+    <section class="page" id="page-screener">
+      <h1>Screener</h1>
+      <p class="muted">Find strong companies that your course method says are in a buy zone, across the whole Egyptian Exchange.</p>
+      <div class="card filters">
+        <label>Company quality
+          <select id="fQuality"><option value="2">Strong only</option><option value="1">Strong or Fair</option></select></label>
+        <label>Technical signal
+          <select id="fSignal"><option value="2">First or Confirm Buy</option><option value="1">Any buy, including Alarm Buy</option><option value="-3">Any signal</option></select></label>
+        <label>Sector
+          <select id="fSector"><option value="">All sectors</option></select></label>
+        <button id="runScreener" class="primary">Run screener</button>
+      </div>
+      <p class="muted tiny" id="sSummary"></p>
+      <div class="card">
+        <table class="table" id="sTable">
+          <thead><tr><th>Stock</th><th>Close</th><th>Signal</th><th>Company</th><th>RSI</th><th>Combined view</th></tr></thead>
+          <tbody><tr><td colspan="6" class="muted center">Choose your filters and press "Run screener". It takes about 20 to 40 seconds.</td></tr></tbody>
         </table>
       </div>
     </section>
@@ -162,6 +196,7 @@
               <li>Daily prices: Yahoo Finance (e.g. COMI → COMI.CA). The larger, widely traded EGX stocks are covered; for others, use <b>Import CSV</b> with date, open, high, low, close and volume columns.</li>
               <li>Indicators: MA 5 / 9 / 18, RSI 14 (Wilder), swing highs and lows, support and resistance, 20-day volume average, reversal candles and gaps.</li>
               <li>Chart and pattern steps 10 and 11 are judged on the chart: the swing points are marked for you.</li>
+              <li>Company fundamentals: TradingView's market data (last 12 months of reported results), rated with standard rules and compared with similar companies. Smaller companies often have too few reported figures to rate.</li>
             </ul>
           </div>
           <div class="card span3">

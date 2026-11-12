@@ -63,6 +63,9 @@ function ladder(el, active, labels = true) {
   el.innerHTML = [-3, -2, -1, 0, 1, 2, 3].map((r) =>
     `<div><div class="seg ${rcls(r)} ${r === active ? "on" : ""}"></div>${labels ? `<div class="lab">${RUNGS[r]}</div>` : ""}</div>`).join("");
 }
+const qcls = (lvl) => (lvl == null ? "qn" : `q${lvl}`);
+const qbadge = (label, lvl, score) => `<span class="badge ${qcls(lvl)}">${esc(label || "Not rated")}${score != null ? ` · ${score}` : ""}</span>`;
+const verdictHtml = (v) => (v ? `<span class="tone-${esc(v.tone)}">${esc(v.text)}</span>` : "");
 const badge = (r, big = false) => `<span class="badge ${big ? "big" : ""} ${rcls(r)}">${esc(RUNGS[r])}</span>`;
 
 /* ---------- analyse ---------- */
@@ -114,8 +117,25 @@ function render(d) {
       ${badge(st.rung)}</li>`).join("");
   $("#nUp").innerHTML = d.next.up.map((x) => `<li>${esc(x)}</li>`).join("") || "<li class='muted'>Already fully bullish</li>";
   $("#nDown").innerHTML = d.next.down.map((x) => `<li>${esc(x)}</li>`).join("") || "<li class='muted'>Already fully bearish</li>";
+  renderFundamentals(d);
   drawCharts(d);
   updatePlan();
+}
+
+function renderFundamentals(d) {
+  const f = d.fundamentals || {}, q = f.quality || {};
+  const v = $("#verdict");
+  v.className = `verdict tone-${d.verdict ? d.verdict.tone : "neutral"}`;
+  v.innerHTML = `<span class="k">Combined view: company + chart</span>${esc(d.verdict ? d.verdict.text : "")}`;
+  $("#fundBadge").innerHTML = qbadge(q.label, q.level, q.score);
+  $("#fundMeta").textContent = [f.sector, f.industry !== f.sector ? f.industry : "", f.market_cap ? `market cap ${fmt(f.market_cap / 1e9, 1)} bn EGP` : ""].filter(Boolean).join(" · ");
+  $("#fundWhy").textContent = (f.error ? "Couldn't load fundamentals: " : "") + (q.why || "") + (f.bank ? " Bank: margin and debt checks don't apply to banks and are skipped." : "");
+  const unit = (r) => (r.value == null ? "–" : `${fmt(r.value, r.unit === "%" ? 1 : 2)}${r.unit}`);
+  const peer = (r) => { const p = (f.peers || {})[r.key]; return p ? `${p.group} median ${fmt(p.median, r.unit === "%" ? 1 : 2)}${r.unit}` : ""; };
+  $("#fundGrid").innerHTML = (f.rules || []).map((r) => `<div class="metric ${r.score == null ? "qn" : `q${r.score}`}">
+      <div class="t"><span>${esc(r.title)}</span><span class="chip-s">${esc(r.label)}</span></div>
+      <div class="v">${unit(r)}</div><div class="w">${esc(r.why)}</div>${peer(r) ? `<div class="w">${esc(peer(r))}</div>` : ""}</div>`).join("")
+    || `<div class="muted">No company data for ${esc(d.symbol)}.</div>`;
 }
 $("#searchForm").addEventListener("submit", (e) => { e.preventDefault(); analyse($("#symbol").value); });
 $("#csvBtn").addEventListener("click", async () => {
@@ -241,14 +261,38 @@ $("#scanBtn").addEventListener("click", async () => {
   body.innerHTML = `<tr><td colspan="6" class="muted center">Checking ${settings.watchlist.length} stocks…</td></tr>`;
   try {
     const rows = await api("scan", settings.watchlist);
-    rows.sort((a, b) => (b.rung ?? -9) - (a.rung ?? -9));
-    body.innerHTML = rows.map((r) => r.error
-      ? `<tr><td><b>${esc(r.symbol)}</b></td><td colspan="5" class="why">${esc(r.error)}</td></tr>`
-      : `<tr class="click" data-go="${esc(r.symbol)}" tabindex="0"><td><b>${esc(r.symbol)}</b><div class="muted tiny">${esc(r.name)}</div></td>
-         <td class="num">${fmt(r.close)}<div class="muted tiny">${esc(r.date)}</div></td><td>${badge(r.rung)}</td>
-         <td class="num">${fmt(r.rsi, 1)}</td><td class="why">${esc(r.ma)}</td><td class="why">${esc(r.why)}</td></tr>`).join("");
+    rows.sort((a, b) => (b.rung ?? -9) - (a.rung ?? -9) || (b.quality_score ?? -1) - (a.quality_score ?? -1));
+    body.innerHTML = rows.map(resultRow).join("");
   } finally { btn.disabled = false; btn.textContent = "Scan all"; }
 });
+function resultRow(r) {
+  return r.error
+    ? `<tr><td><b>${esc(r.symbol)}</b></td><td colspan="5" class="why">${esc(r.error)}</td></tr>`
+    : `<tr class="click" data-go="${esc(r.symbol)}" tabindex="0"><td><b>${esc(r.symbol)}</b><div class="muted tiny">${esc(r.name)}</div></td>
+       <td class="num">${fmt(r.close)}<div class="muted tiny">${esc(r.date)}</div></td><td>${badge(r.rung)}</td>
+       <td>${qbadge(r.quality, r.quality_level, r.quality_score)}</td><td class="num">${fmt(r.rsi, 1)}</td>
+       <td class="why">${verdictHtml(r.verdict)}</td></tr>`;
+}
+
+/* ---------- screener ---------- */
+async function loadSectors() {
+  const s = await api("sectors");
+  if (Array.isArray(s)) $("#fSector").innerHTML = `<option value="">All sectors</option>` + s.map((x) => `<option>${esc(x)}</option>`).join("");
+}
+$("#runScreener").addEventListener("click", async () => {
+  const btn = $("#runScreener"), body = $("#sTable tbody");
+  btn.disabled = true; btn.textContent = "Screening…";
+  body.innerHTML = `<tr><td colspan="6" class="muted center">Rating every EGX company, then checking the best ones with your course method…</td></tr>`;
+  $("#sSummary").textContent = "";
+  try {
+    const r = await api("screener", Number($("#fQuality").value), Number($("#fSignal").value), $("#fSector").value);
+    if (r.error) { body.innerHTML = `<tr><td colspan="6" class="why">${esc(r.error)}</td></tr>`; return; }
+    $("#sSummary").textContent = `Rated ${r.rated} companies · ${r.passed_quality} met the quality filter · checked the top ${r.checked} with the course checklist` +
+      (r.skipped_no_prices ? ` · ${r.skipped_no_prices} skipped (no price history)` : "") + ` · ${r.results.length} match.`;
+    body.innerHTML = r.results.map(resultRow).join("") || `<tr><td colspan="6" class="muted center">No company matches right now. Try "Strong or Fair" or "Any buy, including Alarm Buy".</td></tr>`;
+  } finally { btn.disabled = false; btn.textContent = "Run screener"; }
+});
+$("#sTable").addEventListener("keydown", (e) => { const tr = e.target.closest("tr[data-go]"); if (tr && e.key === "Enter") analyse(tr.dataset.go); });
 $("#wTable").addEventListener("keydown", (e) => { const tr = e.target.closest("tr[data-go]"); if (tr && e.key === "Enter") analyse(tr.dataset.go); });
 
 /* ---------- start ---------- */
@@ -264,6 +308,7 @@ $("#wTable").addEventListener("keydown", (e) => { const tr = e.target.closest("t
   const h = new URLSearchParams(location.hash.slice(1));
   applyTheme(h.get("theme") || settings.theme); applyRole(h.get("role") || settings.role); drawChips();
   if (h.get("a")) analyse(h.get("a"));
-  else if (h.get("p")) { go(h.get("p")); if (h.has("scan")) $("#scanBtn").click(); }
+  else if (h.get("p")) { go(h.get("p")); if (h.has("scan")) $("#scanBtn").click(); if (h.has("run")) $("#runScreener").click(); }
+  loadSectors();
   $("#symbol").focus();
 })();
