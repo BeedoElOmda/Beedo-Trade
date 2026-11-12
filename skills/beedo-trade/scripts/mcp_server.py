@@ -5,7 +5,9 @@
 """Beedo-Trade as a standalone MCP server (for Claude Desktop and any MCP client).
 
 Run:  uv run --script mcp_server.py
-Tools: beedo_method (the course method), beedo_analyze (indicators for one EGX stock).
+Tools: beedo_method (the course method), beedo_analyze (indicators for one EGX stock),
+beedo_history (raw daily prices). It runs on the user's own computer, so it can reach Yahoo Finance
+even when Claude's sandbox cannot.
 """
 import json, sys
 from pathlib import Path
@@ -29,7 +31,6 @@ def beedo_method() -> str:
     """The Beedo-Trade workflow, report format and full course rulebook. Call once before analysing EGX stocks."""
     # The skill's frontmatter is for Claude Code's skill loader; the body is the method.
     body = SKILL.read_text(encoding="utf-8").split("---", 2)[-1]
-    body = body.replace("python -I <skill-dir>/scripts/analyze.py SYMBOL", "the beedo_analyze tool")
     return body + "\n\n---\n\n" + RULES.read_text(encoding="utf-8")
 
 @mcp.tool()
@@ -40,11 +41,22 @@ def beedo_analyze(symbol: str) -> str:
     sym = symbol.strip().upper()
     try:
         bars, name = analyze.fetch(sym)
+        return json.dumps(analyze.report(bars, sym, name), default=str)
     except Exception as e:
-        return f"Could not download prices for {sym}: {e}. Check the symbol is a valid EGX code."
-    if len(bars) < 60:
-        return f"Only {len(bars)} daily bars for {sym}; need 60+. Check the symbol."
-    return json.dumps({"symbol": sym, "name": name, "bars": len(bars), **analyze.analyze(bars)}, default=str)
+        return f"Error: {e}"
+
+@mcp.tool()
+def beedo_history(symbol: str, bars: int = 130) -> str:
+    """Raw daily price history (date, open, high, low, close, volume in EGP), oldest first, for one EGX stock.
+    Use it to inspect chart patterns, gaps or swings yourself. symbol: 4-letter EGX code. bars: 5 to 250."""
+    sym = symbol.strip().upper()
+    try:
+        rows, _ = analyze.fetch(sym)
+    except Exception as e:
+        return f"Error: {e}"
+    rows = rows[-max(5, min(bars, 250)):]
+    return json.dumps({"symbol": sym, "currency": "EGP", "columns": ["date", "open", "high", "low", "close", "volume"],
+                       "bars": [[b["d"], b["o"], b["h"], b["l"], b["c"], b["v"]] for b in rows]})
 
 @mcp.prompt()
 def beedo_trade_analysis(symbol: str, position: str = "unknown") -> str:

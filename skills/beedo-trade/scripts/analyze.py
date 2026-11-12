@@ -1,18 +1,42 @@
 """Beedo-Trade: compute the mechanical parts of the course checklist for one EGX stock.
 
-Usage:  python analyze.py COMI            (EGX code; ".CA" is added for Yahoo)
+Usage:  python analyze.py COMI                 (EGX code; ".CA" is added for Yahoo)
+        python analyze.py --csv prices.csv [SYMBOL]   (daily prices you supply)
         python analyze.py --selftest
 Stdlib only. Daily bars come from Yahoo Finance (COMI -> COMI.CA).
 """
-import json, sys, urllib.request, datetime as dt
+import csv, json, sys, urllib.error, urllib.request, datetime as dt
+
+class NoHistory(Exception):
+    """Yahoo has no daily prices for this symbol (common for smaller EGX stocks)."""
 
 # ---------- data ----------
 def fetch(symbol, rng="1y"):
     ysym = symbol.upper() if "." in symbol else symbol.upper() + ".CA"
-    url = f"https://query1.finance.yahoo.com/v8/finance/chart/{ysym}?range={rng}&interval=1d"
-    req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
-    with urllib.request.urlopen(req, timeout=20) as r:
-        res = json.load(r)["chart"]["result"][0]
+    data, err = None, None
+    for host in ("query1", "query2"):  # query2 sometimes answers when query1 is blocked
+        url = f"https://{host}.finance.yahoo.com/v8/finance/chart/{ysym}?range={rng}&interval=1d"
+        req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
+        try:
+            with urllib.request.urlopen(req, timeout=20) as r:
+                data = json.load(r)
+            break
+        except urllib.error.HTTPError as e:
+            err = e
+            if e.code == 404:
+                break
+        except urllib.error.URLError as e:
+            err = e
+    if data is None:
+        if isinstance(err, urllib.error.HTTPError) and err.code == 404:
+            raise NoHistory(f"Yahoo Finance has no price history for {ysym}. Smaller EGX stocks are often "
+                            "missing there. Use a CSV of daily prices, or a snapshot-only report (Alarm at most).")
+        raise ConnectionError(f"Could not reach Yahoo Finance for {ysym}: {err}. This happens with no internet, "
+                              "a firewall or VPN, or a sandbox that blocks the web.")
+    res = (data.get("chart") or {}).get("result")
+    if not res or not res[0].get("timestamp"):
+        raise NoHistory(f"Yahoo Finance returned no daily prices for {ysym}.")
+    res = res[0]
     q = res["indicators"]["quote"][0]
     bars = []
     for i, t in enumerate(res.get("timestamp") or []):
@@ -23,6 +47,43 @@ def fetch(symbol, rng="1y"):
         bars.append(dict(d=dt.datetime.fromtimestamp(t, dt.timezone.utc).date().isoformat(),
                          o=round(o, 2), h=round(h, 2), l=round(l, 2), c=round(c, 2), v=v or 0))
     return bars, res["meta"].get("longName") or ysym
+
+def load_csv(path):
+    """Daily bars from a CSV with columns date, open, high, low, close, volume (any order, any case).
+    Accepts the usual exports (e.g. 'Date,Open,High,Low,Close,Volume', 'Price' for close, '1,234' numbers)."""
+    alias = {"date": "d", "open": "o", "high": "h", "low": "l", "close": "c", "price": "c", "last": "c",
+             "volume": "v", "vol": "v", "vol.": "v"}
+    def num(s):
+        s = (s or "").strip().replace(",", "")
+        if s in ("", "-"): return 0.0
+        mult = {"K": 1e3, "M": 1e6, "B": 1e9}.get(s[-1:].upper(), 1)  # "1.2M" style volumes
+        return float(s[:-1] if mult != 1 else s or 0) * mult
+    with open(path, newline="", encoding="utf-8-sig") as f:
+        rows = list(csv.DictReader(f))
+    if not rows:
+        raise ValueError("The CSV has no rows.")
+    cols = {k: alias[k.strip().lower()] for k in rows[0] if k and k.strip().lower() in alias}
+    missing = {"d", "o", "h", "l", "c"} - set(cols.values())
+    if missing:
+        raise ValueError(f"The CSV needs date, open, high, low and close columns; found {list(rows[0])}.")
+    bars = []
+    for r in rows:
+        b = {cols[k]: r[k] for k in cols}
+        o, h, l, c = (num(b[x]) for x in "ohlc")
+        bars.append(dict(d=b["d"].strip(), o=round(o, 2), h=round(max(o, h, l, c), 2),
+                         l=round(min(o, h, l, c), 2), c=round(c, 2), v=int(num(b.get("v", "0")))))
+    # One format for the whole file, the first that parses every row, so 01/02 can't flip meaning mid-file.
+    # shortcut: a file whose every date fits both d/m and m/d (all days <= 12) is read as day-first.
+    def parses(fmt):
+        try: return [dt.datetime.strptime(b["d"], fmt) for b in bars]
+        except ValueError: return None
+    for fmt in ("%Y-%m-%d", "%d/%m/%Y", "%m/%d/%Y", "%d-%m-%Y", "%b %d, %Y", "%d/%m/%y", "%m/%d/%y"):
+        ds = parses(fmt)
+        if ds: break
+    else:
+        raise ValueError(f"Unrecognised date format, e.g. {bars[0]['d']!r}. Use YYYY-MM-DD.")
+    for b, d in zip(bars, ds): b["d"] = d.date().isoformat()
+    return sorted(bars, key=lambda b: b["d"])
 
 # ---------- indicators ----------
 def sma(xs, n):
@@ -218,15 +279,35 @@ def selftest():
     assert any(e[1] == "UP" for e in analyze(bars)["moving_averages"]["confirm_crosses_9x18"])
     assert candle(dict(o=10, c=10.2, h=10.25, l=9), "down").startswith("Hammer")
     assert candle(dict(o=10, c=9.8, h=11, l=9.78), "up").startswith("Shooting")
+    import tempfile, os  # CSV loader: Investing.com-style export, newest first, K/M volumes, a "-"
+    rows = ["Date,Price,Open,High,Low,Vol.,Change %"] + \
+           [f'"{(dt.date(2026, 1, 1) + dt.timedelta(k)).strftime("%m/%d/%Y")}",{100 + k},{100 + k},{101 + k},{99 + k},{"1.2M" if k else "-"},0%'
+            for k in range(70)][::-1]
+    with tempfile.NamedTemporaryFile("w", suffix=".csv", delete=False) as f:
+        f.write("\n".join(rows))
+    cb = load_csv(f.name); os.unlink(f.name)
+    assert len(cb) == 70 and cb[0]["d"] == "2026-01-01" and cb[-1]["c"] == 169 and cb[1]["v"] == 1200000 and cb[0]["v"] == 0
+    assert analyze(cb)["moving_averages"]["alignment"].startswith("5>9>18")
     print("selftest ok")
 
-if __name__ == "__main__":
-    if sys.argv[1:] == ["--selftest"]:
-        selftest(); sys.exit()
-    if len(sys.argv) < 2:
-        sys.exit(__doc__)
-    bars, name = fetch(sys.argv[1])
+def report(bars, symbol, name):
     if len(bars) < 60:
-        sys.exit(f"Only {len(bars)} daily bars for {sys.argv[1]}; need 60+. Check the symbol.")
-    out = {"symbol": sys.argv[1].upper(), "name": name, "bars": len(bars), **analyze(bars)}
+        raise NoHistory(f"Only {len(bars)} daily bars for {symbol}; the course indicators need 60+.")
+    return {"symbol": symbol.upper(), "name": name, "bars": len(bars), **analyze(bars)}
+
+if __name__ == "__main__":
+    args = sys.argv[1:]
+    if args == ["--selftest"]:
+        selftest(); sys.exit()
+    try:
+        if args[:1] == ["--csv"] and len(args) >= 2:
+            sym = args[2] if len(args) > 2 else "CSV"
+            out = report(load_csv(args[1]), sym, f"{sym} (from {args[1]})")
+        elif args:
+            bars, name = fetch(args[0])
+            out = report(bars, args[0], name)
+        else:
+            sys.exit(__doc__)
+    except (NoHistory, ConnectionError, ValueError, OSError) as e:
+        sys.exit(f"ERROR: {e}")
     print(json.dumps(out, indent=1, default=str))
