@@ -98,6 +98,8 @@ This is a learning and decision-support tool that applies a technical-analysis m
 
 `app/` holds Beedo-Trade as its own desktop program: type an EGX code and get the signal, the cash holder and shareholder actions, an interactive chart (candles, MA 5/9/18, support and resistance, swing points, volume, RSI), the 11-step checklist, a trade-plan calculator and a watchlist scanner. Light and dark themes.
 
+**Company fundamentals (1.2):** each stock also gets a Strong / Fair / Weak company rating from standard rules (P/E, P/B, return on equity, margin, debt, growth, dividend), compared with similar companies, plus a **combined view** that joins it with the course signal. The **Screener** rates every EGX company and lists the strong ones that are in a buy zone. Fundamentals come from TradingView's market data and are not part of the Beedo technical course.
+
 - **Install:** download `Beedo-Trade-Setup-x.y.z.exe` from the repository's Releases page and run it. Choose **Install for me only** (recommended, no administrator rights) or **Install for all users** (installs into Program Files after administrator approval). If Windows shows "Windows protected your PC", click **More info → Run anyway**; the app isn't code-signed.
 - **User guide:** an illustrated guide (`app/packaging/guide/Beedo-Trade User Guide.pdf`) is installed with the app. Open it from the Start menu or the app's **User guide** button.
 - **Uninstall:** **Settings → Apps → Installed apps → Beedo-Trade → Uninstall**, or **Uninstall Beedo-Trade** in the Start menu. You're asked whether to keep your watchlist and settings.
