@@ -13,7 +13,7 @@ The full rulebook is in `references/course-rules.md`. Read it before your first 
 
 | Need | Tool |
 |---|---|
-| Daily history + course indicators (MA 5/9/18 crosses, RSI 14, swings, S/R, volume, candles, gaps) | `python -I <skill-dir>/scripts/analyze.py SYMBOL` |
+| Daily history + course indicators (MA 5/9/18 crosses, RSI 14, swings, S/R, volume, candles, gaps) | `python -I <skill-dir>/scripts/analyze.py SYMBOL` (see "Getting the price history" below for the fallbacks) |
 | Today's TradingView snapshot (close, RSI, pivots S1-S3/R1-R3, Bollinger, MACD) | `egx-mcp` tool `stock_data_egx` |
 | Quick price only | `egx-mcp` tool `stock_price_egx` |
 | Gold / silver price in EGP (for gold comparisons or a "move to gold" question) | `egx-mcp` tools `gold_price`, `silver_price` |
@@ -22,9 +22,18 @@ The full rulebook is in `references/course-rules.md`. Read it before your first 
 
 The `trader-*` skills are optional: if they are not available, do the sizing and limit checks yourself with the same arithmetic. They were built for US markets. Use only their arithmetic. `trader-exit` assumes US intraday rules (opening-range stops, closing flat before 4 p.m. New York time), so do stop/target math yourself as described in step 6.
 
-If `python` is not on PATH, run the script with `uv run --no-project python <skill-dir>/scripts/analyze.py SYMBOL` instead. The script needs only Python's standard library and pulls daily bars from Yahoo Finance (`COMI` → `COMI.CA`). If it fails (network, unknown symbol), say so, and fall back to `stock_data_egx` alone: you still have RSI, SMA5/10/20, pivots and today's candle, but no crossover history. Say which steps you could not check.
+If the egx-mcp tools are not loaded in this session, the price history alone is enough for the analysis.
 
-If the egx-mcp tools are not loaded in this session, the script alone is enough for the analysis.
+### Getting the price history (try in this order)
+The course indicators need about a year of daily prices from Yahoo Finance (`COMI` → `COMI.CA`).
+1. **`beedo-trade` MCP server**, if its tools are loaded: `beedo_analyze` gives the same output as the script, and `beedo_history` gives the raw daily bars. Prefer it: it runs on the user's own computer, so it reaches Yahoo even when your sandbox can't.
+2. **The script**: `python -I <skill-dir>/scripts/analyze.py SYMBOL`, or `uv run --no-project python <skill-dir>/scripts/analyze.py SYMBOL` if `python` is not on PATH. It uses only Python's standard library.
+3. **A CSV of daily prices from the user**: `analyze.py --csv <file> SYMBOL`. It accepts the usual exports (Date, Open, High, Low, Close or Price, Volume; ISO or d/m/Y or m/d/Y dates; volumes like 1.2M). Ask for at least 60 trading days, ideally a year.
+4. **Snapshot only** (`stock_data_egx`): RSI, SMA5/10/20, pivots and today's candle, but no history. Steps 1, 4, 6, 10 and 11 can't be checked. Mark them "not checked" and cap the signal at **Alarm**, because the course never confirms without trend and MA history.
+
+What the errors mean:
+- **"Could not reach Yahoo Finance"**: the network is blocked where the script ran, which is often your sandbox, not the user's PC. Tell the user that the local `beedo-trade` server fixes this. They can turn it on in their Claude Desktop settings, or re-run the Beedo-Trade installer to add it. Then go to option 3 or 4.
+- **"Yahoo Finance has no price history"**: Yahoo doesn't carry that stock. This is common for smaller EGX companies, and nothing is wrong with the setup. Offer option 3 (CSV), otherwise option 4.
 
 ## Workflow
 
@@ -33,7 +42,7 @@ If the egx-mcp tools are not loaded in this session, the script alone is enough 
 - Does the user already own it (shareholder) or have cash (cash holder)? If they didn't say, give both actions; don't stop to ask.
 
 ### 2. Collect data (run both in parallel)
-- Run `analyze.py SYMBOL`.
+- Get the price history and indicators (`beedo_analyze`, or `analyze.py SYMBOL`).
 - Call `stock_data_egx` for the same symbol.
 - Check that the two agree on the last close. If they differ, one source is stale: use the newer date and mention it.
 
