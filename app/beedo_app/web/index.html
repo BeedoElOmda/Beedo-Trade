@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Beedo-Trade</title>
+<link rel="stylesheet" href="app.css">
+</head>
+<body>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg viewBox="0 0 32 32"><path d="M5 23l6-7 5 4 9-11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="25" cy="9" r="2.6" fill="currentColor"/></svg>
+      </div>
+      <div><div class="brand-name">Beedo-Trade</div><div class="brand-sub">EGX course method</div></div>
+    </div>
+    <nav>
+      <button class="nav-item active" data-page="analyze"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg>Analyze</button>
+      <button class="nav-item" data-page="watchlist"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>Watchlist</button>
+      <button class="nav-item" data-page="about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>About</button>
+    </nav>
+    <div class="sidebar-foot">
+      <button id="guideBtn" class="ghost small" title="Open the Beedo-Trade user guide">User guide</button>
+      <button id="themeBtn" class="ghost small" title="Switch light / dark">Light mode</button>
+      <div class="muted tiny" id="version"></div>
+    </div>
+  </aside>
+
+  <main>
+    <!-- ================= ANALYZE ================= -->
+    <section class="page active" id="page-analyze">
+      <header class="topbar">
+        <form id="searchForm" class="search" autocomplete="off">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>
+          <input id="symbol" list="symbols" placeholder="EGX code, e.g. COMI" maxlength="6" spellcheck="false" aria-label="EGX stock code">
+          <datalist id="symbols"></datalist>
+          <button type="submit" class="primary">Analyze</button>
+        </form>
+        <button id="csvBtn" class="ghost" title="Analyse daily prices from a CSV file">Import CSV</button>
+        <div class="segmented" role="radiogroup" aria-label="Your position">
+          <button data-role="cash" role="radio">Cash holder</button>
+          <button data-role="shareholder" role="radio">Shareholder</button>
+        </div>
+      </header>
+
+      <div id="empty" class="empty">
+        <h1>Analyse an EGX stock with your course method</h1>
+        <p class="muted">Type a 4-letter code, or pick one below. You get the signal, the actions for your position, the chart and the 11-step checklist.</p>
+        <div id="quick" class="chips"></div>
+      </div>
+
+      <div id="loading" class="hidden">
+        <div class="grid">
+          <div class="card skeleton h160 span2"></div><div class="card skeleton h160"></div>
+          <div class="card skeleton h420 span3"></div>
+        </div>
+      </div>
+
+      <div id="error" class="notice error hidden"></div>
+
+      <div id="result" class="hidden">
+        <div class="grid">
+          <div class="card hero span2">
+            <div class="hero-top">
+              <div>
+                <div class="sym" id="rSym"></div>
+                <div class="muted" id="rName"></div>
+              </div>
+              <div class="price">
+                <div id="rClose"></div>
+                <div class="muted tiny" id="rDate"></div>
+              </div>
+            </div>
+            <div class="signal-row">
+              <div class="badge big" id="rBadge"></div>
+              <p id="rWhy"></p>
+            </div>
+            <div class="ladder" id="ladder" aria-label="Signal ladder"></div>
+            <div class="stats" id="stats"></div>
+          </div>
+          <div class="card actions">
+            <h3>What to do</h3>
+            <div class="action" data-role="cash"><div class="action-title">Cash holder</div><div id="aCash"></div></div>
+            <div class="action" data-role="shareholder"><div class="action-title">Shareholder</div><div id="aShare"></div></div>
+          </div>
+
+          <div class="card span3 chart-card">
+            <div class="card-head">
+              <h3>Chart</h3>
+              <div class="toggles" id="toggles">
+                <label><input type="checkbox" data-layer="ma5" checked><i class="sw ma5"></i>MA5</label>
+                <label><input type="checkbox" data-layer="ma9" checked><i class="sw ma9"></i>MA9</label>
+                <label><input type="checkbox" data-layer="ma18" checked><i class="sw ma18"></i>MA18</label>
+                <label><input type="checkbox" data-layer="levels" checked><i class="sw lvl"></i>Support / resistance</label>
+                <label><input type="checkbox" data-layer="swings" checked><i class="sw swg"></i>Swing points</label>
+              </div>
+            </div>
+            <div id="priceChart" class="chart"></div>
+            <div class="rsi-head"><span>RSI 14</span><span class="muted tiny">30 / 50 / 70</span></div>
+            <div id="rsiChart" class="chart rsi"></div>
+          </div>
+
+          <div class="card span2">
+            <div class="card-head"><h3>11-step checklist</h3><span class="muted tiny">Each step lands on one rung of the ladder</span></div>
+            <ol class="checklist" id="checklist"></ol>
+          </div>
+
+          <div class="stack">
+            <div class="card">
+              <h3>What would change the signal</h3>
+              <div class="next"><div class="next-col up"><div class="tiny label">Upward</div><ul id="nUp"></ul></div>
+              <div class="next-col down"><div class="tiny label">Downward</div><ul id="nDown"></ul></div></div>
+            </div>
+            <div class="card">
+              <h3>Trade plan</h3>
+              <form id="planForm" class="plan-form">
+                <label>Cash (EGP)<input id="cash" type="number" min="0" step="1000"></label>
+                <label>Max risk per trade (%)<input id="risk" type="number" min="0.1" max="20" step="0.5"></label>
+              </form>
+              <div id="plan" class="plan"></div>
+            </div>
+          </div>
+        </div>
+        <p class="muted tiny disclaimer">Learning and decision-support tool applying the Beedo technical-analysis course. Not investment advice. Free data can be delayed: check the live price and the day's EGX disclosures before trading.</p>
+      </div>
+    </section>
+
+    <!-- ================= WATCHLIST ================= -->
+    <section class="page" id="page-watchlist">
+      <header class="topbar">
+        <form id="addForm" class="search">
+          <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>
+          <input id="addSym" placeholder="Add EGX code" maxlength="6" spellcheck="false" aria-label="Add stock">
+          <button class="ghost" type="submit">Add</button>
+        </form>
+        <button id="scanBtn" class="primary">Scan all</button>
+      </header>
+      <div id="wChips" class="chips editable"></div>
+      <div class="card">
+        <table class="table" id="wTable">
+          <thead><tr><th>Stock</th><th>Close</th><th>Signal</th><th>RSI</th><th>Moving averages</th><th>Why</th></tr></thead>
+          <tbody><tr><td colspan="6" class="muted center">Press "Scan all" to check every stock on your list.</td></tr></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ================= ABOUT ================= -->
+    <section class="page" id="page-about">
+      <div class="about">
+        <h1>About Beedo-Trade</h1>
+        <p>Beedo-Trade applies the Beedo technical-analysis course to Egyptian Exchange stocks, the same way every time: 11 steps, one signal, and separate advice for a cash holder and a shareholder.</p>
+        <div class="grid">
+          <div class="card span3">
+            <h3>The signal ladder</h3>
+            <div class="ladder legend" id="ladderLegend"></div>
+            <p class="muted">Alarm = early warning, get ready. First = start a position (or start reducing). Confirm = several signals agree, act fully. Trend and moving averages set the ceiling: candles and RSI alone can't confirm a move against them, and in a sideways market the cash holder waits for a breakout.</p>
+          </div>
+          <div class="card span3">
+            <h3>Where the numbers come from</h3>
+            <ul class="plain">
+              <li>Daily prices: Yahoo Finance (e.g. COMI → COMI.CA). The larger, widely traded EGX stocks are covered; for others, use <b>Import CSV</b> with date, open, high, low, close and volume columns.</li>
+              <li>Indicators: MA 5 / 9 / 18, RSI 14 (Wilder), swing highs and lows, support and resistance, 20-day volume average, reversal candles and gaps.</li>
+              <li>Chart and pattern steps 10 and 11 are judged on the chart: the swing points are marked for you.</li>
+            </ul>
+          </div>
+          <div class="card span3">
+            <h3>Important</h3>
+            <p>This is a learning and decision-support tool. It is <b>not investment advice</b>, it does not know your full financial situation, and it never places orders. Free data can be delayed: always check the live price and the day's disclosures before trading.</p>
+            <div class="links">
+              <button class="ghost small" id="guideBtn2">Open the user guide</button>
+              <button class="ghost small" data-url="https://github.com/BeedoElOmda/Beedo-Trade/releases">Check for updates</button>
+              <button class="ghost small" data-url="https://github.com/BeedoElOmda/Beedo-Trade/issues">Report a problem</button>
+            </div>
+            <p class="muted tiny" id="aboutInfo"></p>
+            <p class="muted tiny">Charts by <a href="#" data-url="https://www.tradingview.com/">TradingView</a> Lightweight Charts™ (Apache 2.0). Source: <a href="#" data-url="https://github.com/BeedoElOmda/Beedo-Trade">github.com/BeedoElOmda/Beedo-Trade</a></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div id="toast" class="toast hidden" role="status"></div>
+<script src="vendor/lightweight-charts.standalone.production.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
