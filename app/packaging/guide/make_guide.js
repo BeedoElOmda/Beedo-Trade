@@ -123,7 +123,7 @@ const first = [
 const reading = [
   h1('4. Reading the result'),
   h2('4.1  The signal and what to do'),
-  ...shot('g_signal.png', 'COMI: First Buy, with the actions for both positions and the key numbers.'),
+  ...shot('g_signal.png', 'COMI: First Buy, with the actions for both positions, the key numbers and the combined view.'),
   P('The coloured badge is the overall signal. The bar under it is the course\u2019s signal ladder, with your stock\u2019s position lit up:'),
   dataTable([2000, 3700, 3326], ['Signal', 'Meaning', 'Typical action'], [
     ['Confirm Buy', 'Trend, moving averages, RSI and volume agree upward', 'Cash holder: buy the full position'],
@@ -135,7 +135,7 @@ const reading = [
     ['Confirm Sell', 'Everything agrees downward', 'Shareholder: sell'],
   ], (ri) => ['D5F5E3', 'E9F7EF', 'E8F8F5', 'F2F3F4', 'FEF5E7', 'FDEBD0', 'FADBD8'][ri]),
   gap(),
-  P([run('The sentence next to the badge says why. When a signal is held back by a course rule (for example "price is still below MA18" or "the market is moving sideways"), it says so. The four boxes show '), b('RSI'), run(', today\u2019s '), b('volume'), run(' against its 20-day average, and the nearest '), b('support'), run(' and '), b('resistance'), run('.')]),
+  P([run('The sentence next to the badge says why. When a signal is held back by a course rule (for example "price is still below MA18" or "the market is moving sideways"), it says so. The four boxes show '), b('RSI'), run(', today\u2019s '), b('volume'), run(' against its 20-day average, and the nearest '), b('support'), run(' and '), b('resistance'), run('. The '), b('Combined view'), run(' at the bottom joins this signal with the company’s fundamentals rating (section 6).')]),
   ...shot('sell.png', 'A shareholder view of a Confirm Sell (ABUK): the shareholder advice is highlighted.', 520),
   h2('4.2  The chart'),
   ...shot('g_chart.png', 'Candles with MA 5 / 9 / 18, support (S) and resistance (R) lines, swing arrows, volume and RSI.'),
@@ -156,13 +156,51 @@ const watch = [
   ...shot('watchlist.png', 'The watchlist after "Scan all", strongest buy first.'),
   numR('num2', [run('Open '), ui('Watchlist'), run(' in the left menu.')]),
   numR('num2', [run('Type a code in '), ui('Add EGX code'), run(' and click '), ui('Add'), run('. Remove a stock with the \u2715 on its chip.')]),
-  numR('num2', [run('Click '), ui('Scan all'), run('. Every stock is analysed and sorted from the strongest buy to the strongest sell.')]),
+  numR('num2', [run('Click '), ui('Scan all'), run('. Every stock is analysed and sorted from the strongest buy to the strongest sell, with each company’s rating and the combined view.')]),
   numR('num2', 'Click any row to open its full analysis.'),
   P('Your watchlist is saved automatically and shown as quick-pick buttons on the start screen.'),
 ];
 
+const fund = [
+  h1('6. Company fundamentals and the Screener'),
+  P('Your course tells you when to buy or sell. Fundamentals tell you whether the company is worth owning at all. Beedo-Trade rates every company with standard rules, then combines that rating with the course signal.'),
+  h2('6.1  The fundamentals card'),
+  ...shot('g_fund.png', 'COMI: rated Strong (83). Each tile shows the figure, its rating and the median of similar companies.'),
+  P('Each figure is rated Good, Fair or Poor, and shown next to the median of similar companies (same industry where possible, otherwise the same sector or the whole market):'),
+  dataTable([2500, 3300, 3226], ['Check', 'Good', 'Poor'], [
+    ['P/E (valuation)', '10 or less, or well below peers', 'Over 30, far above peers, or loss-making'],
+    ['P/B (price vs book)', '1.5 or less (banks: 1.0)', 'Over 5 (banks: 2.5) and above peers'],
+    ['Return on equity', '15% or more', 'Under 8%'],
+    ['Net profit margin', '10% or more', 'Under 3%'],
+    ['Debt to equity', '0.5 or less', 'Over 1.5'],
+    ['Earnings / revenue growth', '20% or more a year', 'Falling'],
+    ['Dividend yield (bonus)', '4% or more', 'No penalty for paying no dividend'],
+  ]),
+  gap(80),
+  P([b('Overall rating: '), run('Strong (70 or more out of 100), Fair (45 to 69) or Weak (under 45). Banks skip the margin and debt checks, which don’t fit how banks work. If fewer than three key figures are reported, the rating is '), b('Not enough data'), run('. This is common for smaller companies.')]),
+  callout('note', 'Why growth needs 20% to count as good', 'Egypt’s high inflation lifts every company’s sales and profits in pounds. Growth below inflation means the business is shrinking in real terms, so 20% a year is the bar for "Good".'),
+  gap(),
+  h2('6.2  The combined view'),
+  dataTable([2200, 2200, 4626], ['Company', 'Course signal', 'Combined view'], [
+    ['Strong', 'First / Confirm Buy', 'Best setup: a strong company with a buy signal'],
+    ['Strong', 'Alarm Buy or Hold', 'Put it on your watchlist and wait for a buy signal'],
+    ['Strong', 'Any sell', 'Wait for the chart to turn before buying'],
+    ['Fair', 'First / Confirm Buy', 'Acceptable: consider a smaller position'],
+    ['Weak', 'First / Confirm Buy', 'Speculative: small size, or skip it'],
+    ['Weak', 'No buy signal', 'Avoid'],
+  ], (ri) => ['D5F5E3', 'E8F6F8', 'FEF5E7', 'E8F6F8', 'FEF5E7', 'FADBD8'][ri]),
+  h2('6.3  The Screener'),
+  ...shot('g_screener.png', 'The Screener: strong companies that are in a buy zone right now.', 470),
+  numR('num5', [run('Open '), ui('Screener'), run(' in the left menu.')]),
+  numR('num5', [run('Choose the '), ui('Company quality'), run(' (Strong only, or Strong or Fair), the '), ui('Technical signal'), run(' you want, and optionally a '), ui('Sector'), run('.')]),
+  numR('num5', [run('Click '), ui('Run screener'), run('. It rates every EGX company, then runs your course checklist on the best 40. This takes 10 to 40 seconds.')]),
+  numR('num5', 'Click any row to open its full analysis.'),
+  gap(80),
+  callout('tip', 'Use the Screener to find ideas, then check them', 'The Screener narrows about 300 stocks to a short list. Open each result, read its chart and checklist, and confirm the live price and the day’s news before acting.'),
+];
+
 const csv = [
-  h1('6. Stocks without price history (Import CSV)'),
+  h1('7. Stocks without price history (Import CSV)'),
   P('Prices come from Yahoo Finance, which covers the larger, widely traded EGX stocks but not every company. If a stock isn\u2019t covered, you\u2019ll see "Yahoo Finance has no price history". You can still analyse it from a file of daily prices:'),
   numR('num3', [run('Export daily prices from your broker or a charting website as a '), b('CSV'), run(' file, with at least 60 trading days (a year is best).')]),
   numR('num3', [run('Type the stock code in the search box (optional, used as the name), then click '), ui('Import CSV'), run(' and choose the file.')]),
@@ -176,20 +214,20 @@ const csv = [
 ];
 
 const settings = [
-  h1('7. Settings, updates and data'),
-  h2('7.1  Light or dark'),
+  h1('8. Settings, updates and data'),
+  h2('8.1  Light or dark'),
   P([run('Click '), ui('Light mode'), run(' / '), ui('Dark mode'), run(' at the bottom of the left menu.')]),
   ...shot('light.png', 'Light theme (EAST, Confirm Buy).', 520),
-  h2('7.2  What Beedo-Trade remembers'),
+  h2('8.2  What Beedo-Trade remembers'),
   P('Your watchlist, cash, risk %, position (cash holder or shareholder) and theme are saved automatically in your user profile, in the folder %APPDATA%\\BeedoTrade. The About page shows the exact folder.'),
-  h2('7.3  Updating to a new version'),
+  h2('8.3  Updating to a new version'),
   numR('num4', [run('On the '), ui('About'), run(' page, click '), ui('Check for updates'), run('. This opens the GitHub Releases page.')]),
   numR('num4', 'Download the newer Beedo-Trade-Setup file and run it. It replaces the old version in place and closes Beedo-Trade first if it is open.'),
   numR('num4', 'Your watchlist and settings are kept.'),
 ];
 
 const uninstall = [
-  h1('8. Uninstalling'),
+  h1('9. Uninstalling'),
   P('Use either of the standard Windows ways:'),
   stepCard('A', 'From Windows Settings', [P([run('Open '), ui('Settings \u2192 Apps \u2192 Installed apps'), run(', find '), b('Beedo-Trade'), run(', click the '), ui('\u22EF'), run(' button and choose '), ui('Uninstall'), run('.')], { spacing: { after: 0 } })]),
   gap(80),
@@ -199,14 +237,15 @@ const uninstall = [
 ];
 
 const trouble = [
-  h1('9. Troubleshooting'),
+  h1('10. Troubleshooting'),
   dataTable([3300, 5726], ['Problem', 'What to do'], [
     ['Setup: "Access is denied" (Error 5)', 'Choose "Install for me only" and keep the suggested folder, or choose "Install for all users" to install into Program Files (needs administrator approval).'],
     ['"Windows protected your PC"', 'Click More info, then Run anyway. The app isn\u2019t code-signed.'],
     ['The app window stays blank', 'Install Microsoft Edge WebView2 (free from Microsoft), then start Beedo-Trade again.'],
-    ['"Yahoo Finance has no price history"', 'Yahoo doesn\u2019t carry that stock. Use Import CSV (section 6).'],
+    ['"Yahoo Finance has no price history"', 'Yahoo doesn\u2019t carry that stock. Use Import CSV (section 7).'],
     ['"Could not reach Yahoo Finance"', 'Check your internet connection, firewall or VPN, then try again.'],
     ['Prices look a day old', 'Free data can lag, and on Friday and Saturday the latest price is Thursday\u2019s close. Check the live price in your broker app.'],
+    ['Company rating says "Not enough data"', 'TradingView has too few reported figures for that company (common for smaller firms). Use the technical signal and keep positions small.'],
     ['The first start is slow', 'Normal: Windows checks a new program the first time. Later starts are faster.'],
   ]),
   gap(),
@@ -234,7 +273,7 @@ const doc = new Document({
     properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1300, bottom: 1200, left: 1440, right: 1440 } } },
     footers: { default: new Footer({ children: [P([run(`Beedo-Trade for Windows ${VERSION}  \u2022  page `, { size: 16, color: GREY }),
       new TextRun({ children: [PageNumber.CURRENT], size: 16, color: GREY })], { alignment: AlignmentType.CENTER, spacing: { after: 0 } })] }) },
-    children: [...cover, ...welcome, ...install, ...first, ...reading, ...watch, ...csv, ...settings, ...uninstall, ...trouble],
+    children: [...cover, ...welcome, ...install, ...first, ...reading, ...watch, ...fund, ...csv, ...settings, ...uninstall, ...trouble],
   }],
 });
 Packer.toBuffer(doc).then((buf) => fs.writeFileSync(OUT, buf));
