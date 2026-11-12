@@ -93,3 +93,13 @@ This is a learning and decision-support tool that applies a technical-analysis m
 ## License
 
 [MIT](LICENSE). The EGX MCP server downloaded by the installer is a separate project with its own terms.
+
+## Standalone Windows app (no Claude needed)
+
+`app/` holds Beedo-Trade as its own desktop program: type an EGX code and get the signal, the cash holder and shareholder actions, an interactive chart (candles, MA 5/9/18, support and resistance, swing points, volume, RSI), the 11-step checklist, a trade-plan calculator and a watchlist scanner. Light and dark themes.
+
+- **Install:** download `Beedo-Trade-Setup-x.y.z.exe` from the repository's Releases page and run it. Choose **Install for me only** (recommended, no administrator rights) or **Install for all users** (installs into Program Files after administrator approval). If Windows shows "Windows protected your PC", click **More info → Run anyway**; the app isn't code-signed.
+- **User guide:** an illustrated guide (`app/packaging/guide/Beedo-Trade User Guide.pdf`) is installed with the app. Open it from the Start menu or the app's **User guide** button.
+- **Uninstall:** **Settings → Apps → Installed apps → Beedo-Trade → Uninstall**, or **Uninstall Beedo-Trade** in the Start menu. You're asked whether to keep your watchlist and settings.
+- **Build it yourself:** install [uv](https://docs.astral.sh/uv/) and Inno Setup (`winget install JRSoftware.InnoSetup`), then from `app/` run `powershell -ExecutionPolicy Bypass -File packaging\build.ps1`.
+- **How it decides:** `app/beedo_app/engine.py` turns the course rules into code and uses the same `analyze.py` as the Claude skill, so the numbers match. Chart patterns (steps 10 and 11) are left for you to judge on the chart, where the swing points are marked.
