@@ -13,7 +13,7 @@ else:
     sys.path.insert(0, str(BASE.parent))
 
 import analyze  # noqa: E402  (shared with the Claude skill, so numbers always match)
-from beedo_app import engine  # noqa: E402
+from beedo_app import engine, fundamentals  # noqa: E402
 
 from beedo_app import __version__ as VERSION  # noqa: E402  (single source: beedo_app/__init__.py)
 DATA_DIR = Path(os.environ.get("APPDATA", Path.home())) / "BeedoTrade"
@@ -63,9 +63,18 @@ class Api:
         out = {"symbol": symbol.upper(), "name": name, "source": source, "last_bar": rep["last_bar"],
                "levels": rep["levels"], "rsi": rep["rsi14"], "ma": {k: rep["moving_averages"][k] for k in ("MA5", "MA9", "MA18")},
                "volume_ratio": rep["volume"]["ratio_vs_avg20"], **engine.evaluate(rep), "chart": _series(bars)}
+        out["fundamentals"] = self._fundamentals(symbol)
+        out["verdict"] = fundamentals.verdict(out["fundamentals"].get("quality", {}).get("level"), out["signal"]["rung"])
         with self._lock:
             self._cache[symbol.upper()] = rep
         return out
+
+    @staticmethod
+    def _fundamentals(symbol):
+        try:  # fundamentals are a second opinion: if TradingView is unreachable, the technical analysis still shows
+            return fundamentals.for_symbol(symbol)
+        except Exception as e:
+            return {"error": str(e), "quality": {"label": "Not enough data", "level": None, "score": None, "why": str(e)}, "rules": []}
 
     def analyze(self, symbol):
         sym = (symbol or "").strip().upper()
@@ -101,21 +110,49 @@ class Api:
             return {"error": "Cash must be positive and risk between 0 and 20%."}
         return engine.trade_plan(rep, cash, risk_pct)
 
+    def _technical_row(self, sym, fund=None):
+        try:
+            bars, name = analyze.fetch(sym)
+            rep = analyze.report(bars, sym, name)
+            ev = engine.evaluate(rep)
+            with self._lock:
+                self._cache[sym] = rep
+            fund = fund or self._fundamentals(sym)
+            q = fund.get("quality", {})
+            return {"symbol": sym, "name": name, "close": rep["last_bar"]["c"], "date": rep["last_bar"]["d"],
+                    "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"],
+                    "quality": q.get("label"), "quality_level": q.get("level"), "quality_score": q.get("score"),
+                    "verdict": fundamentals.verdict(q.get("level"), ev["signal"]["rung"])}
+        except Exception as e:
+            return {"symbol": sym, "error": str(e)}
+
     def scan(self, symbols):
-        def one(sym):
-            try:
-                bars, name = analyze.fetch(sym)
-                rep = analyze.report(bars, sym, name)
-                ev = engine.evaluate(rep)
-                with self._lock:
-                    self._cache[sym] = rep
-                return {"symbol": sym, "name": name, "close": rep["last_bar"]["c"], "date": rep["last_bar"]["d"],
-                        "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"]}
-            except Exception as e:
-                return {"symbol": sym, "error": str(e)}
         syms = [s.strip().upper() for s in symbols or [] if s.strip()][:40]
         with ThreadPoolExecutor(max_workers=6) as ex:
-            return list(ex.map(one, syms))
+            return list(ex.map(self._technical_row, syms))
+
+    def sectors(self):
+        try:
+            return sorted({r["sector"] for r in fundamentals.market() if r.get("sector")})
+        except Exception as e:
+            return {"error": str(e)}
+
+    def screener(self, min_quality=2, min_rung=2, sector=""):
+        """Rates every EGX company, keeps those meeting the quality bar, then runs the course checklist on the best 40."""
+        try:
+            rows = fundamentals.market()
+        except Exception as e:
+            return {"error": str(e)}
+        rated = [fundamentals.rate(r, rows) for r in rows if not sector or r.get("sector") == sector]
+        keep = [f for f in rated if f["quality"]["level"] is not None and f["quality"]["level"] >= int(min_quality)]
+        keep.sort(key=lambda f: -f["quality"]["score"])
+        checked = keep[:40]  # each technical check downloads a year of prices, so cap the work
+        with ThreadPoolExecutor(max_workers=6) as ex:
+            results = list(ex.map(lambda f: self._technical_row(f["symbol"], f), checked))
+        hits = [r for r in results if not r.get("error") and r["rung"] >= int(min_rung)]
+        hits.sort(key=lambda r: (-r["rung"], -(r["quality_score"] or 0)))
+        return {"rated": len(rated), "passed_quality": len(keep), "checked": len(checked),
+                "skipped_no_prices": sum(1 for r in results if r.get("error")), "results": hits}
 
     def open_url(self, url):
         if str(url).startswith("https://"):
