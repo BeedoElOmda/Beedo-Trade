@@ -1,0 +1,41 @@
+BEEDO-TRADE: IMPORTANT NOTICE
+
+Beedo-Trade is a learning and decision-support tool. It applies the Beedo technical-analysis course method to Egyptian Exchange (EGX) stocks.
+
+- It is NOT investment advice and does not know your full financial situation.
+- It never places orders. You make every decision and trade in your own broker app.
+- Prices come from free sources (Yahoo Finance) and can be delayed or missing. Always check the live price and the day's EGX disclosures before trading.
+- Trading shares involves risk, including the loss of money you invest.
+
+By installing, you confirm that you understand this.
+
+------------------------------------------------------------
+
+MIT License
+
+Copyright (c) 2026 Beedo
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+
+------------------------------------------------------------
+
+Third-party components
+
+- TradingView Lightweight Charts(TM), Copyright (c) 2024 TradingView, Inc., Apache License 2.0.
+- Python (PSF License), pywebview and pythonnet (BSD / MIT licenses), bundled with PyInstaller.
