@@ -29,8 +29,8 @@ The full rules are in [`skills/beedo-trade/references/course-rules.md`](skills/b
 | Part | What it does |
 |---|---|
 | `skills/beedo-trade/SKILL.md` | The method and the report format Claude follows |
-| `skills/beedo-trade/scripts/analyze.py` | Downloads a year of daily prices (Yahoo Finance, e.g. `COMI.CA`) and calculates the MA crossovers, RSI, swing points, levels, volume, candles and gaps. Uses only Python's standard library. |
-| `skills/beedo-trade/scripts/mcp_server.py` | Beedo-Trade as its own MCP server for Claude Desktop, with the tools `beedo_method` (the method and course rules) and `beedo_analyze` (the indicators for one stock), plus a ready-made prompt `beedo_trade_analysis`. Claude Code uses the skill instead. |
+| `skills/beedo-trade/scripts/analyze.py` | Downloads a year of daily prices (Yahoo Finance, e.g. `COMI.CA`) and calculates the MA crossovers, RSI, swing points, levels, volume, candles and gaps. It can also read a CSV of daily prices you supply (`--csv`). Uses only Python's standard library. |
+| `skills/beedo-trade/scripts/mcp_server.py` | Beedo-Trade as its own MCP server for Claude Desktop. Tools: `beedo_method` (the method and course rules), `beedo_analyze` (the indicators for one stock) and `beedo_history` (raw daily prices). Prompt: `beedo_trade_analysis`. It runs on your own computer, so it can download price history even when Claude's sandbox can't. Claude Code uses the skill instead. |
 | EGX MCP server (installed by the script) | Today's TradingView snapshot for EGX stocks, plus gold and silver prices in EGP. Third-party project: [M-Abdelmegeed/EGX-Data-MCP-Server](https://github.com/M-Abdelmegeed/EGX-Data-MCP-Server). It is downloaded at install time, not included in this package. |
 
 ## Install
@@ -65,6 +65,14 @@ Then start a new Claude Code session, or fully quit and reopen Claude Desktop.
 ### Claude.ai (web)
 
 Upload `beedo-trade.skill` under **Settings → Capabilities → Skills**. On the web, the skill can't reach the EGX server or download price history. You'll need to give it the numbers yourself, or use Claude Code / Desktop instead.
+
+## If price history can't be downloaded
+
+You'll see this as Claude saying it couldn't download price history or reach Yahoo Finance, or the report marking steps 1, 4, 6, 10 and 11 as "not checked".
+
+- **Make sure the `beedo-trade` server is installed and running.** In Claude Desktop, check that it is listed under **Settings → Developer**. If it's missing, you have an older install: download the latest version and run the installer again. This server runs on your own computer, where Yahoo Finance isn't blocked. It replaces the older manual fix of editing the EGX server's `main.py`.
+- **Check that your computer can reach Yahoo.** Open https://query1.finance.yahoo.com/v8/finance/chart/COMI.CA?range=5d&interval=1d in a browser. You should see text that includes prices. If not, a firewall, VPN or network setting is blocking it.
+- **Some stocks aren't on Yahoo.** Yahoo covers the larger, widely traded EGX stocks (for example COMI and EGAL) but not every listed company. For a missing stock, upload a CSV of daily prices into the chat (date, open, high, low, close, volume; at least 60 trading days). Without one, Claude uses the TradingView snapshot only, and the signal is capped at **Alarm**.
 
 ## Optional extras
 
