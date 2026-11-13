@@ -12,6 +12,14 @@ COLS = {  # our key -> TradingView column
     "roe": "return_on_equity", "net_margin": "net_margin", "debt_to_equity": "debt_to_equity",
     "eps_growth": "earnings_per_share_diluted_yoy_growth_ttm", "revenue_growth": "total_revenue_yoy_growth_ttm",
     "dividend_yield": "dividends_yield_current",
+    # shown as key figures (not rated)
+    "eps": "earnings_per_share_basic_ttm", "ps": "price_sales_current", "ev_ebitda": "enterprise_value_ebitda_ttm",
+    "roa": "return_on_assets", "gross_margin": "gross_margin", "operating_margin": "operating_margin",
+    "current_ratio": "current_ratio", "total_debt": "total_debt", "free_cash_flow": "free_cash_flow_ttm",
+    "revenue": "total_revenue", "net_income": "net_income",
+    "high_52w": "price_52_week_high", "low_52w": "price_52_week_low", "beta": "beta_1_year",
+    "volatility_1m": "Volatility.M", "perf_1m": "Perf.1M", "perf_3m": "Perf.3M", "perf_ytd": "Perf.YTD", "perf_1y": "Perf.Y",
+    "avg_volume": "average_volume_30d_calc",
 }
 BANKS = {"Regional Banks", "Major Banks"}
 CACHE_SECONDS = 1800
@@ -147,7 +155,8 @@ def rate(row, rows):
                    "why": f"{sum(1 for r in scored if r['score'] == GOOD)} good, {sum(1 for r in scored if r['score'] == FAIR)} fair and "
                           f"{sum(1 for r in scored if r['score'] == POOR)} poor out of {len(scored)} checks"}
     return {"symbol": row["symbol"], "name": row.get("name"), "sector": row.get("sector"), "industry": row.get("industry"),
-            "bank": bank, "market_cap": row.get("market_cap"), "rules": rules, "quality": quality, "peers": peers}
+            "bank": bank, "market_cap": row.get("market_cap"), "rules": rules, "quality": quality, "peers": peers,
+            "figures": {k: row.get(k) for k in COLS if k not in ("symbol", "name", "sector", "industry")}}
 
 
 def for_symbol(symbol):
@@ -162,14 +171,14 @@ def for_symbol(symbol):
 def verdict(quality_level, rung):
     """Combines the business (quality) with the course's technical signal (rung -3..+3)."""
     if quality_level is None:
-        return {"tone": "neutral", "text": "No fundamentals rating: rely on the technical signal, and keep positions small."}
+        return {"tone": "neutral", "short": "No rating", "text": "No fundamentals rating: rely on the technical signal, and keep positions small."}
     if quality_level == 2:
-        if rung >= 2: return {"tone": "good", "text": "Best setup: a strong company with a buy signal."}
-        if rung >= 0: return {"tone": "neutral", "text": "Strong company, but no buy signal yet: put it on your watchlist and wait."}
-        return {"tone": "warn", "text": "Strong company in a falling trend: wait for the chart to turn before buying."}
+        if rung >= 2: return {"tone": "good", "short": "Best setup", "text": "Best setup: a strong company with a buy signal."}
+        if rung >= 0: return {"tone": "neutral", "short": "Watch", "text": "Strong company, but no buy signal yet: put it on your watchlist and wait."}
+        return {"tone": "warn", "short": "Wait", "text": "Strong company in a falling trend: wait for the chart to turn before buying."}
     if quality_level == 1:
-        if rung >= 2: return {"tone": "neutral", "text": "Acceptable: a fair company with a buy signal. Consider a smaller position."}
-        if rung >= 0: return {"tone": "neutral", "text": "Fair company with no clear signal: no edge right now."}
-        return {"tone": "warn", "text": "Fair company in a falling trend: stay out for now."}
-    if rung >= 2: return {"tone": "warn", "text": "Speculative: the chart says buy but the business is weak. Use a small size, or skip it."}
-    return {"tone": "bad", "text": "Avoid: a weak business without a buy signal."}
+        if rung >= 2: return {"tone": "neutral", "short": "Acceptable", "text": "Acceptable: a fair company with a buy signal. Consider a smaller position."}
+        if rung >= 0: return {"tone": "neutral", "short": "No edge", "text": "Fair company with no clear signal: no edge right now."}
+        return {"tone": "warn", "short": "Stay out", "text": "Fair company in a falling trend: stay out for now."}
+    if rung >= 2: return {"tone": "warn", "short": "Speculative", "text": "Speculative: the chart says buy but the business is weak. Use a small size, or skip it."}
+    return {"tone": "bad", "short": "Avoid", "text": "Avoid: a weak business without a buy signal."}

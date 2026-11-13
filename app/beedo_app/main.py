@@ -18,8 +18,10 @@ from beedo_app import engine, fundamentals  # noqa: E402
 from beedo_app import __version__ as VERSION  # noqa: E402  (single source: beedo_app/__init__.py)
 DATA_DIR = Path(os.environ.get("APPDATA", Path.home())) / "BeedoTrade"
 SETTINGS = DATA_DIR / "settings.json"
+# Ratios shown as columns in the Watchlist and Screener tables
+TABLE_FIGURES = ("market_cap", "pe", "pb", "roe", "net_margin", "debt_to_equity", "eps_growth", "dividend_yield", "perf_ytd")
 DEFAULTS = {"watchlist": ["COMI", "TMGH", "SWDY", "ETEL", "EAST", "EGAL"], "cash": 50000, "risk_pct": 2,
-            "role": "cash", "theme": "dark"}
+            "theme": "dark"}
 
 
 def _series(bars):
@@ -122,7 +124,8 @@ class Api:
             return {"symbol": sym, "name": name, "close": rep["last_bar"]["c"], "date": rep["last_bar"]["d"],
                     "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"],
                     "quality": q.get("label"), "quality_level": q.get("level"), "quality_score": q.get("score"),
-                    "verdict": fundamentals.verdict(q.get("level"), ev["signal"]["rung"])}
+                    "verdict": fundamentals.verdict(q.get("level"), ev["signal"]["rung"]),
+                    **{k: (fund.get("figures") or {}).get(k) for k in TABLE_FIGURES}}
         except Exception as e:
             return {"symbol": sym, "error": str(e)}
 
