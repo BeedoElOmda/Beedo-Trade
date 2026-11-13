@@ -1,6 +1,6 @@
 [project]
 name = "beedo-trade-app"
-version = "1.4.0"
+version = "1.5.0"
 description = "Beedo-Trade standalone Windows and macOS app: EGX technical analysis with the Beedo course method"
 requires-python = ">=3.11,<3.14"
 dependencies = ["pywebview>=5.3"]
