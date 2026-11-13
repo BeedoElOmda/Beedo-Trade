@@ -1,6 +1,40 @@
 # Beedo-Trade
 
-A Claude skill that analyses **Egyptian Exchange (EGX)** stocks with a structured technical-analysis method, the Beedo course checklist, and gives a clear signal: **Alarm / First / Confirm Buy or Sell**, or **Hold**. It gives separate advice for someone holding cash and someone who already owns the stock.
+Technical analysis of **Egyptian Exchange (EGX)** stocks, gold and silver with the Beedo course checklist: one clear signal (**Alarm / First / Confirm Buy or Sell**, or **Hold**) and separate advice for someone holding cash and someone who already owns the stock.
+
+It comes in two forms: a **desktop app** for Windows and Mac (no Claude needed), and a **Claude skill** with its own MCP server. Both use the same calculation code, so the numbers match. It is a learning and decision-support tool, **not investment advice**.
+
+## Standalone app for Windows and Mac (no Claude needed)
+
+Beedo-Trade is a desktop program for Windows and Mac (source in `app/`): type an EGX code and get the signal, the cash holder and shareholder actions, an interactive chart (candles, MA 5/9/18, support and resistance, swing points, volume, RSI), the 11-step checklist, a trade-plan calculator and a watchlist scanner. Light and dark themes.
+
+**Company fundamentals (1.2):** each stock also gets a Strong / Fair / Weak company rating from standard rules (P/E, P/B, return on equity, margin, debt, growth, dividend), compared with similar companies, plus a **combined view** that joins it with the course signal. The **Screener** rates every EGX company and lists the strong ones that are in a buy zone. Fundamentals come from TradingView's market data and are not part of the Beedo technical course.
+
+**Gold & Silver (1.3):** a page with international gold prices per gram for 24k, 21k and 18k, silver per gram, the official dollar rate and the gold/silver ratio, all in EGP. Type `GOLD` or `SILVER` anywhere a stock code works to run the course checklist, chart and trade plan (in grams) on the metal, or add them to the watchlist. These are international prices; Egyptian shop prices add a local premium.
+
+**New in 1.5:**
+
+- **Portfolio:** enter what you own and what you paid; see cost, value, profit or loss, the signal and the shareholder action for each holding.
+- **Alerts:** set a price to be told about, and get told when the signal of a watchlist or portfolio stock changes. Checked at start-up and every 15 minutes while the app is open, against the latest daily close.
+- **Weekly chart:** switch the chart between daily and weekly candles (five years of history).
+- **Back-test:** replay the checklist day by day over the past two years and compare it with buy and hold.
+- **Export:** save an analysis as PDF, and the watchlist, screener or portfolio as a file Excel opens.
+- **Arabic interface:** switch language from the left menu. Detailed readings built from live numbers stay in English.
+- **Update notice:** the app tells you when a newer version is on GitHub.
+
+**Investing.com data:** Investing.com blocks automated access, so download a stock's *Historical Data* as CSV there and use **Import CSV**; the app reads that file format directly.
+
+- **Install:** download `Beedo-Trade-Setup-x.y.z.exe` from the repository's Releases page and run it. Choose **Install for me only** (recommended, no administrator rights) or **Install for all users** (installs into Program Files after administrator approval). If Windows shows "Windows protected your PC", click **More info → Run anyway**; the app isn't code-signed.
+- **User guide:** an illustrated guide (`app/packaging/guide/Beedo-Trade User Guide.pdf`) is installed with the app. Open it from the Start menu or the app's **User guide** button.
+- **Uninstall:** **Settings → Apps → Installed apps → Beedo-Trade → Uninstall**, or **Uninstall Beedo-Trade** in the Start menu. You're asked whether to keep your watchlist and settings.
+- **Mac:** download the `.dmg` from Releases (`arm64` for Apple Silicon, `x86_64` for Intel), drag Beedo-Trade to Applications, and on first launch allow it under **System Settings → Privacy & Security → Open Anyway** (the app isn't notarised by Apple). Not tested on a real Mac yet: please report problems.
+- **Automatic builds:** publishing a GitHub release builds the Windows installer and both Mac `.dmg` files and attaches them (`.github/workflows/`).
+- **Build it yourself:** install [uv](https://docs.astral.sh/uv/) and Inno Setup (`winget install JRSoftware.InnoSetup`), then from `app/` run `powershell -ExecutionPolicy Bypass -File packaging\build.ps1`.
+- **How it decides:** `app/beedo_app/engine.py` turns the course rules into code and uses the same `analyze.py`, `fundamentals.py` and `metals.py` as the Claude skill, so the numbers match. Chart patterns (steps 10 and 11) are left for you to judge on the chart, where the swing points are marked.
+
+## Claude skill
+
+The skill analyses **Egyptian Exchange (EGX)** stocks with a structured technical-analysis method, the Beedo course checklist, and gives a clear signal: **Alarm / First / Confirm Buy or Sell**, or **Hold**. It gives separate advice for someone holding cash and someone who already owns the stock.
 
 Ask Claude things like:
 
@@ -30,7 +64,9 @@ The full rules are in [`skills/beedo-trade/references/course-rules.md`](skills/b
 |---|---|
 | `skills/beedo-trade/SKILL.md` | The method and the report format Claude follows |
 | `skills/beedo-trade/scripts/analyze.py` | Downloads a year of daily prices (Yahoo Finance, e.g. `COMI.CA`) and calculates the MA crossovers, RSI, swing points, levels, volume, candles and gaps. It can also read a CSV of daily prices you supply (`--csv`). Uses only Python's standard library. |
-| `skills/beedo-trade/scripts/mcp_server.py` | Beedo-Trade as its own MCP server for Claude Desktop. Tools: `beedo_method` (the method and course rules), `beedo_analyze` (the indicators for one stock) and `beedo_history` (raw daily prices). Prompt: `beedo_trade_analysis`. It runs on your own computer, so it can download price history even when Claude's sandbox can't. Claude Code uses the skill instead. |
+| `skills/beedo-trade/scripts/mcp_server.py` | Beedo-Trade as its own MCP server for Claude Desktop. Tools: `beedo_method` (the method and course rules), `beedo_analyze` (the indicators for one stock, or for GOLD / SILVER), `beedo_history` (raw daily prices), `beedo_fundamentals` and `beedo_metals`. Prompt: `beedo_trade_analysis`. It runs on your own computer, so it can download price history even when Claude's sandbox can't. Claude Code uses the skill instead. |
+| `skills/beedo-trade/scripts/fundamentals.py` | Company rating (Strong / Fair / Weak) from standard rules on TradingView's market data, with the ratios behind it. MCP tool: `beedo_fundamentals`. A second opinion; it never changes the course signal. |
+| `skills/beedo-trade/scripts/metals.py` | Gold (24k, 21k, 18k) and silver in EGP per gram, the dollar rate and the gold/silver ratio. MCP tool: `beedo_metals`. `GOLD` and `SILVER` also work as symbols for the course checklist. |
 | EGX MCP server (installed by the script) | Today's TradingView snapshot for EGX stocks, plus gold and silver prices in EGP. Third-party project: [M-Abdelmegeed/EGX-Data-MCP-Server](https://github.com/M-Abdelmegeed/EGX-Data-MCP-Server). It is downloaded at install time, not included in this package. |
 
 ## Install
@@ -92,21 +128,4 @@ This is a learning and decision-support tool that applies a technical-analysis m
 
 ## License
 
-[MIT](LICENSE). The EGX MCP server downloaded by the installer is a separate project with its own terms.
-
-## Standalone app for Windows and Mac (no Claude needed)
-
-`app/` holds Beedo-Trade as its own desktop program: type an EGX code and get the signal, the cash holder and shareholder actions, an interactive chart (candles, MA 5/9/18, support and resistance, swing points, volume, RSI), the 11-step checklist, a trade-plan calculator and a watchlist scanner. Light and dark themes.
-
-**Company fundamentals (1.2):** each stock also gets a Strong / Fair / Weak company rating from standard rules (P/E, P/B, return on equity, margin, debt, growth, dividend), compared with similar companies, plus a **combined view** that joins it with the course signal. The **Screener** rates every EGX company and lists the strong ones that are in a buy zone. Fundamentals come from TradingView's market data and are not part of the Beedo technical course.
-
-**Gold & Silver (1.3):** a page with international gold prices per gram for 24k, 21k and 18k, silver per gram, the official dollar rate and the gold/silver ratio, all in EGP. Type `GOLD` or `SILVER` anywhere a stock code works to run the course checklist, chart and trade plan (in grams) on the metal, or add them to the watchlist. These are international prices; Egyptian shop prices add a local premium.
-
-**Investing.com data:** Investing.com blocks automated access, so download a stock's *Historical Data* as CSV there and use **Import CSV**; the app reads that file format directly.
-
-- **Install:** download `Beedo-Trade-Setup-x.y.z.exe` from the repository's Releases page and run it. Choose **Install for me only** (recommended, no administrator rights) or **Install for all users** (installs into Program Files after administrator approval). If Windows shows "Windows protected your PC", click **More info → Run anyway**; the app isn't code-signed.
-- **User guide:** an illustrated guide (`app/packaging/guide/Beedo-Trade User Guide.pdf`) is installed with the app. Open it from the Start menu or the app's **User guide** button.
-- **Uninstall:** **Settings → Apps → Installed apps → Beedo-Trade → Uninstall**, or **Uninstall Beedo-Trade** in the Start menu. You're asked whether to keep your watchlist and settings.
-- **Mac:** download the `.dmg` from Releases (`arm64` for Apple Silicon, `x86_64` for Intel), drag Beedo-Trade to Applications, and on first launch allow it under **System Settings → Privacy & Security → Open Anyway** (the app isn't notarised by Apple). The Mac build is produced by GitHub Actions (`.github/workflows/build-mac.yml`, `app/packaging/build_mac.sh`).
-- **Build it yourself:** install [uv](https://docs.astral.sh/uv/) and Inno Setup (`winget install JRSoftware.InnoSetup`), then from `app/` run `powershell -ExecutionPolicy Bypass -File packaging\build.ps1`.
-- **How it decides:** `app/beedo_app/engine.py` turns the course rules into code and uses the same `analyze.py` as the Claude skill, so the numbers match. Chart patterns (steps 10 and 11) are left for you to judge on the chart, where the swing points are marked.
+[MIT](LICENSE), for the app and the skill. The EGX MCP server downloaded by the installer is a separate project with its own terms.
