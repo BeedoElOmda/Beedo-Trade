@@ -18,7 +18,10 @@ from beedo_app import engine  # noqa: E402
 
 from beedo_app import __version__ as VERSION  # noqa: E402  (single source: beedo_app/__init__.py)
 MAC = sys.platform == "darwin"
-DATA_DIR = (Path.home() / "Library" / "Application Support" if MAC else Path(os.environ.get("APPDATA", Path.home()))) / "BeedoTrade"
+# Portable build: a portable.txt file beside the program keeps settings in its own "data" folder (USB stick, no install)
+PORTABLE_DIR = Path(sys.executable).parent if getattr(sys, "frozen", False) and (Path(sys.executable).parent / "portable.txt").exists() else None
+DATA_DIR = PORTABLE_DIR / "data" if PORTABLE_DIR else \
+    (Path.home() / "Library" / "Application Support" if MAC else Path(os.environ.get("APPDATA", Path.home()))) / "BeedoTrade"
 SETTINGS = DATA_DIR / "settings.json"
 # Ratios shown as columns in the Watchlist and Screener tables
 TABLE_FIGURES = ("market_cap", "pe", "pb", "roe", "net_margin", "debt_to_equity", "eps_growth", "dividend_yield", "perf_ytd")
