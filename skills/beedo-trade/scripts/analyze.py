@@ -12,7 +12,7 @@ class NoHistory(Exception):
 
 # ---------- data ----------
 def fetch(symbol, rng="1y"):
-    ysym = symbol.upper() if "." in symbol else symbol.upper() + ".CA"
+    ysym = symbol.upper() if ("." in symbol or "=" in symbol) else symbol.upper() + ".CA"  # GC=F, EGP=X etc. are passed as-is
     data, err = None, None
     for host in ("query1", "query2"):  # query2 sometimes answers when query1 is blocked
         url = f"https://{host}.finance.yahoo.com/v8/finance/chart/{ysym}?range={rng}&interval=1d"
