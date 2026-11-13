@@ -1,8 +1,8 @@
 """Fundamentals rating tests on made-up companies (no network)."""
 import sys
 from pathlib import Path
-sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-from beedo_app import fundamentals as F
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "skills" / "beedo-trade" / "scripts"))
+import fundamentals as F
 
 def co(symbol, **kw):
     base = dict(symbol=symbol, name=symbol, sector="Process Industries", industry="Chemicals", close=10, market_cap=1e9,

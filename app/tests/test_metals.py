@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "skills" / "beedo-trade" / "scripts"), str(ROOT / "app")]
-from beedo_app import metals
+import metals
 
 
 def bar(d, c):

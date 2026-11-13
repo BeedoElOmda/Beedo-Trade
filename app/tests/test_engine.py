@@ -55,3 +55,38 @@ def test_every_step_has_a_valid_rung():
     for closes in (wave(100, 0.4), wave(160, -0.4), wave(100, 0)):
         for s in run(closes)["steps"]:
             assert s["rung"] in engine.RUNGS and s["label"] == engine.RUNGS[s["rung"]]
+
+
+def test_weekly_groups_by_calendar_week():
+    days = [("2026-01-05", 10), ("2026-01-06", 12), ("2026-01-09", 11), ("2026-01-12", 13)]
+    w = engine.weekly([{"d": d, "o": c, "h": c + 1, "l": c - 1, "c": c, "v": 5} for d, c in days])
+    assert [(x["d"], x["o"], x["h"], x["l"], x["c"], x["v"]) for x in w] == [("2026-01-05", 10, 13, 9, 11, 15), ("2026-01-12", 13, 14, 12, 13, 5)]
+
+
+def test_backtest_buys_on_first_buy_and_sells_on_first_sell():
+    bars = [{"d": f"d{i}", "o": c, "h": c, "l": c, "c": c, "v": 1} for i, c in enumerate([10] * 60 + [10, 12, 15, 9])]
+    rungs = iter([0, 2, 3, -2, 0])  # one per day from bar 60: hold, buy at 10, hold, sell at 15, nothing
+    real = engine.evaluate
+    engine.evaluate = lambda rep: {"signal": {"rung": next(rungs)}}
+    try:
+        r = engine.backtest(bars, lambda b: b)
+    finally:
+        engine.evaluate = real
+    assert [(t["buy"], t["sell"], t["pct"], t["open"]) for t in r["trades"]] == [(10, 15, 50.0, False)]
+    assert r["method_pct"] == 50.0 and r["wins"] == 1 and r["hold_pct"] == -10.0
+
+
+def test_alerts_price_levels_and_signal_changes():
+    rows = {"COMI": {"symbol": "COMI", "close": 100, "rung": 2}, "TMGH": {"symbol": "TMGH", "close": 50, "rung": 0}}
+    hits = engine.alerts(rows, [{"symbol": "COMI", "above": 95, "below": 80}, {"symbol": "TMGH", "below": 50}, {"symbol": "GONE", "above": 1}],
+                         {"COMI": 1, "TMGH": 0})
+    assert [(h["symbol"], h["kind"]) for h in hits] == [("COMI", "above"), ("TMGH", "below"), ("COMI", "signal")]
+    assert "Alarm Buy to First Buy" in hits[2]["text"]
+
+
+def test_portfolio_profit_and_totals():
+    rows = {"COMI": {"symbol": "COMI", "name": "CIB", "close": 120, "date": "d", "rung": 2, "label": "First Buy", "action": "Hold."},
+            "BAD": {"symbol": "BAD", "error": "no prices"}}
+    p = engine.portfolio([{"symbol": "COMI", "qty": 10, "price": 100}, {"symbol": "BAD", "qty": 1, "price": 5}], rows)
+    assert (p["cost"], p["value"], p["pl"], p["pl_pct"]) == (1000, 1200, 200, 20.0)
+    assert p["rows"][0]["pl_pct"] == 20.0 and p["rows"][1]["error"] == "no prices"
