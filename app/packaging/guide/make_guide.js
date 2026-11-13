@@ -211,8 +211,31 @@ const fund = [
   callout('tip', 'Use the Screener to find ideas, then check them', 'The Screener narrows about 300 stocks to a short list. Open each result, read its chart and checklist, and confirm the live price and the day’s news before acting.'),
 ];
 
+
+const metalsSec = [
+  h1('7. Gold & Silver'),
+  P('The Gold & Silver page shows today’s international prices in Egyptian pounds, and lets you run your course method on each metal, exactly as for a stock.'),
+  ...shot('g_metals.png', 'The Gold & Silver page: gold per gram for 24k, 21k and 18k, silver per gram, the dollar rate and the gold/silver ratio.'),
+  dataTable([2600, 6426], ['Card', 'What it shows'], [
+    ['Gold', 'Price per gram for 24k, 21k and 18k in EGP, per ounce in USD and EGP, today’s change, 1-year performance and 52-week range'],
+    ['Silver', 'Price per gram (999 silver) in EGP, per ounce, today’s change, 1-year performance and 52-week range'],
+    ['Market', 'The official US dollar rate in EGP, and the gold/silver ratio'],
+  ]),
+  gap(80),
+  callout('warn', 'International price, not the shop price', 'Prices come from the international gold and silver markets (Yahoo Finance), converted at the official dollar rate. Egyptian shops add a local premium and workmanship fees, so the 21k price at a jeweller is usually higher.'),
+  gap(),
+  h2('7.1  Analyse gold or silver with your course method'),
+  numR('num6', [run('Click '), ui('Analyze with my course method'), run(' on the Gold or Silver card, or type '), b('GOLD'), run(' or '), b('SILVER'), run(' in the search box.')]),
+  numR('num6', 'You get the same signal, chart, 11-step checklist and trade plan as for a stock, on the price in EGP per gram (24k gold, 999 silver).'),
+  numR('num6', [run('The trade plan counts '), b('grams'), run(' instead of shares. Key figures, the company rating and the combined view are hidden, because there is no company behind a metal.')]),
+  numR('num6', [run('Click '), ui('Add to watchlist'), run(' to scan gold and silver together with your stocks.')]),
+  ...shot('g_gold.png', 'Gold analysed with the course method, in EGP per gram.'),
+  h2('7.2  The gold/silver ratio'),
+  P('The ratio is how many ounces of silver one ounce of gold buys. Historically it moves roughly between 40 and 120. Above about 80, silver is cheap compared with gold; below about 50, gold is cheap compared with silver. It is a context indicator, not a buy or sell signal.'),
+];
+
 const csv = [
-  h1('7. Stocks without price history (Import CSV)'),
+  h1('8. Stocks without price history (Import CSV)'),
   P('Prices come from Yahoo Finance, which covers the larger, widely traded EGX stocks but not every company. If a stock isn\u2019t covered, you\u2019ll see "Yahoo Finance has no price history". You can still analyse it from a file of daily prices:'),
   numR('num3', [run('Export daily prices from your broker or a charting website as a '), b('CSV'), run(' file, with at least 60 trading days (a year is best).')]),
   numR('num3', [run('Type the stock code in the search box (optional, used as the name), then click '), ui('Import CSV'), run(' and choose the file.')]),
@@ -223,23 +246,25 @@ const csv = [
     ['Close', 'A column named Close, Price or Last'],
     ['Volume (optional)', 'Volume or Vol.; values like 1.2M or 850K are understood'],
   ]),
+  gap(),
+  callout('tip', 'Getting a CSV from Investing.com', [run('On investing.com, open the stock, choose '), b('Historical Data'), run(', set the period to about one year and the time frame to '), b('Daily'), run(', then click '), b('Download'), run('. Beedo-Trade reads that file as it is: its Price and Vol. columns, volumes like 1.2M and its month/day dates. Investing.com doesn’t allow programs to fetch its data automatically, so this download is the way to use it.')]),
 ];
 
 const settings = [
-  h1('8. Settings, updates and data'),
-  h2('8.1  Light or dark'),
+  h1('9. Settings, updates and data'),
+  h2('9.1  Light or dark'),
   P([run('Click '), ui('Light mode'), run(' / '), ui('Dark mode'), run(' at the bottom of the left menu.')]),
   ...shot('light.png', 'Light theme (EAST, Confirm Buy).', 470),
-  h2('8.2  What Beedo-Trade remembers'),
+  h2('9.2  What Beedo-Trade remembers'),
   P('Your watchlist, cash, risk %, position (cash holder or shareholder) and theme are saved automatically in your user profile, in the folder %APPDATA%\\BeedoTrade. The About page shows the exact folder.'),
-  h2('8.3  Updating to a new version'),
+  h2('9.3  Updating to a new version'),
   numR('num4', [run('On the '), ui('About'), run(' page, click '), ui('Check for updates'), run('. This opens the GitHub Releases page.')]),
   numR('num4', 'Download the newer Beedo-Trade-Setup file and run it. It replaces the old version in place and closes Beedo-Trade first if it is open.'),
   numR('num4', 'Your watchlist and settings are kept.'),
 ];
 
 const uninstall = [
-  h1('9. Uninstalling'),
+  h1('10. Uninstalling'),
   P('Use either of the standard Windows ways:'),
   stepCard('A', 'From Windows Settings', [P([run('Open '), ui('Settings \u2192 Apps \u2192 Installed apps'), run(', find '), b('Beedo-Trade'), run(', click the '), ui('\u22EF'), run(' button and choose '), ui('Uninstall'), run('.')], { spacing: { after: 0 } })]),
   gap(80),
@@ -249,12 +274,12 @@ const uninstall = [
 ];
 
 const trouble = [
-  h1('10. Troubleshooting'),
+  h1('11. Troubleshooting'),
   dataTable([3300, 5726], ['Problem', 'What to do'], [
     ['Setup: "Access is denied" (Error 5)', 'Choose "Install for me only" and keep the suggested folder, or choose "Install for all users" to install into Program Files (needs administrator approval).'],
     ['"Windows protected your PC"', 'Click More info, then Run anyway. The app isn\u2019t code-signed.'],
     ['The app window stays blank', 'Install Microsoft Edge WebView2 (free from Microsoft), then start Beedo-Trade again.'],
-    ['"Yahoo Finance has no price history"', 'Yahoo doesn\u2019t carry that stock. Use Import CSV (section 7).'],
+    ['"Yahoo Finance has no price history"', 'Yahoo doesn\u2019t carry that stock. Use Import CSV (section 8).'],
     ['"Could not reach Yahoo Finance"', 'Check your internet connection, firewall or VPN, then try again.'],
     ['Prices look a day old', 'Free data can lag, and on Friday and Saturday the latest price is Thursday\u2019s close. Check the live price in your broker app.'],
     ['Company rating says "Not enough data"', 'TradingView has too few reported figures for that company (common for smaller firms). Use the technical signal and keep positions small.'],
@@ -279,13 +304,13 @@ const doc = new Document({
   },
   numbering: { config: [
     { reference: 'bul', levels: [{ level: 0, format: LevelFormat.BULLET, text: '\u2022', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 270 } } } }] },
-    ...['num', 'num2', 'num3', 'num4', 'num5'].map((reference) => ({ reference, levels: [{ level: 0, format: LevelFormat.DECIMAL, text: '%1.', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 300 } } } }] })),
+    ...['num', 'num2', 'num3', 'num4', 'num5', 'num6'].map((reference) => ({ reference, levels: [{ level: 0, format: LevelFormat.DECIMAL, text: '%1.', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 300 } } } }] })),
   ] },
   sections: [{
     properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1300, bottom: 1200, left: 1440, right: 1440 } } },
     footers: { default: new Footer({ children: [P([run(`Beedo-Trade for Windows ${VERSION}  \u2022  page `, { size: 16, color: GREY }),
       new TextRun({ children: [PageNumber.CURRENT], size: 16, color: GREY })], { alignment: AlignmentType.CENTER, spacing: { after: 0 } })] }) },
-    children: [...cover, ...welcome, ...install, ...first, ...reading, ...watch, ...fund, ...csv, ...settings, ...uninstall, ...trouble],
+    children: [...cover, ...welcome, ...install, ...first, ...reading, ...watch, ...fund, ...metalsSec, ...csv, ...settings, ...uninstall, ...trouble],
   }],
 });
 Packer.toBuffer(doc).then((buf) => fs.writeFileSync(OUT, buf));
