@@ -203,3 +203,35 @@ button.small { padding: 6px 10px; font-size: 12px; }
   .grid { grid-template-columns: 1fr 1fr; } .span3 { grid-column: span 2; } .span2 { grid-column: span 2; }
   .checklist li { grid-template-columns: 28px 1fr auto; } .checklist .reading { grid-column: 2 / 4; }
 }
+
+/* ---------- 1.5 ---------- */
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--rm1); margin-inline-start: auto; }
+.card-head .segmented { margin: 0; }
+.filters input { background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 8px 10px; color: var(--text); width: 170px; font-variant-numeric: tabular-nums; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+.notice.alert { background: color-mix(in srgb, var(--rm1) 12%, transparent); border-color: color-mix(in srgb, var(--rm1) 45%, transparent); cursor: pointer; margin-bottom: 8px; }
+button.x { color: var(--muted); border: 0; background: none; cursor: pointer; } button.x:hover { color: var(--rm3); }
+#btOut .stats { margin: 4px 0 8px; }
+#pTotals:empty { display: none; } #pTotals { margin-top: 0; }
+
+/* Arabic: right-to-left layout; charts and numbers stay left-to-right */
+[dir="rtl"] body { font-family: "Segoe UI", "Geeza Pro", Tahoma, system-ui, sans-serif; }
+[dir="rtl"] .nav-item, [dir="rtl"] .table th { text-align: right; }
+[dir="rtl"] .sidebar { border-right: 0; border-left: 1px solid var(--line); }
+[dir="rtl"] .segmented { margin-left: 0; margin-right: auto; }
+[dir="rtl"] .price, [dir="rtl"] .plan dd, [dir="rtl"] .table th.num, [dir="rtl"] .table td.num { text-align: left; }
+[dir="rtl"] .chip .x { margin-left: 0; margin-right: 8px; }
+[dir="rtl"] .next ul, [dir="rtl"] ul.plain { padding-left: 0; padding-right: 18px; }
+[dir="rtl"] .verdict { border-left: 0; border-right: 4px solid var(--c, var(--r0)); }
+[dir="rtl"] .chart, [dir="rtl"] .ladder, [dir="rtl"] .range, [dir="rtl"] .ratio-bar, [dir="rtl"] .search input, [dir="rtl"] td.num, [dir="rtl"] .stat .v, [dir="rtl"] .kf-row b { direction: ltr; }
+[dir="rtl"] .search input { text-align: right; }
+
+/* Save as PDF: print the analysis only, on a white page */
+@media print {
+  :root, [data-theme] { --bg: #fff; --panel: #fff; --panel-2: #F6F8FC; --line: #D5DCE8; --text: #0F172A; --muted: #475569; --shadow: none; }
+  .sidebar, .topbar, .toast, #btBtn, #toggles, #tf, #planForm, #error { display: none !important; }
+  .shell { display: block; height: auto; } main { overflow: visible; padding: 0; } html, body { height: auto; }
+  .card { break-inside: avoid; box-shadow: none; } .chart-card { break-before: page; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+[dir="rtl"] .pos, [dir="rtl"] .neg { direction: ltr; unicode-bidi: isolate; display: inline-block; }

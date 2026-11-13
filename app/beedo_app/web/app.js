@@ -26,7 +26,7 @@ async function api(name, ...args) {
 }
 
 /* ---------- state ---------- */
-let settings = { watchlist: [], cash: 50000, risk_pct: 2, theme: "dark" };
+let settings = { watchlist: [], cash: 50000, risk_pct: 2, theme: "dark", lang: "en", alerts: [], portfolio: [] };
 let current = null, charts = null;
 const save = (patch) => { Object.assign(settings, patch); api("save_settings", patch); };
 const toast = (msg) => { const t = $("#toast"); t.textContent = msg; t.classList.remove("hidden"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add("hidden"), 2600); };
@@ -37,6 +37,8 @@ function go(page) {
   $$(".page").forEach((p) => p.classList.toggle("active", p.id === `page-${page}`));
   if (page === "analyze" && charts) requestAnimationFrame(() => charts.fit());
   if (page === "metals" && !metalsLoaded) loadMetals();
+  if (page === "portfolio") loadPortfolio();
+  if (page === "watchlist") $("#alertDot").classList.add("hidden");
 }
 $$(".nav-item").forEach((b) => b.addEventListener("click", () => go(b.dataset.page)));
 
@@ -77,7 +79,7 @@ const verdictChip = (v) => (v ? `<span class="vchip tone-${esc(v.tone)}" title="
 const badge = (r, big = false) => `<span class="badge ${big ? "big" : ""} ${rcls(r)}">${esc(RUNGS[r])}</span>`;
 
 /* ---------- analyse ---------- */
-function show(id) { ["empty", "loading", "result"].forEach((x) => $(`#${x}`).classList.toggle("hidden", x !== id)); }
+function show(id) { ["empty", "loading", "result"].forEach((x) => $(`#${x}`).classList.toggle("hidden", x !== id)); $("#printBtn").classList.toggle("hidden", id !== "result"); }
 function showError(e, symbol) {
   const box = $("#error");
   const tips = /no price history|daily bars/i.test(e) ? "Yahoo Finance may not carry this stock. Try <b>Import CSV</b> with daily prices (date, open, high, low, close, volume)."
@@ -129,6 +131,8 @@ function render(d) {
   $("#fundGrid").closest(".card").classList.toggle("hidden", metal);
   $("#verdict").classList.toggle("hidden", metal);
   if (!metal) renderFundamentals(d);
+  $$("#tf button").forEach((x) => x.setAttribute("aria-checked", String(x.dataset.tf === "d")));
+  $("#btOut").innerHTML = "";
   drawCharts(d);
   updatePlan();
 }
@@ -189,20 +193,20 @@ function chartOpts() {
     grid: { vertLines: { color: css("--line") }, horzLines: { color: css("--line") } },
     rightPriceScale: { borderColor: css("--line") }, timeScale: { borderColor: css("--line"), rightOffset: 4 }, crosshair: { mode: 0 } };
 }
-function drawCharts(d) {
+function drawCharts(d, chart = d.chart) {
   const LC = window.LightweightCharts;
   if (!LC) { $("#priceChart").textContent = "Chart library failed to load."; return; }
   if (charts) charts.destroy();
   const pc = LC.createChart($("#priceChart"), chartOpts());
   const rc = LC.createChart($("#rsiChart"), { ...chartOpts(), timeScale: { ...chartOpts().timeScale, visible: false } });
   const candles = pc.addCandlestickSeries({ upColor: css("--r2"), downColor: css("--rm3"), wickUpColor: css("--r2"), wickDownColor: css("--rm3"), borderVisible: false });
-  candles.setData(d.chart.candles);
+  candles.setData(chart.candles);
   candles.priceScale().applyOptions({ scaleMargins: { top: 0.06, bottom: 0.24 } });
   const vol = pc.addHistogramSeries({ priceScaleId: "", priceFormat: { type: "volume" }, lastValueVisible: false, priceLineVisible: false });
   vol.priceScale().applyOptions({ scaleMargins: { top: 0.82, bottom: 0 } });
-  const volData = () => d.chart.volume.map((v) => ({ time: v.time, value: v.value, color: v.up ? css("--r2") + "55" : css("--rm3") + "55" }));
+  const volData = () => chart.volume.map((v) => ({ time: v.time, value: v.value, color: v.up ? css("--r2") + "55" : css("--rm3") + "55" }));
   vol.setData(volData());
-  const line = (key, color) => { const s = pc.addLineSeries({ color, lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false }); s.setData(d.chart[key]); return s; };
+  const line = (key, color) => { const s = pc.addLineSeries({ color, lineWidth: 2, priceLineVisible: false, lastValueVisible: false, crosshairMarkerVisible: false }); s.setData(chart[key]); return s; };
   const mas = { ma5: line("ma5", css("--ma5")), ma9: line("ma9", css("--ma9")), ma18: line("ma18", css("--ma18")) };
 
   const lv = d.levels.recent_90d;
@@ -213,15 +217,15 @@ function drawCharts(d) {
     lv.supports_nearest_first.slice(0, 2).forEach((p, i) => lines.push(candles.createPriceLine({ price: p, color: css("--sup"), lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: `S${i + 1}` })));
     lv.resistances_nearest_first.slice(0, 2).forEach((p, i) => lines.push(candles.createPriceLine({ price: p, color: css("--res"), lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: `R${i + 1}` })));
   };
-  const markers = d.chart.swings.map((s) => ({ time: s.time, position: s.type === "H" ? "aboveBar" : "belowBar",
+  const markers = chart.swings.map((s) => ({ time: s.time, position: s.type === "H" ? "aboveBar" : "belowBar",
     color: s.type === "H" ? css("--res") : css("--sup"), shape: s.type === "H" ? "arrowDown" : "arrowUp", size: 0.7 }))
     .sort((a, b) => (a.time < b.time ? -1 : 1));
   const drawSwings = (on) => candles.setMarkers(on ? markers : []);
 
   // RSI: pad with blank points so both charts share bar indexes and scroll together
-  const rsiMap = new Map(d.chart.rsi.map((p) => [p.time, p.value]));
+  const rsiMap = new Map(chart.rsi.map((p) => [p.time, p.value]));
   const rsi = rc.addLineSeries({ color: css("--accent-2"), lineWidth: 2, priceLineVisible: false });
-  rsi.setData(d.chart.candles.map((c) => (rsiMap.has(c.time) ? { time: c.time, value: rsiMap.get(c.time) } : { time: c.time })));
+  rsi.setData(chart.candles.map((c) => (rsiMap.has(c.time) ? { time: c.time, value: rsiMap.get(c.time) } : { time: c.time })));
   [[70, css("--rm3")], [50, css("--muted")], [30, css("--r2")]].forEach(([p, c]) => rsi.createPriceLine({ price: p, color: c, lineWidth: 1, lineStyle: 2, axisLabelVisible: true, title: "" }));
   rsi.priceScale().applyOptions({ autoScale: false, scaleMargins: { top: 0.1, bottom: 0.1 } });
   rsi.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
@@ -237,7 +241,7 @@ function drawCharts(d) {
     drawLevels(state.levels); drawSwings(state.swings);
   };
   apply();
-  const fit = () => { const n = d.chart.candles.length; pc.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 130), to: n + 3 }); };
+  const fit = () => { const n = chart.candles.length; pc.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 130), to: n + 3 }); };
   fit();
   charts = {
     fit,
@@ -364,8 +368,12 @@ $("#wTable").addEventListener("keydown", (e) => { const tr = e.target.closest("t
   $("#cash").value = settings.cash; $("#risk").value = settings.risk_pct;
   // Deep links (used for the guide's screenshots): #a=COMI, #p=watchlist&scan, #p=about, &theme=light, &role=shareholder
   const h = new URLSearchParams(location.hash.slice(1));
-  applyTheme(h.get("theme") || settings.theme); drawChips();
-  if (h.get("a")) analyse(h.get("a"));
+  if ((h.get("lang") || settings.lang) === "ar") { settings.lang = "ar"; startArabic(); }
+  $("#langBtn").textContent = settings.lang === "ar" ? "English" : "العربية";
+  applyTheme(h.get("theme") || settings.theme); drawChips(); drawAlerts();
+  checkUpdate(false);
+  if (!h.has("noalerts")) { checkAlerts(false); setInterval(() => checkAlerts(false), 15 * 60 * 1000); }
+  if (h.get("a")) analyse(h.get("a")).then(() => { if (h.has("weekly")) $('#tf [data-tf="w"]').click(); if (h.has("bt")) $("#btBtn").click(); });
   else if (h.get("p")) { go(h.get("p")); if (h.has("scan")) $("#scanBtn").click(); if (h.has("run")) $("#runScreener").click(); }
   loadSectors();
   $("#symbol").focus();
@@ -406,3 +414,127 @@ document.addEventListener("click", (e) => {
   if (!settings.watchlist.includes(w.dataset.watch)) { save({ watchlist: [...settings.watchlist, w.dataset.watch] }); drawChips(); }
   toast(`${w.dataset.watch} is on your watchlist`);
 });
+
+/* ---------- 1.5: update notice ---------- */
+async function checkUpdate(manual) {
+  const u = await api("check_update");
+  if (u && u.newer) {
+    const b = $("#updateBtn"); b.textContent = `Update available: ${u.latest}`; b.dataset.url = u.url; b.classList.remove("hidden");
+    if (manual) toast(`Version ${u.latest} is available`);
+  } else if (manual) toast(u && u.error ? "Couldn't check for updates. Check your internet connection." : "You have the latest version");
+}
+$("#updateCheck").addEventListener("click", () => checkUpdate(true));
+
+/* ---------- 1.5: language ---------- */
+$("#langBtn").addEventListener("click", async () => { await api("save_settings", { lang: settings.lang === "ar" ? "en" : "ar" }); location.reload(); });
+
+/* ---------- 1.5: save as PDF, export to Excel ---------- */
+$("#printBtn").addEventListener("click", () => window.print());
+document.addEventListener("click", async (e) => {
+  const b = e.target.closest("[data-export]");
+  if (!b) return;
+  const table = $(b.dataset.export);
+  // What is on screen, row by row: the first line of each cell (the second line is a caption)
+  const rows = $$("tr", table).filter((tr) => tr.children.length > 2).map((tr) => [...tr.children].slice(0, table.id === "pTable" ? -1 : undefined).map((c) => c.innerText.split("\n")[0].trim()));
+  if (rows.length < 2) return toast("Nothing to export yet");
+  const r = await api("export_csv", b.dataset.name, rows);
+  if (r && r.error) toast(r.error); else if (r && r.ok) toast("Saved. Open the file with Excel.");
+});
+
+/* ---------- 1.5: weekly chart ---------- */
+$$("#tf button").forEach((b) => b.addEventListener("click", async () => {
+  if (!current) return;
+  const weekly = b.dataset.tf === "w";
+  if (weekly && !current.weekly) {
+    const w = await api("weekly", current.symbol);
+    if (!w || w.error) return toast(w ? w.error : "Couldn't load weekly prices");
+    current.weekly = w;
+  }
+  $$("#tf button").forEach((x) => x.setAttribute("aria-checked", String(x === b)));
+  drawCharts(current, weekly ? current.weekly : current.chart);
+}));
+
+/* ---------- 1.5: back-test ---------- */
+$("#btBtn").addEventListener("click", async () => {
+  if (!current) return;
+  const btn = $("#btBtn"), out = $("#btOut"), sym = current.symbol;
+  btn.disabled = true; btn.textContent = "Running…";
+  try {
+    const r = await api("backtest", sym);
+    if (sym !== current.symbol) return;
+    if (!r || r.error) { out.innerHTML = `<div class="plan"><div class="warn">${esc(r ? r.error : "Back-test failed")}</div></div>`; return; }
+    const stat = (k, v, s) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+    const done = r.trades.filter((t) => !t.open).length;
+    out.innerHTML = `<div class="stats">${stat("Course method", signed(r.method_pct), "following the signals")}${stat("Buy and hold", signed(r.hold_pct), "bought on the first day")}
+      ${stat("Trades", fmt(r.trades.length, 0), `${done} closed`)}${stat("Winners", `${r.wins} of ${r.trades.length}`, "trades in profit")}</div>
+      <p class="muted tiny">${esc(r.from)} to ${esc(r.to)}</p>` +
+      (r.trades.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>Bought</th><th class="num">Price</th><th>Sold</th><th class="num">Price</th><th class="num">Result</th></tr></thead><tbody>${
+        r.trades.map((t) => `<tr><td>${esc(t.buy_date)}</td><td class="num">${fmt(t.buy)}</td><td>${t.open ? "Still open" : esc(t.sell_date)}</td><td class="num">${fmt(t.sell)}</td><td class="num">${signed(t.pct)}</td></tr>`).join("")}</tbody></table></div>`
+        : `<p class="muted">The method gave no First or Confirm Buy in this period, so it stayed in cash.</p>`);
+  } finally { btn.disabled = false; btn.textContent = "Run back-test"; }
+});
+
+/* ---------- 1.5: alerts ---------- */
+const code = (el) => { const s = el.value.trim().toUpperCase(); return /^[A-Z0-9]{2,6}$/.test(s) ? s : (toast("Enter an EGX code such as COMI"), null); };
+function drawAlerts() {
+  $("#alertList").innerHTML = (settings.alerts || []).map((a, i) => `<span class="chip">${esc(a.symbol)}${a.above ? ` ≥ ${fmt(a.above)}` : ""}${a.below ? ` ≤ ${fmt(a.below)}` : ""}<button class="x" data-alert-del="${i}" aria-label="Remove alert">✕</button></span>`).join("");
+}
+async function checkAlerts(manual) {
+  const btn = $("#alertCheck"); btn.disabled = true;
+  try {
+    const r = await api("check_alerts"), hits = (r && r.hits) || [];
+    $("#alertHits").innerHTML = hits.map((h) => `<div class="notice alert click" data-go="${esc(h.symbol)}">${esc(h.text)}</div>`).join("");
+    $("#alertDot").classList.toggle("hidden", !hits.length || $("#page-watchlist").classList.contains("active"));
+    if (hits.length) toast(hits.length === 1 ? hits[0].text : `${hits.length} alerts: open the Watchlist page`);
+    else if (manual) toast("No alerts right now");
+  } finally { btn.disabled = false; }
+}
+$("#alertCheck").addEventListener("click", () => checkAlerts(true));
+$("#alertForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const symbol = code($("#alSym")), above = Number($("#alAbove").value) || null, below = Number($("#alBelow").value) || null;
+  if (!symbol) return;
+  if (!above && !below) return toast("Enter a price to be alerted at");
+  save({ alerts: [...(settings.alerts || []), { symbol, above, below }] });
+  e.target.reset(); drawAlerts();
+});
+document.addEventListener("click", (e) => {
+  const a = e.target.closest("[data-alert-del]"), h = e.target.closest("[data-hold-del]");
+  if (a) { save({ alerts: settings.alerts.filter((_, i) => i !== Number(a.dataset.alertDel)) }); drawAlerts(); }
+  if (h) { e.stopPropagation(); save({ portfolio: settings.portfolio.filter((_, i) => i !== Number(h.dataset.holdDel)) }); loadPortfolio(); }
+}, true);
+
+/* ---------- 1.5: portfolio ---------- */
+async function loadPortfolio() {
+  const body = $("#pTable tbody"), btn = $("#pRefresh");
+  if (!(settings.portfolio || []).length) {
+    $("#pTotals").innerHTML = "";
+    body.innerHTML = `<tr><td colspan="11" class="muted center">Add what you own above. Use GOLD or SILVER with a quantity in grams for metals.</td></tr>`;
+    return;
+  }
+  btn.disabled = true; body.innerHTML = `<tr><td colspan="11" class="muted center">Loading prices…</td></tr>`;
+  try {
+    const p = await api("portfolio");
+    if (!p || p.error) { body.innerHTML = `<tr><td colspan="11" class="why">${esc(p ? p.error : "Couldn't load the portfolio")}</td></tr>`; return; }
+    const stat = (k, v, s = "") => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+    $("#pTotals").innerHTML = stat("Cost", `${fmt(p.cost, 0)} EGP`) + stat("Value", `${fmt(p.value, 0)} EGP`, "at the last close") +
+      stat("Profit / loss", `<span class="${p.pl >= 0 ? "pos" : "neg"}">${fmt(p.pl, 0)} EGP</span>`) + stat("Return", signed(p.pl_pct));
+    const del = (r) => `<td><button class="x" data-hold-del="${r.i}" aria-label="Remove ${esc(r.symbol)}">✕</button></td>`;
+    body.innerHTML = p.rows.map((r) => r.error
+      ? `<tr><td><b>${esc(r.symbol)}</b></td><td class="num">${fmt(r.qty, 0)}</td><td class="num">${fmt(r.price)}</td><td colspan="7" class="why">${esc(r.error)}</td>${del(r)}</tr>`
+      : `<tr class="click" data-go="${esc(r.symbol)}" tabindex="0"><td><b>${esc(r.symbol)}</b><div class="muted tiny ellipsis">${esc(r.name)}</div></td>
+        <td class="num">${fmt(r.qty, 0)}</td><td class="num">${fmt(r.price)}</td><td class="num">${fmt(r.close)}<div class="muted tiny">${esc(r.date)}</div></td>
+        <td class="num">${fmt(r.cost, 0)}</td><td class="num">${fmt(r.value, 0)}</td><td class="num"><span class="${r.pl >= 0 ? "pos" : "neg"}">${fmt(r.pl, 0)}</span></td>
+        <td class="num">${signed(r.pl_pct)}</td><td>${badge(r.rung)}</td><td class="why">${esc(r.action)}</td>${del(r)}</tr>`).join("");
+  } finally { btn.disabled = false; }
+}
+$("#pRefresh").addEventListener("click", loadPortfolio);
+$("#pForm").addEventListener("submit", (e) => {
+  e.preventDefault();
+  const symbol = code($("#pSym")), qty = Number($("#pQty").value), price = Number($("#pPrice").value);
+  if (!symbol) return;
+  if (!(qty > 0) || !(price > 0)) return toast("Enter the quantity and the price you paid");
+  save({ portfolio: [...(settings.portfolio || []), { symbol, qty, price }] });
+  e.target.reset(); loadPortfolio();
+});
+$("#pTable").addEventListener("keydown", (e) => { const tr = e.target.closest("tr[data-go]"); if (tr && e.key === "Enter") analyse(tr.dataset.go); });

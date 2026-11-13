@@ -17,15 +17,18 @@
     </div>
     <nav>
       <button class="nav-item active" data-page="analyze"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg>Analyze</button>
-      <button class="nav-item" data-page="watchlist"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>Watchlist</button>
+      <button class="nav-item" data-page="watchlist"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>Watchlist<i class="dot hidden" id="alertDot" title="New alerts"></i></button>
+      <button class="nav-item" data-page="portfolio"><svg viewBox="0 0 24 24"><path d="M3 8h18v11H3zM9 8V5h6v3M3 13h18"/></svg>Portfolio</button>
       <button class="nav-item" data-page="metals"><svg viewBox="0 0 24 24"><path d="M3 18h7l-2-5H5zM14 18h7l-2-5h-3zM8.5 11h7l-2-5h-3z"/></svg>Gold &amp; Silver</button>
       <button class="nav-item" data-page="screener"><svg viewBox="0 0 24 24"><path d="M4 5h16l-6 7v6l-4 2v-8z"/></svg>Screener</button>
       <button class="nav-item" data-page="about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>About</button>
     </nav>
     <div class="sidebar-foot">
       <div class="fx hidden" id="fxBox" title="Official US dollar rate (Yahoo Finance)"><span class="k">USD / EGP</span><b id="fxRate"></b><span class="tiny" id="fxChg"></span></div>
+      <button id="updateBtn" class="primary small hidden" title="Open the download page"></button>
       <button id="guideBtn" class="ghost small" title="Open the Beedo-Trade user guide">User guide</button>
       <button id="themeBtn" class="ghost small" title="Switch theme: dark, light or follow Windows / macOS">Theme</button>
+      <button id="langBtn" class="ghost small" title="Switch language / تغيير اللغة">العربية</button>
       <div class="muted tiny" id="version"></div>
     </div>
   </aside>
@@ -41,6 +44,7 @@
           <button type="submit" class="primary">Analyze</button>
         </form>
         <button id="csvBtn" class="ghost" title="Analyse daily prices from a CSV file">Import CSV</button>
+        <button id="printBtn" class="ghost hidden" title="Print this analysis, or save it as a PDF file">Save as PDF</button>
       </header>
 
       <div id="empty" class="empty">
@@ -93,6 +97,7 @@
           <div class="card span3 chart-card">
             <div class="card-head">
               <h3>Chart</h3>
+              <div class="segmented" id="tf" role="radiogroup" aria-label="Chart period"><button data-tf="d" role="radio" aria-checked="true">Daily</button><button data-tf="w" role="radio" aria-checked="false">Weekly</button></div>
               <div class="toggles" id="toggles">
                 <label><input type="checkbox" data-layer="ma5" checked><i class="sw ma5"></i>MA5</label>
                 <label><input type="checkbox" data-layer="ma9" checked><i class="sw ma9"></i>MA9</label>
@@ -137,6 +142,11 @@
             </div>
           </div>
         </div>
+        <div class="card" id="btCard" style="margin-top:16px">
+          <div class="card-head"><h3>Back-test</h3><button id="btBtn" class="ghost small">Run back-test</button></div>
+          <p class="muted">Replays the checklist day by day over the past two years. It buys at the close on a First or Confirm Buy and sells at the close on a First or Confirm Sell. Fees and taxes are not counted. Past results do not predict future results.</p>
+          <div id="btOut"></div>
+        </div>
         <p class="muted tiny disclaimer">Learning and decision-support tool applying the Beedo technical-analysis course. Not investment advice. Free data can be delayed: check the live price and the day's EGX disclosures before trading.</p>
       </div>
     </section>
@@ -149,6 +159,7 @@
           <input id="addSym" placeholder="Add EGX code" maxlength="6" spellcheck="false" aria-label="Add stock">
           <button class="ghost" type="submit">Add</button>
         </form>
+        <button id="wExport" class="ghost" data-export="#wTable" data-name="Beedo-Trade-watchlist">Export to Excel</button>
         <button id="scanBtn" class="primary">Scan all</button>
       </header>
       <div id="wChips" class="chips editable"></div>
@@ -158,6 +169,42 @@
           <tbody><tr><td colspan="14" class="muted center">Press "Scan all" to check every stock on your list.</td></tr></tbody>
         </table>
       </div>
+      <div class="card" style="margin-top:16px">
+        <div class="card-head"><h3>Alerts</h3><button id="alertCheck" class="ghost small">Check now</button></div>
+        <p class="muted tiny">Checked when the app starts and every 15 minutes while it is open, against the latest daily close. You are also told when the signal of a stock on your watchlist or in your portfolio changes. Alerts are information, not orders.</p>
+        <div id="alertHits"></div>
+        <form id="alertForm" class="filters">
+          <label>Code<input id="alSym" maxlength="6" spellcheck="false" placeholder="COMI"></label>
+          <label>Alert at or above (EGP)<input id="alAbove" type="number" min="0" step="any"></label>
+          <label>Alert at or below (EGP)<input id="alBelow" type="number" min="0" step="any"></label>
+          <button class="ghost" type="submit">Add alert</button>
+        </form>
+        <div id="alertList" class="chips editable"></div>
+      </div>
+    </section>
+
+    <!-- ================= PORTFOLIO ================= -->
+    <section class="page" id="page-portfolio">
+      <header class="page-head">
+        <div><h1>Portfolio</h1>
+        <p class="muted">What you own, what it is worth at the last close, and what the course says a shareholder should do.</p></div>
+        <div class="btn-row"><button class="ghost" data-export="#pTable" data-name="Beedo-Trade-portfolio">Export to Excel</button>
+        <button id="pRefresh" class="primary">Refresh</button></div>
+      </header>
+      <form id="pForm" class="card filters">
+        <label>Code<input id="pSym" maxlength="6" spellcheck="false" placeholder="COMI"></label>
+        <label>Quantity<input id="pQty" type="number" min="0" step="any"></label>
+        <label>Average buy price (EGP)<input id="pPrice" type="number" min="0" step="any"></label>
+        <button class="ghost" type="submit">Add holding</button>
+      </form>
+      <div class="stats" id="pTotals"></div>
+      <div class="card table-wrap" style="margin-top:16px">
+        <table class="table" id="pTable">
+          <thead><tr><th>Stock</th><th class="num">Quantity</th><th class="num">Buy price</th><th class="num">Close</th><th class="num">Cost</th><th class="num">Value</th><th class="num">Profit / loss</th><th class="num">%</th><th>Signal</th><th>What to do</th><th></th></tr></thead>
+          <tbody><tr><td colspan="11" class="muted center">Add what you own above. Use GOLD or SILVER with a quantity in grams for metals.</td></tr></tbody>
+        </table>
+      </div>
+      <p class="muted tiny disclaimer">Your holdings are saved only on this computer. Values use the last daily close, which can be delayed. Not investment advice.</p>
     </section>
 
     <!-- ================= GOLD & SILVER ================= -->
@@ -186,6 +233,7 @@
         <label>Sector
           <select id="fSector"><option value="">All sectors</option></select></label>
         <button id="runScreener" class="primary">Run screener</button>
+        <button class="ghost" data-export="#sTable" data-name="Beedo-Trade-screener">Export to Excel</button>
       </div>
       <p class="muted tiny" id="sSummary"></p>
       <div class="card table-wrap">
@@ -221,7 +269,7 @@
             <p>This is a learning and decision-support tool. It is <b>not investment advice</b>, it does not know your full financial situation, and it never places orders. Free data can be delayed: always check the live price and the day's disclosures before trading.</p>
             <div class="links">
               <button class="ghost small" id="guideBtn2">Open the user guide</button>
-              <button class="ghost small" data-url="https://github.com/BeedoElOmda/Beedo-Trade/releases">Check for updates</button>
+              <button class="ghost small" id="updateCheck">Check for updates</button>
               <button class="ghost small" data-url="https://github.com/BeedoElOmda/Beedo-Trade/issues">Report a problem</button>
             </div>
             <p class="muted tiny" id="aboutInfo"></p>
@@ -234,6 +282,7 @@
 </div>
 <div id="toast" class="toast hidden" role="status"></div>
 <script src="vendor/lightweight-charts.standalone.production.js"></script>
+<script src="i18n.js"></script>
 <script src="app.js"></script>
 </body>
 </html>
