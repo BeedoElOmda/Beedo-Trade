@@ -241,7 +241,38 @@ const metalsSec = [
 ];
 
 const csv = [
-  h1('8. Stocks without price history (Import CSV)'),
+  h1('8. Portfolio, alerts and more tools'),
+  P('Version 1.5 adds tools for following what you own and for checking the method itself.'),
+  h2('8.1  Portfolio'),
+  ...shot('g_portfolio.png', 'The Portfolio page: cost, value and profit or loss of each holding, with the signal and the shareholder action.', 560),
+  numR('num8', [run('Open '), ui('Portfolio'), run(' in the left menu.')]),
+  numR('num8', [run('Type the stock code, the quantity you own and the average price you paid, then click '), ui('Add holding'), run('. For gold or silver, use GOLD or SILVER and enter the quantity in grams.')]),
+  numR('num8', [run('The table shows each holding at the last daily close: cost, value, profit or loss, the signal, and what the course says a shareholder should do. The boxes above the table show the totals.')]),
+  numR('num8', [run('Click a row to open the full analysis. Click the ✕ at the end of a row to remove that holding.')]),
+  P('Your holdings are saved only on your computer. Beedo-Trade never connects to a broker and never places orders.'),
+  h2('8.2  Alerts'),
+  ...shot('g_alerts.png', 'Alerts, at the bottom of the Watchlist page: one alert has been reached.', 520),
+  P([run('At the bottom of the '), ui('Watchlist'), run(' page, enter a stock code and a price, then click '), ui('Add alert'), run('. Fill '), b('at or above'), run(' to be told when the price rises to a level (a breakout or a target), '), b('at or below'), run(' for a fall to a level (a stop), or both.')]),
+  bullet([run('Beedo-Trade checks when it starts and every 15 minutes while it is open. A reached alert appears in the Alerts box and an orange dot shows next to '), ui('Watchlist'), run(' in the menu.')]),
+  bullet([run('You are also told when the '), b('signal changes'), run(' for any stock on your watchlist or in your portfolio, for example from Alarm Buy to First Buy.')]),
+  bullet('Alerts use the latest daily close, not live prices, and only work while the app is open.'),
+  h2('8.3  Weekly chart'),
+  ...shot('g_weekly.png', 'COMI on weekly candles: about five years of history.', 560),
+  P([run('Above the chart, click '), ui('Weekly'), run(' to see one candle per week over about five years, with the same moving averages, swing points and RSI. It makes the long-term trend and the historical support and resistance easier to see. Click '), ui('Daily'), run(' to go back. The signal and the checklist always use daily prices.')]),
+  h2('8.4  Back-test'),
+  ...shot('g_backtest.png', 'A back-test of COMI over two years, compared with buy and hold.', 560),
+  P([run('At the bottom of an analysis, click '), ui('Run back-test'), run('. Beedo-Trade replays the checklist day by day over the past two years, each day using only the prices known on that day. It buys at the close on a First or Confirm Buy and sells at the close on a First or Confirm Sell.')]),
+  bullet([b('Course method'), run(': the total result of following those signals.')]),
+  bullet([b('Buy and hold'), run(': the result of buying on the first day and doing nothing.')]),
+  bullet('The table lists every trade with its dates, prices and result.'),
+  P('In the example above the method made less than buy and hold, because the stock rose strongly and the method was out of it part of the time. A back-test shows how the method behaved on one stock in one period. It does not count fees or taxes, and it does not predict future results.'),
+  h2('8.5  Save as PDF and export to Excel'),
+  bullet([run('On the Analyze page, click '), ui('Save as PDF'), run(' to print the analysis or save it as a PDF file: in the print window, choose '), b('Save as PDF'), run(' or '), b('Microsoft Print to PDF'), run(' as the printer.')]),
+  bullet([run('On the Watchlist, Screener and Portfolio pages, click '), ui('Export to Excel'), run(' to save the table as a file that Excel opens directly.')]),
+  h2('8.6  Arabic interface'),
+  ...shot('g_arabic.png', 'The Arabic interface.', 560),
+  P([run('Click '), ui('العربية'), run(' at the bottom of the left menu to switch the app to Arabic, and '), ui('English'), run(' to switch back. Menus, signals, actions and key figures are translated. Detailed readings that are built from live numbers, such as the checklist readings, stay in English.')]),
+  h1('9. Stocks without price history (Import CSV)'),
   P('Prices come from Yahoo Finance, which covers the larger, widely traded EGX stocks but not every company. If a stock isn\u2019t covered, you\u2019ll see "Yahoo Finance has no price history". You can still analyse it from a file of daily prices:'),
   numR('num3', [run('Export daily prices from your broker or a charting website as a '), b('CSV'), run(' file, with at least 60 trading days (a year is best).')]),
   numR('num3', [run('Type the stock code in the search box (optional, used as the name), then click '), ui('Import CSV'), run(' and choose the file.')]),
@@ -257,20 +288,20 @@ const csv = [
 ];
 
 const settings = [
-  h1('9. Settings, updates and data'),
-  h2('9.1  Theme: dark, light or system'),
+  h1('10. Settings, updates and data'),
+  h2('10.1  Theme: dark, light or system'),
   P([run('Click the '), ui('Theme'), run(' button at the bottom of the left menu to switch between '), b('Dark'), run(', '), b('Light'), run(' and '), b('System'), run('. System follows the light or dark setting of Windows or macOS and changes with it.')]),
   ...shot('light.png', 'Light theme (EAST, Confirm Buy).', 470),
-  h2('9.2  What Beedo-Trade remembers'),
-  P('Your watchlist, cash, risk %, position (cash holder or shareholder) and theme are saved automatically in your user profile, in the folder %APPDATA%\\BeedoTrade. The About page shows the exact folder.'),
-  h2('9.3  Updating to a new version'),
-  numR('num4', [run('On the '), ui('About'), run(' page, click '), ui('Check for updates'), run('. This opens the GitHub Releases page.')]),
+  h2('10.2  What Beedo-Trade remembers'),
+  P('Your watchlist, portfolio, alerts, cash, risk %, language and theme are saved automatically in your user profile, in the folder %APPDATA%\\BeedoTrade. The About page shows the exact folder.'),
+  h2('10.3  Updating to a new version'),
+  numR('num4', [run('When a newer version is published, a blue '), ui('Update available'), run(' button appears at the bottom of the left menu. Click it to open the download page. You can also click '), ui('Check for updates'), run(' on the '), ui('About'), run(' page at any time.')]),
   numR('num4', 'Download the newer Beedo-Trade-Setup file and run it. It replaces the old version in place and closes Beedo-Trade first if it is open.'),
   numR('num4', 'Your watchlist and settings are kept.'),
 ];
 
 const uninstall = [
-  h1('10. Uninstalling'),
+  h1('11. Uninstalling'),
   P('Use either of the standard Windows ways:'),
   stepCard('A', 'From Windows Settings', [P([run('Open '), ui('Settings \u2192 Apps \u2192 Installed apps'), run(', find '), b('Beedo-Trade'), run(', click the '), ui('\u22EF'), run(' button and choose '), ui('Uninstall'), run('.')], { spacing: { after: 0 } })]),
   gap(80),
@@ -280,12 +311,12 @@ const uninstall = [
 ];
 
 const trouble = [
-  h1('11. Troubleshooting'),
+  h1('12. Troubleshooting'),
   dataTable([3300, 5726], ['Problem', 'What to do'], [
     ['Setup: "Access is denied" (Error 5)', 'Choose "Install for me only" and keep the suggested folder, or choose "Install for all users" to install into Program Files (needs administrator approval).'],
     ['"Windows protected your PC"', 'Click More info, then Run anyway. The app isn\u2019t code-signed.'],
     ['The app window stays blank', 'Install Microsoft Edge WebView2 (free from Microsoft), then start Beedo-Trade again.'],
-    ['"Yahoo Finance has no price history"', 'Yahoo doesn\u2019t carry that stock. Use Import CSV (section 8).'],
+    ['"Yahoo Finance has no price history"', 'Yahoo doesn\u2019t carry that stock. Use Import CSV (section 9).'],
     ['"Could not reach Yahoo Finance"', 'Check your internet connection, firewall or VPN, then try again.'],
     ['Prices look a day old', 'Free data can lag, and on Friday and Saturday the latest price is Thursday\u2019s close. Check the live price in your broker app.'],
     ['Company rating says "Not enough data"', 'TradingView has too few reported figures for that company (common for smaller firms). Use the technical signal and keep positions small.'],
@@ -310,7 +341,7 @@ const doc = new Document({
   },
   numbering: { config: [
     { reference: 'bul', levels: [{ level: 0, format: LevelFormat.BULLET, text: '\u2022', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 270 } } } }] },
-    ...['num', 'num2', 'num3', 'num4', 'num5', 'num6', 'num7'].map((reference) => ({ reference, levels: [{ level: 0, format: LevelFormat.DECIMAL, text: '%1.', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 300 } } } }] })),
+    ...['num', 'num2', 'num3', 'num4', 'num5', 'num6', 'num7', 'num8'].map((reference) => ({ reference, levels: [{ level: 0, format: LevelFormat.DECIMAL, text: '%1.', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 300 } } } }] })),
   ] },
   sections: [{
     properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1300, bottom: 1200, left: 1440, right: 1440 } } },
