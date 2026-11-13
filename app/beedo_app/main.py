@@ -1,5 +1,5 @@
-"""Beedo-Trade desktop app: a native window (Edge WebView2) around the course engine."""
-import json, os, sys, threading, webbrowser
+"""Beedo-Trade desktop app: a native window (Edge WebView2 on Windows, WebKit on macOS) around the course engine."""
+import json, os, subprocess, sys, threading, webbrowser
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -16,7 +16,8 @@ import analyze  # noqa: E402  (shared with the Claude skill, so numbers always m
 from beedo_app import engine, fundamentals, metals  # noqa: E402
 
 from beedo_app import __version__ as VERSION  # noqa: E402  (single source: beedo_app/__init__.py)
-DATA_DIR = Path(os.environ.get("APPDATA", Path.home())) / "BeedoTrade"
+MAC = sys.platform == "darwin"
+DATA_DIR = (Path.home() / "Library" / "Application Support" if MAC else Path(os.environ.get("APPDATA", Path.home()))) / "BeedoTrade"
 SETTINGS = DATA_DIR / "settings.json"
 # Ratios shown as columns in the Watchlist and Screener tables
 TABLE_FIGURES = ("market_cap", "pe", "pb", "roe", "net_margin", "debt_to_equity", "eps_growth", "dividend_yield", "perf_ytd")
@@ -184,14 +185,20 @@ class Api:
             webbrowser.open(url)
 
     def open_guide(self):
-        # Installed: <app>\docs\...pdf (put there by the installer). Developer checkout: app\packaging\guide\...pdf
+        # Windows install: <app>\docs (installer). macOS: inside the app bundle. Developer checkout: app/packaging/guide
         here = Path(sys.executable).parent if getattr(sys, "frozen", False) else BASE.parent / "packaging" / "guide"
-        for p in (here / "docs" / "Beedo-Trade User Guide.pdf", here / "Beedo-Trade User Guide.pdf"):
-            if p.exists():
-                os.startfile(p)
+        for d in (here / "docs", here, BASE / "docs"):
+            for p in sorted(d.glob("Beedo-Trade User Guide*.pdf"), key=lambda f: f.stat().st_mtime, reverse=True)[:1]:  # newest guide
+                subprocess.run(["open", str(p)]) if MAC else os.startfile(p)
                 return {"ok": True}
-        webbrowser.open("https://github.com/BeedoElOmda/Beedo-Trade#standalone-windows-app-no-claude-needed")
+        webbrowser.open("https://github.com/BeedoElOmda/Beedo-Trade#standalone-app-for-windows-and-mac-no-claude-needed")
         return {"ok": True, "online": True}
+
+    def fx(self):
+        try:
+            return metals.rate()
+        except Exception as e:
+            return {"error": str(e)}
 
     def info(self):
         return {"version": VERSION, "data_dir": str(DATA_DIR)}
@@ -227,7 +234,7 @@ def main():
     if "--serve" in sys.argv:
         return serve()
     api = Api()
-    api._window = webview.create_window("Beedo-Trade", str(BASE / "web" / "index.html"), js_api=api,
+    api._window = webview.create_window(f"Beedo-Trade {VERSION}", str(BASE / "web" / "index.html"), js_api=api,
                                        width=1360, height=880, min_size=(1024, 680), background_color="#0B1220")
     try:  # the launcher's splash screen (packaged build only) stays up until the window is ready
         import pyi_splash

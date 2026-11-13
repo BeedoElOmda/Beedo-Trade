@@ -50,18 +50,23 @@ def bars(code):
     return to_egp_per_gram(_fetch(m["ticker"]), _fetch("EGP=X")), m["name"]
 
 
+def rate():
+    """Official US dollar rate in EGP, with the change from the previous day."""
+    fx = _fetch("EGP=X")
+    return {"usd_egp": fx[-1]["c"], "usd_egp_change": round((fx[-1]["c"] / fx[-2]["c"] - 1) * 100, 2), "fx_date": fx[-1]["d"]}
+
+
 def summary():
     """Price cards for the Gold & Silver page."""
-    fx = _fetch("EGP=X")
-    rate, rate_prev = fx[-1]["c"], fx[-2]["c"]
-    out = {"usd_egp": rate, "usd_egp_change": round((rate / rate_prev - 1) * 100, 2), "fx_date": fx[-1]["d"], "source": SOURCE}
+    out = {**rate(), "source": SOURCE}
+    rate_now = out["usd_egp"]
     for code, m in METALS.items():
         usd = _fetch(m["ticker"])
         last, prev = usd[-1], usd[-2]
-        g = last["c"] * rate / OUNCE_GRAMS
+        g = last["c"] * rate_now / OUNCE_GRAMS
         year = [b["c"] for b in usd[-252:]]
         out[code.lower()] = {
-            "usd_oz": last["c"], "egp_oz": round(last["c"] * rate, 0), "egp_gram": round(g, 2),
+            "usd_oz": last["c"], "egp_oz": round(last["c"] * rate_now, 0), "egp_gram": round(g, 2),
             "change_usd": round((last["c"] / prev["c"] - 1) * 100, 2), "date": last["d"],
             "high_52w_usd": max(year), "low_52w_usd": min(year),
             "perf_1y_usd": round((last["c"] / year[0] - 1) * 100, 1),
