@@ -303,9 +303,17 @@ if __name__ == "__main__":
     if args == ["--selftest"]:
         selftest(); sys.exit()
     try:
+        if not args:
+            sys.exit(__doc__)
         if args[:1] == ["--csv"] and len(args) >= 2:
             sym = args[2] if len(args) > 2 else "CSV"
             out = report(load_csv(args[1]), sym, f"{sym} (from {args[1]})")
+        elif args[0].upper() in ("GOLD", "SILVER"):  # EGP per gram, see metals.py
+            import os
+            sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # sibling import under python -I
+            import metals
+            bars, name = metals.bars(args[0].upper())
+            out = report(bars, args[0], name)
         elif args:
             bars, name = fetch(args[0])
             out = report(bars, args[0], name)
