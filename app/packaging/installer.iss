@@ -43,19 +43,26 @@ RestartApplications=no
 [Tasks]
 Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription: "Shortcuts:"
 
+; Older guides. A guide left open in a PDF viewer is locked: it is skipped here instead of aborting the upgrade.
+[InstallDelete]
+Type: files; Name: "{app}\docs\Beedo-Trade User Guide*.pdf"
+
+[UninstallDelete]
+Type: files; Name: "{app}\docs\Beedo-Trade User Guide*.pdf"
+
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
-Source: "{#GuideFile}"; DestDir: "{app}\docs"; DestName: "Beedo-Trade User Guide.pdf"; Flags: ignoreversion
+Source: "{#GuideFile}"; DestDir: "{app}\docs"; DestName: "Beedo-Trade User Guide {#AppVersion}.pdf"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"; Comment: "EGX technical analysis with the Beedo course method"
-Name: "{group}\{#AppName} User Guide"; Filename: "{app}\docs\Beedo-Trade User Guide.pdf"
+Name: "{group}\{#AppName} User Guide"; Filename: "{app}\docs\Beedo-Trade User Guide {#AppVersion}.pdf"
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "Start {#AppName} now"; Flags: nowait postinstall skipifsilent
-Filename: "{app}\docs\Beedo-Trade User Guide.pdf"; Description: "Open the user guide"; Flags: shellexec nowait postinstall skipifsilent unchecked
+Filename: "{app}\docs\Beedo-Trade User Guide {#AppVersion}.pdf"; Description: "Open the user guide"; Flags: shellexec nowait postinstall skipifsilent unchecked
 
 [Code]
 const WebView2Key = 'SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}';

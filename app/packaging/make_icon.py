@@ -22,6 +22,7 @@ d.ellipse([430 - 40, 150 - 40, 430 + 40, 150 + 40], fill="white")
 out = Path(sys.argv[1] if len(sys.argv) > 1 else "beedo.ico")
 img.save(out, sizes=[(16, 16), (24, 24), (32, 32), (48, 48), (64, 64), (128, 128), (256, 256)])
 img.resize((256, 256), Image.LANCZOS).save(out.with_suffix(".png"))
+img.resize((1024, 1024), Image.LANCZOS).save(out.with_suffix(".icns"))  # macOS app icon
 
 # Splash screen shown by the launcher while the app starts (PyInstaller --splash)
 from PIL import ImageFont
