@@ -16,7 +16,7 @@ uv run pyinstaller --noconfirm --clean --windowed --name "Beedo-Trade" \
   --icon "$APP/packaging/beedo.icns" --osx-bundle-identifier com.beedo.trade \
   --add-data "$APP/beedo_app/web:web" \
   --add-data "$APP/packaging/guide/Beedo-Trade User Guide.pdf:docs" \
-  --paths "$APP/../skills/beedo-trade/scripts" --paths "$APP" --hidden-import analyze \
+  --paths "$APP/../skills/beedo-trade/scripts" --paths "$APP" --hidden-import analyze --hidden-import fundamentals --hidden-import metals \
   --exclude-module setuptools --exclude-module pkg_resources \
   --workpath build --distpath dist/mac --specpath build \
   "$APP/beedo_app/main.py"

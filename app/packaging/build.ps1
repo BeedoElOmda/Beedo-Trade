@@ -36,7 +36,7 @@ VSVersionInfo(ffi=FixedFileInfo(filevers=($v), prodvers=($v)), kids=[
 uv run pyinstaller --noconfirm --clean --windowed --name BeedoTrade `
   --icon "$App\packaging\beedo.ico" --version-file (Join-Path $Short "version_info.txt") --splash "$App\packaging\splash.png" `
   --add-data "$App\beedo_app\web;web" `
-  --paths "$App\..\skills\beedo-trade\scripts" --paths "$App" --hidden-import analyze `
+  --paths "$App\..\skills\beedo-trade\scripts" --paths "$App" --hidden-import analyze --hidden-import fundamentals --hidden-import metals `
   --exclude-module setuptools --exclude-module pkg_resources `
   --workpath (Join-Path $Short "work") --distpath (Join-Path $Short "dist") --specpath (Join-Path $Short "spec") `
   "$App\beedo_app\main.py"
