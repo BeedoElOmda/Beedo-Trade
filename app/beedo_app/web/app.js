@@ -26,7 +26,7 @@ async function api(name, ...args) {
 }
 
 /* ---------- state ---------- */
-let settings = { watchlist: [], cash: 50000, risk_pct: 2, role: "cash", theme: "dark" };
+let settings = { watchlist: [], cash: 50000, risk_pct: 2, theme: "dark" };
 let current = null, charts = null;
 const save = (patch) => { Object.assign(settings, patch); api("save_settings", patch); };
 const toast = (msg) => { const t = $("#toast"); t.textContent = msg; t.classList.remove("hidden"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add("hidden"), 2600); };
@@ -51,12 +51,15 @@ function applyTheme(theme) {
 }));
 $("#themeBtn").addEventListener("click", () => { const t = settings.theme === "dark" ? "light" : "dark"; save({ theme: t }); applyTheme(t); });
 
-/* ---------- role ---------- */
-function applyRole(role) {
-  $$(".segmented button").forEach((b) => b.setAttribute("aria-checked", String(b.dataset.role === role)));
-  $$(".actions .action").forEach((a) => a.classList.toggle("mine", a.dataset.role === role));
+/* ---------- number formats ---------- */
+const pct = (v, d = 1) => (v == null ? "–" : `${fmt(v, d)}%`);
+const signed = (v) => (v == null ? "–" : `<span class="${v >= 0 ? "pos" : "neg"}">${v >= 0 ? "+" : ""}${fmt(v, 1)}%</span>`);
+function big(v) {  // EGP amounts: 443.8 bn, 61.6 bn, 950 mn
+  if (v == null) return "–";
+  const a = Math.abs(v);
+  return a >= 1e9 ? `${fmt(v / 1e9, 1)} bn` : a >= 1e6 ? `${fmt(v / 1e6, 0)} mn` : fmt(v, 0);
 }
-$$(".segmented button").forEach((b) => b.addEventListener("click", () => { save({ role: b.dataset.role }); applyRole(b.dataset.role); }));
+const vol = (v) => (v == null ? "–" : v >= 1e6 ? `${fmt(v / 1e6, 2)} M` : `${fmt(v / 1e3, 0)} K`);
 
 /* ---------- ladder ---------- */
 function ladder(el, active, labels = true) {
@@ -65,7 +68,7 @@ function ladder(el, active, labels = true) {
 }
 const qcls = (lvl) => (lvl == null ? "qn" : `q${lvl}`);
 const qbadge = (label, lvl, score) => `<span class="badge ${qcls(lvl)}">${esc(label || "Not rated")}${score != null ? ` · ${score}` : ""}</span>`;
-const verdictHtml = (v) => (v ? `<span class="tone-${esc(v.tone)}">${esc(v.text)}</span>` : "");
+const verdictChip = (v) => (v ? `<span class="vchip tone-${esc(v.tone)}" title="${esc(v.text)}">${esc(v.short)}</span>` : "");
 const badge = (r, big = false) => `<span class="badge ${big ? "big" : ""} ${rcls(r)}">${esc(RUNGS[r])}</span>`;
 
 /* ---------- analyse ---------- */
@@ -110,7 +113,6 @@ function render(d) {
     stat("Resistance", res ? fmt(res) : "–", res ? `${fmt(lv.pct_to_nearest_recent_resistance, 1)}% above` : "none above");
   $("#aCash").textContent = d.actions.cash;
   $("#aShare").textContent = d.actions.shareholder;
-  applyRole(settings.role);
   $("#checklist").innerHTML = d.steps.map((st) => `<li>
       <span class="num">${st.n}</span><span class="name">${esc(st.name)}</span>
       <span class="reading">${esc(st.reading)}${st.note ? `<span class="note">${esc(st.note)}</span>` : ""}</span>
@@ -122,7 +124,33 @@ function render(d) {
   updatePlan();
 }
 
+function renderKeyFigures(d) {
+  const f = (d.fundamentals || {}).figures || {}, close = d.last_bar.c;
+  const row = (k, v, hint = "") => `<div class="kf-row"${hint ? ` title="${esc(hint)}"` : ""}><span>${k}</span><b>${v}</b></div>`;
+  const lo = f.low_52w, hi = f.high_52w;
+  const pos = lo != null && hi > lo ? Math.max(0, Math.min(100, ((close - lo) / (hi - lo)) * 100)) : null;
+  const groups = [
+    ["Valuation", [row("Market cap", `${big(f.market_cap)} EGP`), row("P/E", ratio(f.pe), "Price / earnings per share (last 12 months)"),
+      row("P/B", ratio(f.pb), "Price / book value per share"), row("P/S", ratio(f.ps), "Price / sales per share"),
+      row("EV / EBITDA", ratio(f.ev_ebitda)), row("EPS (12 m)", f.eps == null ? "–" : `${fmt(f.eps, 2)} EGP`), row("Dividend yield", pct(f.dividend_yield))]],
+    ["Profitability", [row("Return on equity", pct(f.roe)), row("Return on assets", pct(f.roa)), row("Gross margin", pct(f.gross_margin)),
+      row("Operating margin", pct(f.operating_margin)), row("Net margin", pct(f.net_margin))]],
+    ["Financial health", [row("Debt / equity", ratio(f.debt_to_equity)), row("Current ratio", ratio(f.current_ratio), "Current assets / current liabilities: above 1 means short-term bills are covered"),
+      row("Total debt", `${big(f.total_debt)} EGP`), row("Free cash flow", `${big(f.free_cash_flow)} EGP`)]],
+    ["Growth & size", [row("Revenue (12 m)", `${big(f.revenue)} EGP`), row("Net income", `${big(f.net_income)} EGP`),
+      row("Revenue growth", signed(f.revenue_growth)), row("EPS growth", signed(f.eps_growth))]],
+    ["Price & risk", [row("Performance 1 M", signed(f.perf_1m)), row("Performance 3 M", signed(f.perf_3m)), row("Year to date", signed(f.perf_ytd)),
+      row("Performance 1 Y", signed(f.perf_1y)), row("Beta (1 Y)", ratio(f.beta), "Above 1 = moves more than the market"),
+      row("Volatility (month)", pct(f.volatility_1m)), row("Avg volume (30 d)", vol(f.avg_volume))]],
+  ];
+  $("#keyFigures").innerHTML = groups.map(([t, rows]) => `<div class="kf-group"><div class="kf-title">${t}</div>${rows.join("")}</div>`).join("") +
+    (pos == null ? "" : `<div class="range"><div class="kf-title">52-week range</div><div class="range-bar"><span style="left:${pos}%"></span></div>
+      <div class="range-ends"><span>${fmt(lo)}</span><span>Now ${fmt(close)} · ${fmt(pos, 0)}% of range</span><span>${fmt(hi)}</span></div></div>`);
+  $("#kfMeta").textContent = (d.fundamentals || {}).error ? "Couldn't load company figures" : "Last 12 months of reported results · TradingView";
+}
+
 function renderFundamentals(d) {
+  renderKeyFigures(d);
   const f = d.fundamentals || {}, q = f.quality || {};
   const v = $("#verdict");
   v.className = `verdict tone-${d.verdict ? d.verdict.tone : "neutral"}`;
@@ -258,21 +286,39 @@ $("#scanBtn").addEventListener("click", async () => {
   const btn = $("#scanBtn"), body = $("#wTable tbody");
   if (!settings.watchlist.length) return toast("Add a stock first");
   btn.disabled = true; btn.textContent = "Scanning…";
-  body.innerHTML = `<tr><td colspan="6" class="muted center">Checking ${settings.watchlist.length} stocks…</td></tr>`;
+  body.innerHTML = `<tr><td colspan="14" class="muted center">Checking ${settings.watchlist.length} stocks…</td></tr>`;
   try {
     const rows = await api("scan", settings.watchlist);
     rows.sort((a, b) => (b.rung ?? -9) - (a.rung ?? -9) || (b.quality_score ?? -1) - (a.quality_score ?? -1));
-    body.innerHTML = rows.map(resultRow).join("");
+    fillTable("#wTable", rows);
   } finally { btn.disabled = false; btn.textContent = "Scan all"; }
 });
+const ratio = (v) => (v == null ? "–" : fmt(v, 2));
 function resultRow(r) {
-  return r.error
-    ? `<tr><td><b>${esc(r.symbol)}</b></td><td colspan="5" class="why">${esc(r.error)}</td></tr>`
-    : `<tr class="click" data-go="${esc(r.symbol)}" tabindex="0"><td><b>${esc(r.symbol)}</b><div class="muted tiny">${esc(r.name)}</div></td>
-       <td class="num">${fmt(r.close)}<div class="muted tiny">${esc(r.date)}</div></td><td>${badge(r.rung)}</td>
-       <td>${qbadge(r.quality, r.quality_level, r.quality_score)}</td><td class="num">${fmt(r.rsi, 1)}</td>
-       <td class="why">${verdictHtml(r.verdict)}</td></tr>`;
+  if (r.error) return `<tr><td><b>${esc(r.symbol)}</b></td><td colspan="13" class="why">${esc(r.error)}</td></tr>`;
+  return `<tr class="click" data-go="${esc(r.symbol)}" tabindex="0" title="${esc(r.verdict ? r.verdict.text : "")}">
+    <td><b>${esc(r.symbol)}</b><div class="muted tiny ellipsis">${esc(r.name)}</div></td>
+    <td class="num">${fmt(r.close)}<div class="muted tiny">${esc(r.date)}</div></td><td>${badge(r.rung)}</td>
+    <td>${qbadge(r.quality, r.quality_level, r.quality_score)}</td>
+    <td class="num">${ratio(r.pe)}</td><td class="num">${ratio(r.pb)}</td><td class="num">${pct(r.roe)}</td><td class="num">${pct(r.net_margin)}</td>
+    <td class="num">${ratio(r.debt_to_equity)}</td><td class="num">${signed(r.eps_growth)}</td><td class="num">${pct(r.dividend_yield)}</td>
+    <td class="num">${big(r.market_cap)}</td><td class="num">${signed(r.perf_ytd)}</td><td>${verdictChip(r.verdict)}</td></tr>`;
 }
+// Tables keep their rows so a header click can re-sort them; missing values always sort last
+const tableRows = {};
+function fillTable(id, rows) { tableRows[id] = rows; $(`${id} tbody`).innerHTML = rows.map(resultRow).join(""); }
+$$("th[data-sort]").forEach((th) => th.addEventListener("click", () => {
+  const table = th.closest("table"), id = `#${table.id}`, key = th.dataset.sort, rows = tableRows[id];
+  if (!rows || !rows.length) return;
+  const dir = th.dataset.dir === "desc" ? "asc" : "desc";
+  $$("th", table).forEach((h) => { delete h.dataset.dir; }); th.dataset.dir = dir;
+  const val = (r) => (key === "verdict" ? r.verdict && r.verdict.short : r[key]);
+  fillTable(id, [...rows].sort((a, b) => {
+    const x = val(a), y = val(b);
+    if (x == null || y == null) return (x == null) - (y == null);
+    return (typeof x === "string" ? x.localeCompare(y) : x - y) * (dir === "asc" ? 1 : -1);
+  }));
+}));
 
 /* ---------- screener ---------- */
 async function loadSectors() {
@@ -282,14 +328,15 @@ async function loadSectors() {
 $("#runScreener").addEventListener("click", async () => {
   const btn = $("#runScreener"), body = $("#sTable tbody");
   btn.disabled = true; btn.textContent = "Screening…";
-  body.innerHTML = `<tr><td colspan="6" class="muted center">Rating every EGX company, then checking the best ones with your course method…</td></tr>`;
+  body.innerHTML = `<tr><td colspan="14" class="muted center">Rating every EGX company, then checking the best ones with your course method…</td></tr>`;
   $("#sSummary").textContent = "";
   try {
     const r = await api("screener", Number($("#fQuality").value), Number($("#fSignal").value), $("#fSector").value);
-    if (r.error) { body.innerHTML = `<tr><td colspan="6" class="why">${esc(r.error)}</td></tr>`; return; }
+    if (r.error) { body.innerHTML = `<tr><td colspan="14" class="why">${esc(r.error)}</td></tr>`; return; }
     $("#sSummary").textContent = `Rated ${r.rated} companies · ${r.passed_quality} met the quality filter · checked the top ${r.checked} with the course checklist` +
-      (r.skipped_no_prices ? ` · ${r.skipped_no_prices} skipped (no price history)` : "") + ` · ${r.results.length} match.`;
-    body.innerHTML = r.results.map(resultRow).join("") || `<tr><td colspan="6" class="muted center">No company matches right now. Try "Strong or Fair" or "Any buy, including Alarm Buy".</td></tr>`;
+      (r.skipped_no_prices ? ` · ${r.skipped_no_prices} skipped (no price history)` : "") + ` · ${r.results.length} match. Click a column header to sort.`;
+    fillTable("#sTable", r.results);
+    if (!r.results.length) body.innerHTML = `<tr><td colspan="14" class="muted center">No company matches right now. Try "Strong or Fair" or "Any buy, including Alarm Buy".</td></tr>`;
   } finally { btn.disabled = false; btn.textContent = "Run screener"; }
 });
 $("#sTable").addEventListener("keydown", (e) => { const tr = e.target.closest("tr[data-go]"); if (tr && e.key === "Enter") analyse(tr.dataset.go); });
@@ -306,7 +353,7 @@ $("#wTable").addEventListener("keydown", (e) => { const tr = e.target.closest("t
   $("#cash").value = settings.cash; $("#risk").value = settings.risk_pct;
   // Deep links (used for the guide's screenshots): #a=COMI, #p=watchlist&scan, #p=about, &theme=light, &role=shareholder
   const h = new URLSearchParams(location.hash.slice(1));
-  applyTheme(h.get("theme") || settings.theme); applyRole(h.get("role") || settings.role); drawChips();
+  applyTheme(h.get("theme") || settings.theme); drawChips();
   if (h.get("a")) analyse(h.get("a"));
   else if (h.get("p")) { go(h.get("p")); if (h.has("scan")) $("#scanBtn").click(); if (h.has("run")) $("#runScreener").click(); }
   loadSectors();

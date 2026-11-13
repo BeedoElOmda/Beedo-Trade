@@ -39,10 +39,6 @@
           <button type="submit" class="primary">Analyze</button>
         </form>
         <button id="csvBtn" class="ghost" title="Analyse daily prices from a CSV file">Import CSV</button>
-        <div class="segmented" role="radiogroup" aria-label="Your position">
-          <button data-role="cash" role="radio">Cash holder</button>
-          <button data-role="shareholder" role="radio">Shareholder</button>
-        </div>
       </header>
 
       <div id="empty" class="empty">
@@ -87,6 +83,11 @@
             <div class="action" data-role="shareholder"><div class="action-title">Shareholder</div><div id="aShare"></div></div>
           </div>
 
+          <div class="card span3">
+            <div class="card-head"><h3>Key figures</h3><span class="muted tiny" id="kfMeta"></span></div>
+            <div class="kf" id="keyFigures"></div>
+          </div>
+
           <div class="card span3 chart-card">
             <div class="card-head">
               <h3>Chart</h3>
@@ -105,7 +106,7 @@
 
           <div class="card span3">
             <div class="card-head">
-              <h3>Company fundamentals</h3>
+              <h3>Company rating</h3>
               <div class="fund-head"><span class="muted tiny" id="fundMeta"></span><span id="fundBadge"></span></div>
             </div>
             <p class="muted" id="fundWhy"></p>
@@ -149,10 +150,10 @@
         <button id="scanBtn" class="primary">Scan all</button>
       </header>
       <div id="wChips" class="chips editable"></div>
-      <div class="card">
+      <div class="card table-wrap">
         <table class="table" id="wTable">
-          <thead><tr><th>Stock</th><th>Close</th><th>Signal</th><th>Company</th><th>RSI</th><th>Combined view</th></tr></thead>
-          <tbody><tr><td colspan="6" class="muted center">Press "Scan all" to check every stock on your list.</td></tr></tbody>
+          <thead><tr><th data-sort="symbol">Stock</th><th data-sort="close" class="num">Close</th><th data-sort="rung">Signal</th><th data-sort="quality_score">Company</th><th data-sort="pe" class="num">P/E</th><th data-sort="pb" class="num">P/B</th><th data-sort="roe" class="num">ROE</th><th data-sort="net_margin" class="num">Net margin</th><th data-sort="debt_to_equity" class="num">Debt/Eq.</th><th data-sort="eps_growth" class="num">EPS growth</th><th data-sort="dividend_yield" class="num">Div. yield</th><th data-sort="market_cap" class="num">Mkt cap</th><th data-sort="perf_ytd" class="num">YTD</th><th data-sort="verdict">View</th></tr></thead>
+          <tbody><tr><td colspan="14" class="muted center">Press "Scan all" to check every stock on your list.</td></tr></tbody>
         </table>
       </div>
     </section>
@@ -171,10 +172,10 @@
         <button id="runScreener" class="primary">Run screener</button>
       </div>
       <p class="muted tiny" id="sSummary"></p>
-      <div class="card">
+      <div class="card table-wrap">
         <table class="table" id="sTable">
-          <thead><tr><th>Stock</th><th>Close</th><th>Signal</th><th>Company</th><th>RSI</th><th>Combined view</th></tr></thead>
-          <tbody><tr><td colspan="6" class="muted center">Choose your filters and press "Run screener". It takes about 20 to 40 seconds.</td></tr></tbody>
+          <thead><tr><th data-sort="symbol">Stock</th><th data-sort="close" class="num">Close</th><th data-sort="rung">Signal</th><th data-sort="quality_score">Company</th><th data-sort="pe" class="num">P/E</th><th data-sort="pb" class="num">P/B</th><th data-sort="roe" class="num">ROE</th><th data-sort="net_margin" class="num">Net margin</th><th data-sort="debt_to_equity" class="num">Debt/Eq.</th><th data-sort="eps_growth" class="num">EPS growth</th><th data-sort="dividend_yield" class="num">Div. yield</th><th data-sort="market_cap" class="num">Mkt cap</th><th data-sort="perf_ytd" class="num">YTD</th><th data-sort="verdict">View</th></tr></thead>
+          <tbody><tr><td colspan="14" class="muted center">Choose your filters and press "Run screener". It takes about 20 to 40 seconds.</td></tr></tbody>
         </table>
       </div>
     </section>
