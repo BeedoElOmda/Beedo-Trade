@@ -13,7 +13,7 @@ else:
     sys.path.insert(0, str(BASE.parent))
 
 import analyze  # noqa: E402  (shared with the Claude skill, so numbers always match)
-from beedo_app import engine, fundamentals  # noqa: E402
+from beedo_app import engine, fundamentals, metals  # noqa: E402
 
 from beedo_app import __version__ as VERSION  # noqa: E402  (single source: beedo_app/__init__.py)
 DATA_DIR = Path(os.environ.get("APPDATA", Path.home())) / "BeedoTrade"
@@ -60,13 +60,25 @@ class Api:
         return s
 
     # ---------- analysis ----------
-    def _build(self, bars, symbol, name, source):
+    @staticmethod
+    def _bars(sym):
+        """Daily bars, name and source for an EGX code, or for GOLD / SILVER (EGP per gram)."""
+        if sym in metals.METALS:
+            b, name = metals.bars(sym)
+            return b, name, metals.SOURCE, "metal"
+        b, name = analyze.fetch(sym)
+        return b, name, "Yahoo Finance (daily)", "stock"
+
+    def _build(self, bars, symbol, name, source, kind="stock"):
         rep = analyze.report(bars, symbol, name)
-        out = {"symbol": symbol.upper(), "name": name, "source": source, "last_bar": rep["last_bar"],
+        out = {"symbol": symbol.upper(), "name": name, "source": source, "kind": kind, "last_bar": rep["last_bar"],
                "levels": rep["levels"], "rsi": rep["rsi14"], "ma": {k: rep["moving_averages"][k] for k in ("MA5", "MA9", "MA18")},
                "volume_ratio": rep["volume"]["ratio_vs_avg20"], **engine.evaluate(rep), "chart": _series(bars)}
-        out["fundamentals"] = self._fundamentals(symbol)
-        out["verdict"] = fundamentals.verdict(out["fundamentals"].get("quality", {}).get("level"), out["signal"]["rung"])
+        if kind == "metal":  # no company behind a metal: no ratios, rating or combined view
+            out["fundamentals"], out["verdict"] = None, None
+        else:
+            out["fundamentals"] = self._fundamentals(symbol)
+            out["verdict"] = fundamentals.verdict(out["fundamentals"].get("quality", {}).get("level"), out["signal"]["rung"])
         with self._lock:
             self._cache[symbol.upper()] = rep
         return out
@@ -83,8 +95,8 @@ class Api:
         if not sym.isalnum() or not 2 <= len(sym) <= 6:
             return {"error": "Enter an EGX code such as COMI, TMGH or SWDY."}
         try:
-            bars, name = analyze.fetch(sym)
-            return self._build(bars, sym, name, "Yahoo Finance (daily)")
+            bars, name, source, kind = self._bars(sym)
+            return self._build(bars, sym, name, source, kind)
         except Exception as e:  # shown in the UI, never a crash
             return {"error": str(e), "symbol": sym}
 
@@ -114,11 +126,15 @@ class Api:
 
     def _technical_row(self, sym, fund=None):
         try:
-            bars, name = analyze.fetch(sym)
+            bars, name, _, kind = self._bars(sym)
             rep = analyze.report(bars, sym, name)
             ev = engine.evaluate(rep)
             with self._lock:
                 self._cache[sym] = rep
+            if kind == "metal":
+                return {"symbol": sym, "name": name, "close": rep["last_bar"]["c"], "date": rep["last_bar"]["d"],
+                        "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"],
+                        "quality": "Metal", "quality_level": None, "quality_score": None, "verdict": None}
             fund = fund or self._fundamentals(sym)
             q = fund.get("quality", {})
             return {"symbol": sym, "name": name, "close": rep["last_bar"]["c"], "date": rep["last_bar"]["d"],
@@ -133,6 +149,12 @@ class Api:
         syms = [s.strip().upper() for s in symbols or [] if s.strip()][:40]
         with ThreadPoolExecutor(max_workers=6) as ex:
             return list(ex.map(self._technical_row, syms))
+
+    def metals(self):
+        try:
+            return metals.summary()
+        except Exception as e:
+            return {"error": f"Could not load gold and silver prices: {e}"}
 
     def sectors(self):
         try:
