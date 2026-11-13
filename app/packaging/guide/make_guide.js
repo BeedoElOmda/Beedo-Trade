@@ -61,7 +61,7 @@ const cover = [
   gap(1500),
   table([W], [[cell([
     P([run('BEEDO-TRADE', { bold: true, size: 64, color: 'FFFFFF' })], { alignment: AlignmentType.CENTER, spacing: { after: 100 } }),
-    P([run('for Windows', { size: 32, color: 'D6EAF8' })], { alignment: AlignmentType.CENTER, spacing: { after: 0 } })],
+    P([run('for Windows and Mac', { size: 32, color: 'D6EAF8' })], { alignment: AlignmentType.CENTER, spacing: { after: 0 } })],
     W, { fill: NAVY, borders: noB, margins: { top: 560, bottom: 560, left: 300, right: 300 } })]]),
   table([W], [[cell(P([run('User Guide', { bold: true, size: 26, color: 'FFFFFF' })], { alignment: AlignmentType.CENTER, spacing: { after: 0 } }),
     W, { fill: TEAL, borders: noB, margins: { top: 160, bottom: 160, left: 200, right: 200 } })]]),
@@ -108,11 +108,17 @@ const install = [
   callout('note', 'Error "Access is denied" (Error 5) during setup', [run('This happens when '), b('Install for me only'), run(' is combined with a folder inside C:\\Program Files, which only an administrator can write to. Setup now warns you before this can happen. Either keep the suggested folder, or start again and choose '), b('Install for all users'), run('.')]),
   gap(),
   P([run('After installing you will find '), b('Beedo-Trade'), run(', '), b('Beedo-Trade User Guide'), run(' and '), b('Uninstall Beedo-Trade'), run(' in the Start menu. The first launch can take 10 to 20 seconds while Windows checks the new program; later launches are faster.')]),
+  h2('2.1  Installing on a Mac'),
+  numR('num7', [run('Download the '), b('.dmg'), run(' file for your Mac from the Releases page: '), b('arm64'), run(' for Apple Silicon Macs (M1 and later), '), b('x86_64'), run(' for Intel Macs. To check, open the Apple menu and choose About This Mac.')]),
+  numR('num7', [run('Open the .dmg and drag '), b('Beedo-Trade'), run(' onto the '), b('Applications'), run(' folder.')]),
+  numR('num7', [run('The first time, macOS blocks the app because it isn’t signed by an Apple-registered developer. Open it once, close the warning, then go to '), ui('System Settings → Privacy & Security'), run(', scroll down and click '), ui('Open Anyway'), run('. On older macOS versions, right-click the app and choose '), ui('Open'), run(' instead.')]),
+  numR('num7', [run('To uninstall, drag Beedo-Trade from Applications to the Trash. Your settings are in '), b('~/Library/Application Support/BeedoTrade'), run('.')]),
 ];
 
 const first = [
   h1('3. Your first analysis'),
   ...shot('home.png', 'The start screen: type a code or pick one of your watchlist stocks.', 560),
+  P([run('The left menu also shows the app’s version next to its name, and the official '), b('USD / EGP'), run(' rate with its change from the previous day.')]),
   num([run('Type an EGX code in the search box, for example '), b('COMI'), run('. Suggestions appear as you type.')]),
   num([run('Press '), ui('Enter'), run(' or click '), ui('Analyze'), run('.')]),
   num([run('Read the result. '), b('What to do'), run(' always shows the advice for both a '), ui('Cash holder'), run(' (you don’t own the stock) and a '), ui('Shareholder'), run(' (you do).')]),
@@ -252,8 +258,8 @@ const csv = [
 
 const settings = [
   h1('9. Settings, updates and data'),
-  h2('9.1  Light or dark'),
-  P([run('Click '), ui('Light mode'), run(' / '), ui('Dark mode'), run(' at the bottom of the left menu.')]),
+  h2('9.1  Theme: dark, light or system'),
+  P([run('Click the '), ui('Theme'), run(' button at the bottom of the left menu to switch between '), b('Dark'), run(', '), b('Light'), run(' and '), b('System'), run('. System follows the light or dark setting of Windows or macOS and changes with it.')]),
   ...shot('light.png', 'Light theme (EAST, Confirm Buy).', 470),
   h2('9.2  What Beedo-Trade remembers'),
   P('Your watchlist, cash, risk %, position (cash holder or shareholder) and theme are saved automatically in your user profile, in the folder %APPDATA%\\BeedoTrade. The About page shows the exact folder.'),
@@ -304,11 +310,11 @@ const doc = new Document({
   },
   numbering: { config: [
     { reference: 'bul', levels: [{ level: 0, format: LevelFormat.BULLET, text: '\u2022', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 270 } } } }] },
-    ...['num', 'num2', 'num3', 'num4', 'num5', 'num6'].map((reference) => ({ reference, levels: [{ level: 0, format: LevelFormat.DECIMAL, text: '%1.', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 300 } } } }] })),
+    ...['num', 'num2', 'num3', 'num4', 'num5', 'num6', 'num7'].map((reference) => ({ reference, levels: [{ level: 0, format: LevelFormat.DECIMAL, text: '%1.', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 300 } } } }] })),
   ] },
   sections: [{
     properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1300, bottom: 1200, left: 1440, right: 1440 } } },
-    footers: { default: new Footer({ children: [P([run(`Beedo-Trade for Windows ${VERSION}  \u2022  page `, { size: 16, color: GREY }),
+    footers: { default: new Footer({ children: [P([run(`Beedo-Trade ${VERSION}  \u2022  page `, { size: 16, color: GREY }),
       new TextRun({ children: [PageNumber.CURRENT], size: 16, color: GREY })], { alignment: AlignmentType.CENTER, spacing: { after: 0 } })] }) },
     children: [...cover, ...welcome, ...install, ...first, ...reading, ...watch, ...fund, ...metalsSec, ...csv, ...settings, ...uninstall, ...trouble],
   }],
