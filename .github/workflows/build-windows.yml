@@ -1,0 +1,41 @@
+name: Build Windows app
+
+# Builds the Windows installer on GitHub's Windows machines with the same script used locally (app/packaging/build.ps1).
+# Runs when a release is published (the installer is attached to it), or by hand from the Actions tab.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to attach the installer to (e.g. v1.5.0). Leave empty to only build."
+        required: false
+
+permissions:
+  contents: write   # needed to attach files to a release
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Install Inno Setup
+        run: choco install innosetup --no-progress -y
+      - name: Build, test and package
+        working-directory: app
+        shell: pwsh
+        run: ./packaging/build.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Beedo-Trade-windows
+          path: app/dist/*.exe
+          if-no-files-found: error
+      - name: Attach to the release
+        if: github.event_name == 'release' || inputs.tag != ''
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        # No --clobber: an installer already attached by hand is kept
+        run: gh release upload "$TAG" app/dist/*.exe || echo "An installer is already attached to $TAG; kept it."
