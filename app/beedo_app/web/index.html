@@ -18,6 +18,7 @@
     <nav>
       <button class="nav-item active" data-page="analyze"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg>Analyze</button>
       <button class="nav-item" data-page="watchlist"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.5 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>Watchlist</button>
+      <button class="nav-item" data-page="metals"><svg viewBox="0 0 24 24"><path d="M3 18h7l-2-5H5zM14 18h7l-2-5h-3zM8.5 11h7l-2-5h-3z"/></svg>Gold &amp; Silver</button>
       <button class="nav-item" data-page="screener"><svg viewBox="0 0 24 24"><path d="M4 5h16l-6 7v6l-4 2v-8z"/></svg>Screener</button>
       <button class="nav-item" data-page="about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>About</button>
     </nav>
@@ -156,6 +157,20 @@
           <tbody><tr><td colspan="14" class="muted center">Press "Scan all" to check every stock on your list.</td></tr></tbody>
         </table>
       </div>
+    </section>
+
+    <!-- ================= GOLD & SILVER ================= -->
+    <section class="page" id="page-metals">
+      <header class="page-head">
+        <div><h1>Gold &amp; Silver</h1>
+        <p class="muted">International prices in Egyptian pounds, with your course method applied to each metal.</p></div>
+        <button id="metalsRefresh" class="ghost">Refresh</button>
+      </header>
+      <div id="metalsError" class="notice error hidden"></div>
+      <div class="grid metals" id="metalsGrid">
+        <div class="card skeleton h160"></div><div class="card skeleton h160"></div><div class="card skeleton h160"></div>
+      </div>
+      <p class="muted tiny" id="metalsNote"></p>
     </section>
 
     <!-- ================= SCREENER ================= -->

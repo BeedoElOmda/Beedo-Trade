@@ -133,6 +133,21 @@ button.small { padding: 6px 10px; font-size: 12px; }
 .table-wrap .badge { font-size: 11px; padding: 3px 8px; }
 .ellipsis { max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (max-width: 1300px) { .kf { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+.page-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; margin-bottom: 16px; }
+.metal { display: flex; flex-direction: column; gap: 12px; }
+.metal-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+.metal-name { font-size: 20px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+.metal-dot { width: 14px; height: 14px; border-radius: 50%; }
+.metal-dot.gold { background: radial-gradient(circle at 35% 35%, #FDE68A, #D97706); }
+.metal-dot.silver { background: radial-gradient(circle at 35% 35%, #F1F5F9, #94A3B8); }
+.metal-big { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; line-height: 1.1; }
+.karats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.karat { background: var(--panel-2); border-radius: 10px; padding: 10px 12px; }
+.karat .k { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: .06em; }
+.karat .v { font-size: 17px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.metal .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+.ratio-bar { position: relative; height: 8px; border-radius: 4px; margin: 10px 0 4px; background: linear-gradient(90deg, #D97706, var(--line) 50%, #94A3B8); }
+.ratio-bar span { position: absolute; top: -4px; width: 4px; height: 16px; border-radius: 2px; background: var(--text); transform: translateX(-50%); }
 .r3 { --c: var(--r3); } .r2 { --c: var(--r2); } .r1 { --c: var(--r1); } .r0 { --c: var(--r0); }
 .rm1 { --c: var(--rm1); } .rm2 { --c: var(--rm2); } .rm3 { --c: var(--rm3); }
 

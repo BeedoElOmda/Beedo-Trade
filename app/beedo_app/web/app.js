@@ -6,7 +6,7 @@ const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "
 const fmt = (n, d = 2) => (n == null || isNaN(n) ? "–" : Number(n).toLocaleString("en-US", { minimumFractionDigits: d, maximumFractionDigits: d }));
 const RUNGS = { 3: "Confirm Buy", 2: "First Buy", 1: "Alarm Buy", 0: "Hold", "-1": "Alarm Sell", "-2": "First Sell", "-3": "Confirm Sell" };
 const rcls = (r) => (r >= 0 ? `r${r}` : `rm${-r}`);
-const SUGGEST = [["COMI", "Commercial International Bank"], ["TMGH", "Talaat Moustafa Group"], ["SWDY", "Elsewedy Electric"],
+const SUGGEST = [["GOLD", "Gold, EGP per gram (24k)"], ["SILVER", "Silver, EGP per gram"], ["COMI", "Commercial International Bank"], ["TMGH", "Talaat Moustafa Group"], ["SWDY", "Elsewedy Electric"],
   ["ETEL", "Telecom Egypt"], ["EAST", "Eastern Company"], ["EGAL", "Egypt Aluminum"], ["FWRY", "Fawry"], ["ABUK", "Abu Qir Fertilizers"],
   ["HRHO", "EFG Holding"], ["ORAS", "Orascom Construction"], ["PHDC", "Palm Hills"], ["MFPC", "Misr Fertilizers (MOPCO)"],
   ["AMOC", "Alexandria Mineral Oils"], ["ESRS", "Ezz Steel"], ["JUFO", "Juhayna"], ["EFID", "Edita"], ["ORWE", "Oriental Weavers"],
@@ -36,6 +36,7 @@ function go(page) {
   $$(".nav-item").forEach((b) => b.classList.toggle("active", b.dataset.page === page));
   $$(".page").forEach((p) => p.classList.toggle("active", p.id === `page-${page}`));
   if (page === "analyze" && charts) requestAnimationFrame(() => charts.fit());
+  if (page === "metals" && !metalsLoaded) loadMetals();
 }
 $$(".nav-item").forEach((b) => b.addEventListener("click", () => go(b.dataset.page)));
 
@@ -53,7 +54,7 @@ $("#themeBtn").addEventListener("click", () => { const t = settings.theme === "d
 
 /* ---------- number formats ---------- */
 const pct = (v, d = 1) => (v == null ? "–" : `${fmt(v, d)}%`);
-const signed = (v) => (v == null ? "–" : `<span class="${v >= 0 ? "pos" : "neg"}">${v >= 0 ? "+" : ""}${fmt(v, 1)}%</span>`);
+const signed = (v) => { if (v == null) return "–"; if (Math.abs(v) < 0.05) return "0.0%"; return `<span class="${v > 0 ? "pos" : "neg"}">${v > 0 ? "+" : ""}${fmt(v, 1)}%</span>`; };
 function big(v) {  // EGP amounts: 443.8 bn, 61.6 bn, 950 mn
   if (v == null) return "–";
   const a = Math.abs(v);
@@ -119,7 +120,11 @@ function render(d) {
       ${badge(st.rung)}</li>`).join("");
   $("#nUp").innerHTML = d.next.up.map((x) => `<li>${esc(x)}</li>`).join("") || "<li class='muted'>Already fully bullish</li>";
   $("#nDown").innerHTML = d.next.down.map((x) => `<li>${esc(x)}</li>`).join("") || "<li class='muted'>Already fully bearish</li>";
-  renderFundamentals(d);
+  const metal = d.kind === "metal";  // no company behind a metal: hide ratios, rating and combined view
+  $("#keyFigures").closest(".card").classList.toggle("hidden", metal);
+  $("#fundGrid").closest(".card").classList.toggle("hidden", metal);
+  $("#verdict").classList.toggle("hidden", metal);
+  if (!metal) renderFundamentals(d);
   drawCharts(d);
   updatePlan();
 }
@@ -253,9 +258,9 @@ async function updatePlan() {
   const box = $("#plan");
   if (p.error) { box.innerHTML = `<div class="warn">${esc(p.error)}</div>`; return; }
   const rows = [["Entry (last close)", `${fmt(p.entry)} EGP`], ["Stop (below support)", `${fmt(p.stop)} EGP`],
-    ["Risk per share", `${fmt(p.risk_per_share)} (${fmt(p.risk_pct, 1)}%)`], ["Target (2R)", `${fmt(p.target)} EGP`]];
+    [current.kind === "metal" ? "Risk per gram" : "Risk per share", `${fmt(p.risk_per_share)} (${fmt(p.risk_pct, 1)}%)`], ["Target (2R)", `${fmt(p.target)} EGP`]];
   if (p.first_resistance) rows.push(["First resistance", `${fmt(p.first_resistance)} EGP`]);
-  if (p.shares != null) rows.push(["Shares", fmt(p.shares, 0)], ["Cost", `${fmt(p.cost, 0)} EGP`], ["Loss if stopped", `${fmt(p.loss_at_stop, 0)} EGP (${fmt(p.loss_pct_of_cash, 1)}%)`]);
+  if (p.shares != null) rows.push([current.kind === "metal" ? "Grams" : "Shares", fmt(p.shares, 0)], ["Cost", `${fmt(p.cost, 0)} EGP`], ["Loss if stopped", `${fmt(p.loss_at_stop, 0)} EGP (${fmt(p.loss_pct_of_cash, 1)}%)`]);
   const note = current.signal.rung < 2 ? "<div class='warn'>The signal isn't a First or Confirm Buy: treat this as a plan to have ready, not a trade for today.</div>" : "";
   box.innerHTML = `<dl>${rows.map(([k, v]) => `<dt>${k}</dt><dd>${v}</dd>`).join("")}</dl>${(p.warnings || []).map((w) => `<div class="warn">${esc(w)}</div>`).join("")}${note}`;
 }
@@ -359,3 +364,39 @@ $("#wTable").addEventListener("keydown", (e) => { const tr = e.target.closest("t
   loadSectors();
   $("#symbol").focus();
 })();
+
+/* ---------- gold & silver ---------- */
+let metalsLoaded = false;
+async function loadMetals() {
+  metalsLoaded = true;
+  const err = $("#metalsError"); err.classList.add("hidden");
+  const m = await api("metals");
+  if (!m || m.error) { err.innerHTML = `<b>Couldn't load prices</b>${esc(m ? m.error : "")}`; err.classList.remove("hidden"); metalsLoaded = false; return; }
+  const g = m.gold, s = m.silver;
+  const buttons = (code) => `<div class="btn-row"><button class="primary small" data-go="${code}">Analyze with my course method</button>
+    <button class="ghost small" data-watch="${code}">Add to watchlist</button></div>`;
+  const card = (cls, title, x, body) => `<div class="card metal">
+      <div class="metal-top"><div class="metal-name"><i class="metal-dot ${cls}"></i>${title}</div><span class="muted tiny">${esc(x.date)}</span></div>${body}
+      <div class="kf-row"><span>Per ounce</span><b>$${fmt(x.usd_oz)} · ${fmt(x.egp_oz, 0)} EGP</b></div>
+      <div class="kf-row"><span>Change today (USD)</span><b>${signed(x.change_usd)}</b></div>
+      <div class="kf-row"><span>1 year (USD)</span><b>${signed(x.perf_1y_usd)}</b></div>
+      <div class="kf-row"><span>52-week range (USD/oz)</span><b>${fmt(x.low_52w_usd)} – ${fmt(x.high_52w_usd)}</b></div>`;
+  const ratioPos = Math.max(0, Math.min(100, ((m.gold_silver_ratio - 40) / (120 - 40)) * 100));
+  $("#metalsGrid").innerHTML =
+    card("gold", "Gold", g, `<div><div class="muted tiny">24k, per gram</div><div class="metal-big">${fmt(g.karats["24k"])} EGP</div></div>
+      <div class="karats">${["24k", "21k", "18k"].map((k) => `<div class="karat"><div class="k">${k}</div><div class="v">${fmt(g.karats[k], 0)}</div></div>`).join("")}</div>`) + buttons("GOLD") + `</div>` +
+    card("silver", "Silver", s, `<div><div class="muted tiny">999, per gram</div><div class="metal-big">${fmt(s.egp_gram)} EGP</div></div>`) + buttons("SILVER") + `</div>` +
+    `<div class="card metal"><div class="metal-name">Market</div>
+      <div><div class="muted tiny">US dollar, official rate</div><div class="metal-big">${fmt(m.usd_egp)} EGP</div><div class="muted tiny">${signed(m.usd_egp_change)} today · ${esc(m.fx_date)}</div></div>
+      <div><div class="kf-title">Gold / silver ratio</div><div class="metal-big">${fmt(m.gold_silver_ratio, 1)}</div>
+      <div class="ratio-bar"><span style="left:${ratioPos}%"></span></div><div class="range-ends"><span>40 · gold cheap</span><span>120 · silver cheap</span></div>
+      <p class="muted tiny">How many ounces of silver one ounce of gold buys. Above about 80, silver is cheap compared with gold; below about 50, gold is.</p></div></div>`;
+  $("#metalsNote").textContent = `${m.source}. These are international prices: Egyptian shop prices for jewellery and bars add a local premium and workmanship fees. Not investment advice.`;
+}
+$("#metalsRefresh").addEventListener("click", () => { metalsLoaded = false; $("#metalsGrid").innerHTML = '<div class="card skeleton h160"></div>'.repeat(3); loadMetals(); });
+document.addEventListener("click", (e) => {
+  const w = e.target.closest("[data-watch]");
+  if (!w) return;
+  if (!settings.watchlist.includes(w.dataset.watch)) { save({ watchlist: [...settings.watchlist, w.dataset.watch] }); drawChips(); }
+  toast(`${w.dataset.watch} is on your watchlist`);
+});
