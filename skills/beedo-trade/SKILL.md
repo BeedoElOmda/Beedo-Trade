@@ -16,7 +16,9 @@ The full rulebook is in `references/course-rules.md`. Read it before your first 
 | Daily history + course indicators (MA 5/9/18 crosses, RSI 14, swings, S/R, volume, candles, gaps) | `python -I <skill-dir>/scripts/analyze.py SYMBOL` (see "Getting the price history" below for the fallbacks) |
 | Today's TradingView snapshot (close, RSI, pivots S1-S3/R1-R3, Bollinger, MACD) | `egx-mcp` tool `stock_data_egx` |
 | Quick price only | `egx-mcp` tool `stock_price_egx` |
-| Gold / silver price in EGP (for gold comparisons or a "move to gold" question) | `egx-mcp` tools `gold_price`, `silver_price` |
+| Company fundamentals: Strong / Fair / Weak rating, the rules behind it, key ratios | `beedo_fundamentals`, or `python -I <skill-dir>/scripts/fundamentals.py SYMBOL` |
+| Gold / silver in EGP per gram (24k, 21k, 18k), dollar rate, gold/silver ratio | `beedo_metals`, or `python -I <skill-dir>/scripts/metals.py`. If neither works: `egx-mcp` tools `gold_price`, `silver_price` |
+| The course checklist on gold or silver | `beedo_analyze` or `analyze.py` with `GOLD` or `SILVER` as the symbol (EGP per gram) |
 | Position size, when the user has set limits (max loss per trade, cash buffer, per-stock cap) | `trader-budget` skill, if installed (amounts in EGP) |
 | Check a planned order against those limits | `trader-risk` skill, if installed |
 
@@ -45,6 +47,7 @@ What the errors mean:
 - Get the price history and indicators (`beedo_analyze`, or `analyze.py SYMBOL`).
 - Call `stock_data_egx` for the same symbol.
 - Check that the two agree on the last close. If they differ, one source is stale: use the newer date and mention it.
+- For a stock (not gold or silver), also get the company rating (`beedo_fundamentals`, or `fundamentals.py SYMBOL`). If it fails, carry on without it.
 
 ### 3. Walk the course checklist
 Go through the 11 steps in this order, and give each step one rung: **Alarm Buy, First Buy, Confirm Buy, Hold, Alarm Sell, First Sell, Confirm Sell**. Write one line of evidence per step, using numbers.
@@ -96,6 +99,8 @@ Use this structure, in English (Arabic course terms in brackets are fine). Keep 
 
 **Key levels:** support <s1>, <s2> · resistance <r1>, <r2>
 
+**Company: <Strong / Fair / Weak> (<score>)**: <the main reasons, one line>. **Combined view:** <one sentence from the table below>
+
 ## Checklist
 | # | Step | Reading | Rung |
 |---|---|---|---|
@@ -122,6 +127,18 @@ If the signal is only Alarm or Hold, you may still give the plan, but label it *
   - If the user has set limits (max loss per trade, cash buffer), use `trader-budget` and then `trader-risk`. If not, ask for their max loss per trade only if they want a firm size.
 - **Gap risk**: a stop is a plan, not a guarantee; EGX can open below it.
 - Claude does not place EGX orders; the user trades in their own broker app.
+
+### 7. Company rating and combined view (stocks only)
+The rating is a second opinion from standard fundamental rules. It is not part of the technical course, and it never changes the signal or the rung. Say that in one short clause when you show it. Leave the line out for gold and silver, and when no rating is available.
+
+| Company | First or Confirm Buy | Hold or Alarm Buy | Any sell signal |
+|---|---|---|---|
+| Strong | Best setup | Watch: wait for a buy signal | Wait for the chart to turn |
+| Fair | Acceptable: consider a smaller position | No edge right now | Stay out for now |
+| Weak | Speculative: small size, or skip | Avoid | Avoid |
+
+### 8. Gold and silver
+`GOLD` and `SILVER` work as symbols: the checklist, signal and trade plan apply to the price in EGP per gram, and quantities are grams. These are international prices converted at the official dollar rate; Egyptian shop prices add a premium and workmanship fees, so say so. Steps that need a company (fundamentals) don't apply.
 
 ## Several stocks
 To compare or scan several codes, run the script for each (in parallel), then give one summary table (symbol, close, trend, MA state, RSI, signal) before any per-stock detail the user asks for.
