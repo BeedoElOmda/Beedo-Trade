@@ -262,3 +262,86 @@ def trade_plan(r, cash=None, risk_pct=2.0):
         plan.update(shares=shares, cost=round(shares * close, 2), loss_at_stop=round(shares * risk, 2),
                     loss_pct_of_cash=round(shares * risk / cash * 100, 2))
     return plan
+
+
+def weekly(bars):
+    """Daily bars -> weekly bars (Monday to Sunday), dated by the first trading day of each week."""
+    import datetime as dt
+    out, key = [], None
+    for b in bars:
+        k = dt.date.fromisoformat(b["d"][:10]).isocalendar()[:2]
+        if k != key:
+            key = k
+            out.append(dict(b))
+        else:
+            w = out[-1]
+            w["h"], w["l"], w["c"], w["v"] = max(w["h"], b["h"]), min(w["l"], b["l"]), b["c"], w["v"] + b["v"]
+    return out
+
+
+def backtest(bars, report):
+    """Replays the checklist day by day, each day seeing only the bars up to that day.
+    Buys at the close on a First or Confirm Buy, sells at the close on a First or Confirm Sell. No fees or taxes."""
+    START = 60  # the indicators need 60 bars
+    if len(bars) <= START:
+        return {"error": "Not enough price history to back-test."}
+    trades, entry = [], None
+
+    def close_trade(b, still_open=False):
+        trades.append({"buy_date": entry["d"], "buy": entry["c"], "sell_date": b["d"], "sell": b["c"],
+                       "pct": round((b["c"] / entry["c"] - 1) * 100, 2), "open": still_open})
+
+    for i in range(START, len(bars) + 1):
+        rung = evaluate(report(bars[:i]))["signal"]["rung"]
+        if entry is None and rung >= 2:
+            entry = bars[i - 1]
+        elif entry is not None and rung <= -2:
+            close_trade(bars[i - 1]); entry = None
+    if entry is not None:
+        close_trade(bars[-1], still_open=True)
+    total = 1.0
+    for t in trades:
+        total *= 1 + t["pct"] / 100
+    return {"from": bars[START - 1]["d"], "to": bars[-1]["d"], "trades": trades,
+            "wins": sum(1 for t in trades if t["pct"] > 0),
+            "method_pct": round((total - 1) * 100, 1),
+            "hold_pct": round((bars[-1]["c"] / bars[START - 1]["c"] - 1) * 100, 1)}
+
+
+def alerts(rows, price_alerts, last_signals):
+    """rows: {symbol: scan row}. Messages for price levels reached and for signals that changed since the last check."""
+    out = []
+    for a in price_alerts:
+        r = rows.get(a.get("symbol"))
+        if not r:
+            continue
+        if a.get("above") and r["close"] >= a["above"]:
+            out.append({"symbol": r["symbol"], "kind": "above",
+                        "text": f"{r['symbol']} closed at {r['close']}: at or above your alert price {a['above']}"})
+        if a.get("below") and r["close"] <= a["below"]:
+            out.append({"symbol": r["symbol"], "kind": "below",
+                        "text": f"{r['symbol']} closed at {r['close']}: at or below your alert price {a['below']}"})
+    for sym, r in rows.items():
+        old = last_signals.get(sym)
+        if old is not None and old != r["rung"]:
+            out.append({"symbol": sym, "kind": "signal", "rung": r["rung"],
+                        "text": f"{sym}: signal changed from {RUNGS[old]} to {RUNGS[r['rung']]}"})
+    return out
+
+
+def portfolio(holdings, rows):
+    """holdings: [{symbol, qty, price}]; rows: {symbol: scan row}. Value and profit at the last close, plus the shareholder action."""
+    out, cost_t, value_t = [], 0.0, 0.0
+    for i, h in enumerate(holdings):
+        r = rows.get(h["symbol"]) or {"error": "No data"}
+        cost = h["qty"] * h["price"]
+        line = {"i": i, "symbol": h["symbol"], "qty": h["qty"], "price": h["price"], "cost": round(cost, 2)}
+        if r.get("error"):
+            out.append({**line, "error": r["error"]}); continue
+        value = h["qty"] * r["close"]
+        cost_t += cost; value_t += value
+        out.append({**line, "name": r["name"], "close": r["close"], "date": r["date"], "value": round(value, 2),
+                    "pl": round(value - cost, 2), "pl_pct": round((value / cost - 1) * 100, 2) if cost else None,
+                    "rung": r["rung"], "label": r["label"], "action": r["action"]})
+    return {"rows": out, "cost": round(cost_t, 2), "value": round(value_t, 2), "pl": round(value_t - cost_t, 2),
+            "pl_pct": round((value_t / cost_t - 1) * 100, 2) if cost_t else None}

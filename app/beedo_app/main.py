@@ -1,5 +1,5 @@
 """Beedo-Trade desktop app: a native window (Edge WebView2 on Windows, WebKit on macOS) around the course engine."""
-import json, os, subprocess, sys, threading, webbrowser
+import csv, json, os, re, subprocess, sys, threading, urllib.request, webbrowser
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -13,7 +13,8 @@ else:
     sys.path.insert(0, str(BASE.parent))
 
 import analyze  # noqa: E402  (shared with the Claude skill, so numbers always match)
-from beedo_app import engine, fundamentals, metals  # noqa: E402
+import fundamentals, metals  # noqa: E402  (also shared with the skill)
+from beedo_app import engine  # noqa: E402
 
 from beedo_app import __version__ as VERSION  # noqa: E402  (single source: beedo_app/__init__.py)
 MAC = sys.platform == "darwin"
@@ -22,7 +23,8 @@ SETTINGS = DATA_DIR / "settings.json"
 # Ratios shown as columns in the Watchlist and Screener tables
 TABLE_FIGURES = ("market_cap", "pe", "pb", "roe", "net_margin", "debt_to_equity", "eps_growth", "dividend_yield", "perf_ytd")
 DEFAULTS = {"watchlist": ["COMI", "TMGH", "SWDY", "ETEL", "EAST", "EGAL"], "cash": 50000, "risk_pct": 2,
-            "theme": "dark"}
+            "theme": "dark", "lang": "en", "alerts": [], "portfolio": [], "signals": {}}
+REPO = "BeedoElOmda/Beedo-Trade"
 
 
 def _series(bars):
@@ -42,6 +44,8 @@ class Api:
     def __init__(self):
         self._cache = {}
         self._lock = threading.Lock()
+        self._save_lock = threading.Lock()  # settings are read-changed-written from several threads
+        self._daily = {}  # symbol -> daily bars of the last analysis (weekly view, back-test)
         self._window = None  # private: pywebview exposes public attributes to the page and would crawl the whole window object
 
     # ---------- settings ----------
@@ -52,13 +56,14 @@ class Api:
             return dict(DEFAULTS)
 
     def save_settings(self, patch):
-        s = {**self.get_settings(), **(patch or {})}
-        try:
-            DATA_DIR.mkdir(parents=True, exist_ok=True)
-            SETTINGS.write_text(json.dumps(s, indent=1), encoding="utf-8")
-        except OSError as e:
-            return {"error": f"Could not save settings: {e}"}
-        return s
+        with self._save_lock:
+            s = {**self.get_settings(), **(patch or {})}
+            try:
+                DATA_DIR.mkdir(parents=True, exist_ok=True)
+                SETTINGS.write_text(json.dumps(s, indent=1), encoding="utf-8")
+            except OSError as e:
+                return {"error": f"Could not save settings: {e}"}
+            return s
 
     # ---------- analysis ----------
     @staticmethod
@@ -82,6 +87,7 @@ class Api:
             out["verdict"] = fundamentals.verdict(out["fundamentals"].get("quality", {}).get("level"), out["signal"]["rung"])
         with self._lock:
             self._cache[symbol.upper()] = rep
+            self._daily[symbol.upper()] = bars
         return out
 
     @staticmethod
@@ -132,14 +138,15 @@ class Api:
             ev = engine.evaluate(rep)
             with self._lock:
                 self._cache[sym] = rep
+                self._daily[sym] = bars
             if kind == "metal":
                 return {"symbol": sym, "name": name, "close": rep["last_bar"]["c"], "date": rep["last_bar"]["d"],
-                        "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"],
+                        "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"], "action": ev["actions"]["shareholder"],
                         "quality": "Metal", "quality_level": None, "quality_score": None, "verdict": None}
             fund = fund or self._fundamentals(sym)
             q = fund.get("quality", {})
             return {"symbol": sym, "name": name, "close": rep["last_bar"]["c"], "date": rep["last_bar"]["d"],
-                    "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"],
+                    "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"], "action": ev["actions"]["shareholder"],
                     "quality": q.get("label"), "quality_level": q.get("level"), "quality_score": q.get("score"),
                     "verdict": fundamentals.verdict(q.get("level"), ev["signal"]["rung"]),
                     **{k: (fund.get("figures") or {}).get(k) for k in TABLE_FIGURES}}
@@ -179,6 +186,76 @@ class Api:
         hits.sort(key=lambda r: (-r["rung"], -(r["quality_score"] or 0)))
         return {"rated": len(rated), "passed_quality": len(keep), "checked": len(checked),
                 "skipped_no_prices": sum(1 for r in results if r.get("error")), "results": hits}
+
+    # ---------- weekly view, back-test ----------
+    def _history(self, sym, rng):
+        """Longer daily history for a stock; metals and CSV imports use the bars of the last analysis."""
+        sym = (sym or "").upper()
+        cached = self._daily.get(sym)
+        if cached is None:
+            raise ValueError("Analyse the stock first.")
+        if sym in metals.METALS:
+            return cached
+        try:
+            return analyze.fetch(sym, rng)[0]
+        except Exception:
+            return cached
+
+    def weekly(self, symbol):
+        try:
+            return _series(engine.weekly(self._history(symbol, "5y")))
+        except Exception as e:
+            return {"error": str(e)}
+
+    def backtest(self, symbol):
+        try:
+            return engine.backtest(self._history(symbol, "2y"), lambda b: analyze.report(b, symbol, ""))
+        except Exception as e:
+            return {"error": str(e)}
+
+    # ---------- alerts, portfolio ----------
+    def _rows(self, symbols):
+        return {r["symbol"]: r for r in self.scan(list(dict.fromkeys(symbols)))}
+
+    def check_alerts(self):
+        """Price alerts reached, and signals that changed since the last check, for the watchlist, alerts and portfolio."""
+        s = self.get_settings()
+        rows = {k: r for k, r in self._rows(s["watchlist"] + [a["symbol"] for a in s["alerts"]] +
+                                            [h["symbol"] for h in s["portfolio"]]).items() if not r.get("error")}
+        hits = engine.alerts(rows, s["alerts"], s["signals"])
+        self.save_settings({"signals": {k: r["rung"] for k, r in rows.items()}})
+        return {"hits": hits, "checked": len(rows)}
+
+    def portfolio(self):
+        hold = self.get_settings()["portfolio"]
+        return engine.portfolio(hold, self._rows([h["symbol"] for h in hold]))
+
+    # ---------- export, updates ----------
+    def export_csv(self, name, rows):
+        """Saves a table as a CSV file that Excel opens directly (UTF-8 with a byte-order mark)."""
+        if not self._window:
+            return {"error": "Not available in developer mode."}
+        path = self._window.create_file_dialog(webview.SAVE_DIALOG, save_filename=re.sub(r"[^\w-]", "", str(name)) + ".csv",
+                                               file_types=("CSV files (*.csv)",))
+        if not path:
+            return {"cancelled": True}
+        path = path if isinstance(path, str) else path[0]
+        try:
+            with open(path, "w", newline="", encoding="utf-8-sig") as f:
+                csv.writer(f).writerows(rows)
+        except OSError as e:
+            return {"error": f"Could not save the file: {e}"}
+        return {"ok": True, "path": path}
+
+    def check_update(self):
+        try:
+            req = urllib.request.Request(f"https://api.github.com/repos/{REPO}/releases/latest", headers={"User-Agent": "Beedo-Trade"})
+            with urllib.request.urlopen(req, timeout=8) as r:
+                latest = json.load(r)["tag_name"].lstrip("v")
+            num = lambda v: tuple(int(x) for x in re.findall(r"\d+", v))
+            return {"latest": latest, "newer": num(latest) > num(VERSION), "url": f"https://github.com/{REPO}/releases/latest"}
+        except Exception as e:  # offline or rate-limited: say nothing
+            return {"error": str(e)}
 
     def open_url(self, url):
         if str(url).startswith("https://"):
