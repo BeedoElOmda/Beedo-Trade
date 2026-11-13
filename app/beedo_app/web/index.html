@@ -13,7 +13,7 @@
       <div class="logo" aria-hidden="true">
         <svg viewBox="0 0 32 32"><path d="M5 23l6-7 5 4 9-11" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/><circle cx="25" cy="9" r="2.6" fill="currentColor"/></svg>
       </div>
-      <div><div class="brand-name">Beedo-Trade</div><div class="brand-sub">EGX course method</div></div>
+      <div><div class="brand-name">Beedo-Trade <span class="ver" id="verTag"></span></div><div class="brand-sub">EGX course method</div></div>
     </div>
     <nav>
       <button class="nav-item active" data-page="analyze"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg>Analyze</button>
@@ -23,8 +23,9 @@
       <button class="nav-item" data-page="about"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7.5v.5"/></svg>About</button>
     </nav>
     <div class="sidebar-foot">
+      <div class="fx hidden" id="fxBox" title="Official US dollar rate (Yahoo Finance)"><span class="k">USD / EGP</span><b id="fxRate"></b><span class="tiny" id="fxChg"></span></div>
       <button id="guideBtn" class="ghost small" title="Open the Beedo-Trade user guide">User guide</button>
-      <button id="themeBtn" class="ghost small" title="Switch light / dark">Light mode</button>
+      <button id="themeBtn" class="ghost small" title="Switch theme: dark, light or follow Windows / macOS">Theme</button>
       <div class="muted tiny" id="version"></div>
     </div>
   </aside>

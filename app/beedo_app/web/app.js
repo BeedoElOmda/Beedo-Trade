@@ -41,16 +41,20 @@ function go(page) {
 $$(".nav-item").forEach((b) => b.addEventListener("click", () => go(b.dataset.page)));
 
 /* ---------- theme ---------- */
+const sysDark = window.matchMedia("(prefers-color-scheme: dark)");
+let themeMode = "dark";  // dark | light | system
 function applyTheme(theme) {
-  document.documentElement.dataset.theme = theme;
-  $("#themeBtn").textContent = theme === "dark" ? "Light mode" : "Dark mode";
+  themeMode = ["dark", "light", "system"].includes(theme) ? theme : "dark";
+  document.documentElement.dataset.theme = themeMode === "system" ? (sysDark.matches ? "dark" : "light") : themeMode;
+  $("#themeBtn").textContent = `Theme: ${themeMode[0].toUpperCase()}${themeMode.slice(1)}`;
   if (charts) charts.restyle();
 }
 ["#guideBtn", "#guideBtn2"].forEach((id) => $(id).addEventListener("click", async () => {
   const r = await api("open_guide");
   toast(r && r.online ? "Opening the online guide…" : "Opening the user guide…");
 }));
-$("#themeBtn").addEventListener("click", () => { const t = settings.theme === "dark" ? "light" : "dark"; save({ theme: t }); applyTheme(t); });
+$("#themeBtn").addEventListener("click", () => { const t = { dark: "light", light: "system", system: "dark" }[themeMode]; save({ theme: t }); applyTheme(t); });
+sysDark.addEventListener("change", () => { if (themeMode === "system") applyTheme("system"); });
 
 /* ---------- number formats ---------- */
 const pct = (v, d = 1) => (v == null ? "–" : `${fmt(v, d)}%`);
@@ -354,6 +358,8 @@ $("#wTable").addEventListener("keydown", (e) => { const tr = e.target.closest("t
   settings = { ...settings, ...(await api("get_settings")) };
   const info = await api("info");
   $("#version").textContent = `Version ${info.version}`;
+  $("#verTag").textContent = `v${info.version}`;
+  api("fx").then((f) => { if (!f || f.error) return; $("#fxRate").textContent = fmt(f.usd_egp); $("#fxChg").innerHTML = `${signed(f.usd_egp_change)} · ${esc(f.fx_date)}`; $("#fxBox").classList.remove("hidden"); });
   $("#aboutInfo").textContent = `Version ${info.version}. Your settings are saved in ${info.data_dir}.`;
   $("#cash").value = settings.cash; $("#risk").value = settings.risk_pct;
   // Deep links (used for the guide's screenshots): #a=COMI, #p=watchlist&scan, #p=about, &theme=light, &role=shareholder
