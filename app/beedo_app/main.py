@@ -39,7 +39,7 @@ class Api:
     def __init__(self):
         self._cache = {}
         self._lock = threading.Lock()
-        self.window = None
+        self._window = None  # private: pywebview exposes public attributes to the page and would crawl the whole window object
 
     # ---------- settings ----------
     def get_settings(self):
@@ -87,7 +87,7 @@ class Api:
             return {"error": str(e), "symbol": sym}
 
     def analyze_csv(self, symbol=""):
-        paths = self.window.create_file_dialog(webview.OPEN_DIALOG, file_types=("CSV files (*.csv)", "All files (*.*)"))
+        paths = self._window.create_file_dialog(webview.OPEN_DIALOG, file_types=("CSV files (*.csv)", "All files (*.*)"))
         if not paths:
             return {"cancelled": True}
         path = paths[0]
@@ -176,7 +176,7 @@ def serve(port=8765):
     """Developer mode: the same UI in a normal browser at http://127.0.0.1:<port> (no file dialog)."""
     from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
     api = Api()
-    api.window = None
+    api._window = None
 
     class H(SimpleHTTPRequestHandler):
         def __init__(self, *a, **kw):
@@ -202,12 +202,12 @@ def main():
     if "--serve" in sys.argv:
         return serve()
     api = Api()
-    api.window = webview.create_window("Beedo-Trade", str(BASE / "web" / "index.html"), js_api=api,
+    api._window = webview.create_window("Beedo-Trade", str(BASE / "web" / "index.html"), js_api=api,
                                        width=1360, height=880, min_size=(1024, 680), background_color="#0B1220")
     try:  # the launcher's splash screen (packaged build only) stays up until the window is ready
         import pyi_splash
         close = lambda *_: pyi_splash.is_alive() and pyi_splash.close()
-        api.window.events.shown += close
+        api._window.events.shown += close
         threading.Timer(30, close).start()  # never leave the splash up if the window event is missed
     except ImportError:
         pass
