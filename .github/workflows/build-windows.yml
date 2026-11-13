@@ -29,7 +29,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: Beedo-Trade-windows
-          path: app/dist/*.exe
+          path: |
+            app/dist/*.exe
+            app/dist/*.zip
           if-no-files-found: error
       - name: Attach to the release
         if: github.event_name == 'release' || inputs.tag != ''
@@ -38,4 +40,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
         # No --clobber: an installer already attached by hand is kept
-        run: gh release upload "$TAG" app/dist/*.exe || echo "An installer is already attached to $TAG; kept it."
+        run: |
+          for f in app/dist/*.exe app/dist/*.zip; do
+            gh release upload "$TAG" "$f" || echo "$(basename "$f") is already attached to $TAG; kept it."
+          done
