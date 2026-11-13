@@ -48,5 +48,17 @@ if (-not $iscc) { Write-Host "Inno Setup not found: install it with  winget inst
   "/DIconFile=$App\packaging\beedo.ico" "/DLicenseFile=$App\packaging\license.txt" "/DGuideFile=$Guide" packaging\installer.iss
 if ($LASTEXITCODE) { throw "Inno Setup failed" }
 New-Item -ItemType Directory -Force (Join-Path $App "dist") | Out-Null
+
+# Portable version: the same program as a zip. Unzip anywhere and run BeedoTrade.exe; no installer, no admin rights.
+$Portable = Join-Path $Short "portable\Beedo-Trade-Portable"
+if (Test-Path (Split-Path $Portable)) { Remove-Item (Split-Path $Portable) -Recurse -Force }
+Copy-Item (Join-Path $Short "dist\BeedoTrade") $Portable -Recurse
+New-Item -ItemType Directory -Force (Join-Path $Portable "docs") | Out-Null
+Copy-Item $Guide (Join-Path $Portable "docs\Beedo-Trade User Guide $Version.pdf")
+"Beedo-Trade portable: settings are kept in the data folder beside this file. Delete this file to use the normal Windows settings folder instead." |
+  Set-Content (Join-Path $Portable "portable.txt") -Encoding utf8
+$Zip = Join-Path $App "dist\Beedo-Trade-Portable-$Version.zip"
+if (Test-Path $Zip) { Remove-Item $Zip -Force }
+Compress-Archive -Path $Portable -DestinationPath $Zip -CompressionLevel Optimal
 Copy-Item (Join-Path $Short "out\Beedo-Trade-Setup-$Version.exe") (Join-Path $App "dist") -Force
 Get-ChildItem (Join-Path $App "dist") | Select-Object Name, @{n = "MB"; e = { [math]::Round($_.Length / 1MB, 1) } }
