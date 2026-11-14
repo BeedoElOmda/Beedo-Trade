@@ -2,6 +2,8 @@
 
 Technical analysis of **Egyptian Exchange (EGX)** stocks, gold and silver with the Beedo course checklist: one clear signal (**Alarm / First / Confirm Buy or Sell**, or **Hold**) and separate advice for someone holding cash and someone who already owns the stock.
 
+[Download](https://github.com/BeedoElOmda/Beedo-Trade/releases/latest) · [Code signing policy](#code-signing-policy) · [Privacy](#privacy) · [Uninstall](#uninstall)
+
 It comes in two forms: a **desktop app** for Windows and Mac (no Claude needed), and a **Claude skill** with its own MCP server. Both use the same calculation code, so the numbers match. It is a learning and decision-support tool, **not investment advice**.
 
 ## Standalone app for Windows and Mac (no Claude needed)
@@ -24,7 +26,7 @@ Beedo-Trade is a desktop program for Windows and Mac (source in `app/`): type an
 
 **Investing.com data:** Investing.com blocks automated access, so download a stock's *Historical Data* as CSV there and use **Import CSV**; the app reads that file format directly.
 
-- **Install:** download `Beedo-Trade-Setup-x.y.z.exe` from the repository's Releases page and run it. Choose **Install for me only** (recommended, no administrator rights) or **Install for all users** (installs into Program Files after administrator approval). If Windows shows "Windows protected your PC", click **More info → Run anyway**; the app isn't code-signed.
+- **Install:** download `Beedo-Trade-Setup-x.y.z.exe` from the repository's Releases page and run it. Choose **Install for me only** (recommended, no administrator rights) or **Install for all users** (installs into Program Files after administrator approval). If Windows shows "Windows protected your PC", click **More info → Run anyway**; the app isn't code-signed yet (free signing through SignPath Foundation is being set up, see [Code signing policy](#code-signing-policy)).
 - **Portable version (Windows):** download `Beedo-Trade-Portable-x.y.z.zip`, unzip it anywhere (a USB stick works) and run `BeedoTrade.exe` inside. No installer and no administrator rights. Settings are kept in a `data` folder beside the program. To remove it, delete the folder.
 - **User guide:** an illustrated guide (`app/packaging/guide/Beedo-Trade User Guide.pdf`) is installed with the app. Open it from the Start menu or the app's **User guide** button.
 - **Uninstall:** **Settings → Apps → Installed apps → Beedo-Trade → Uninstall**, or **Uninstall Beedo-Trade** in the Start menu. You're asked whether to keep your watchlist and settings.
@@ -126,6 +128,27 @@ Then delete `~/.claude/skills/beedo-trade` and `~/mcp-servers/EGX-Data-MCP-Serve
 ## Disclaimer
 
 This is a learning and decision-support tool that applies a technical-analysis method. It is **not investment advice**. Price data from Yahoo Finance and TradingView can be delayed. Always check the live price and the day's EGX disclosures before trading. Claude does not place orders.
+
+## Code signing policy
+
+Free code signing provided by [SignPath.io](https://about.signpath.io), certificate by [SignPath Foundation](https://signpath.org).
+
+- **Committers and reviewers:** [Beedo El-Omda](https://github.com/BeedoElOmda)
+- **Approvers:** [Beedo El-Omda](https://github.com/BeedoElOmda)
+
+Only files built from this repository by its GitHub Actions workflow ([`build-windows.yml`](.github/workflows/build-windows.yml)) are signed, and every signing request is approved by hand: the Windows installer `Beedo-Trade-Setup-<version>.exe` and `BeedoTrade.exe` in the portable zip. Third-party files bundled by PyInstaller (the Python runtime and libraries) are included as published by their authors.
+
+## Privacy
+
+This program will not transfer any information to other networked systems unless specifically requested by the user or the person installing or operating it.
+
+What the desktop app connects to, and why:
+
+- **Yahoo Finance** (`query1/query2.finance.yahoo.com`): daily price history for the stock code, gold or silver you ask about.
+- **TradingView** (`scanner.tradingview.com`): company fundamentals and the screener, when you open them.
+- **GitHub** (`api.github.com`): the update notice checks whether a newer release exists.
+
+These requests contain only the stock code or the request itself. No personal data, portfolio, watchlist or settings leave your computer; they are stored locally (or in the portable `data` folder). The services' own privacy policies apply to their sites. The Claude skill and its installers also download the EGX MCP server from GitHub and Python packages through uv.
 
 ## License
 
