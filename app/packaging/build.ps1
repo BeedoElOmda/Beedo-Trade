@@ -24,9 +24,9 @@ New-Item -ItemType Directory -Force $Short | Out-Null
 @"
 VSVersionInfo(ffi=FixedFileInfo(filevers=($v), prodvers=($v)), kids=[
   StringFileInfo([StringTable('040904B0', [
-    StringStruct('CompanyName', 'Beedo'), StringStruct('FileDescription', 'Beedo-Trade'),
+    StringStruct('CompanyName', 'Beedo El-Omda'), StringStruct('FileDescription', 'Beedo-Trade'),
     StringStruct('FileVersion', '$Version'), StringStruct('InternalName', 'BeedoTrade'),
-    StringStruct('LegalCopyright', 'Copyright (c) 2026 Beedo. MIT License.'),
+    StringStruct('LegalCopyright', 'Copyright (c) 2026 Beedo El-Omda. MIT License.'),
     StringStruct('OriginalFilename', 'BeedoTrade.exe'), StringStruct('ProductName', 'Beedo-Trade'),
     StringStruct('ProductVersion', '$Version')])]),
   VarFileInfo([VarStruct('Translation', [1033, 1200])])])

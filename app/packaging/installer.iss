@@ -9,11 +9,11 @@ AppId={{6B0E3B1E-7A4C-4E7B-9C3D-BEED0742ADE1}
 AppName={#AppName}
 AppVersion={#AppVersion}
 AppVerName={#AppName} {#AppVersion}
-AppPublisher=Beedo
+AppPublisher=Beedo El-Omda
 AppPublisherURL={#AppUrl}
 AppSupportURL={#AppUrl}/issues
 AppUpdatesURL={#AppUrl}/releases
-AppCopyright=Copyright (c) 2026 Beedo. MIT License.
+AppCopyright=Copyright (c) 2026 Beedo El-Omda. MIT License.
 VersionInfoVersion={#AppVersion}
 VersionInfoDescription={#AppName} Setup
 ; "Only for me" needs no admin rights; "All users" asks for admin approval. {autopf} follows the choice:
