@@ -35,6 +35,7 @@ The course indicators need about a year of daily prices from Yahoo Finance (`COM
 
 What the errors mean:
 - **"Could not reach Yahoo Finance"**: the network is blocked where the script ran, which is often your sandbox, not the user's PC. Tell the user that the local `beedo-trade` server fixes this. They can turn it on in their Claude Desktop settings, or re-run the Beedo-Trade installer to add it. Then go to option 3 or 4.
+- **"CERTIFICATE_VERIFY_FAILED"** (mostly on a Mac): Python can't find root certificates. The scripts use the `certifi` bundle, or the Mac system bundle, automatically; if the error still appears, run the command with `SSL_CERT_FILE=/etc/ssl/cert.pem` in front of it, or install certifi (`uv pip install certifi`). It is not a network problem.
 - **"Yahoo Finance has no price history"**: Yahoo doesn't carry that stock. This is common for smaller EGX companies, and nothing is wrong with the setup. Offer option 3 (CSV), otherwise option 4.
 
 ## Workflow
