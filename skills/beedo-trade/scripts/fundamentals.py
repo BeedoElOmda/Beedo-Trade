@@ -3,7 +3,9 @@
 The whole market (about 300 stocks) comes back in one request, so every number can be compared with
 its peers (same industry, or sector, or the market). Rules are deliberately simple and shown to the user.
 """
-import json, statistics, threading, time, urllib.request
+import json, os, statistics, sys, threading, time, urllib.request
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # sibling import under python -I
+import analyze  # noqa: E402,F401  (sets up root certificates for HTTPS)
 
 SCAN_URL = "https://scanner.tradingview.com/egypt/scan"
 COLS = {  # our key -> TradingView column

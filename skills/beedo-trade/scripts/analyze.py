@@ -7,6 +7,23 @@ Stdlib only. Daily bars come from Yahoo Finance (COMI -> COMI.CA).
 """
 import csv, json, sys, urllib.error, urllib.request, datetime as dt
 
+
+def _use_root_certificates():
+    """Python on macOS often has no root certificates, so HTTPS fails with CERTIFICATE_VERIFY_FAILED.
+    Use certifi's bundle when installed (the MCP server and the app have it), else the Mac system bundle."""
+    import os
+    if os.environ.get("SSL_CERT_FILE"):
+        return
+    try:
+        import certifi
+        os.environ["SSL_CERT_FILE"] = certifi.where()
+    except ImportError:
+        if sys.platform == "darwin" and os.path.isfile("/etc/ssl/cert.pem"):
+            os.environ["SSL_CERT_FILE"] = "/etc/ssl/cert.pem"
+
+
+_use_root_certificates()
+
 class NoHistory(Exception):
     """Yahoo has no daily prices for this symbol (common for smaller EGX stocks)."""
 
