@@ -3,7 +3,12 @@ import csv, json, os, re, subprocess, sys, threading, urllib.request, webbrowser
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
+import certifi
 import webview
+
+# Packaged Python on macOS has no root certificates of its own, so every HTTPS request failed with
+# CERTIFICATE_VERIFY_FAILED. Use the certifi bundle shipped inside the app; read on each new connection.
+os.environ.setdefault("SSL_CERT_FILE", certifi.where())
 
 if getattr(sys, "frozen", False):  # PyInstaller bundle
     BASE = Path(sys._MEIPASS)
