@@ -82,7 +82,8 @@ const badge = (r, big = false) => `<span class="badge ${big ? "big" : ""} ${rcls
 function show(id) { ["empty", "loading", "result"].forEach((x) => $(`#${x}`).classList.toggle("hidden", x !== id)); $("#printBtn").classList.toggle("hidden", id !== "result"); }
 function showError(e, symbol) {
   const box = $("#error");
-  const tips = /no price history|daily bars/i.test(e) ? "Yahoo Finance may not carry this stock. Try <b>Import CSV</b> with daily prices (date, open, high, low, close, volume)."
+  const tips = /CERTIFICATE_VERIFY_FAILED|certificate verify/i.test(e) ? "Certificate problem: the app can't verify the secure connection. Update to the latest Beedo-Trade version, or reinstall it."
+    : /no price history|daily bars/i.test(e) ? "Yahoo Finance may not carry this stock. Try <b>Import CSV</b> with daily prices (date, open, high, low, close, volume)."
     : /reach Yahoo|urlopen|connection/i.test(e) ? "Check your internet connection, firewall or VPN, then try again." : "Check the code and try again.";
   box.innerHTML = `<b>Couldn't analyse ${esc(symbol || "this stock")}</b>${esc(e)}<div class="tiny" style="margin-top:6px">${tips}</div>`;
   box.classList.remove("hidden");
