@@ -12,3 +12,10 @@ def test_api_exposes_only_methods():
     api._window = object()  # what main() assigns at run time
     public = [n for n in dir(api) if not n.startswith("_")]
     assert public and all(callable(getattr(api, n)) for n in public), [n for n in public if not callable(getattr(api, n))]
+
+
+def test_https_uses_bundled_certificates():
+    """1.5.0 on macOS: no root certificates in the packaged app, so every download failed."""
+    import os, ssl
+    assert os.path.isfile(os.environ["SSL_CERT_FILE"])
+    assert ssl.create_default_context().cert_store_stats()["x509_ca"] > 100
