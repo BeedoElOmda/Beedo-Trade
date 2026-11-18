@@ -16,7 +16,7 @@ uv run pyinstaller --noconfirm --clean --windowed --name "Beedo-Trade" \
   --icon "$APP/packaging/beedo.icns" --osx-bundle-identifier com.beedo.trade \
   --add-data "$APP/beedo_app/web:web" \
   --add-data "$APP/packaging/guide/Beedo-Trade User Guide.pdf:docs" \
-  --paths "$APP/../skills/beedo-trade/scripts" --paths "$APP" --hidden-import analyze --hidden-import fundamentals --hidden-import metals \
+  --paths "$APP/../skills/beedo-trade/scripts" --paths "$APP" --hidden-import analyze --hidden-import fundamentals --hidden-import metals --collect-data certifi \
   --exclude-module setuptools --exclude-module pkg_resources \
   --workpath build --distpath dist/mac --specpath build \
   "$APP/beedo_app/main.py"
@@ -38,6 +38,11 @@ done
 echo "smoke test: $OUT"
 echo "$OUT" | grep -q "\"version\": \"$VERSION\"" || { echo "Smoke test failed"; exit 1; }
 curl -s -o /dev/null -w "ui files: %{http_code}\n" http://127.0.0.1:8765/vendor/lightweight-charts.standalone.production.js | grep -q 200
+# The certificate bundle must be inside the app, and HTTPS must verify with it (1.5.0 failed here on users' Macs)
+ls "$BUNDLE"/Contents/*/certifi/cacert.pem
+UPD="$(curl -s -X POST -d '[]' http://127.0.0.1:8765/api/check_update || true)"
+echo "update check: $UPD"
+echo "$UPD" | grep -q CERTIFICATE_VERIFY_FAILED && { echo "HTTPS certificate check failed"; exit 1; }
 kill $PID; trap - EXIT
 
 DMG="dist/Beedo-Trade-$VERSION-mac-$ARCH.dmg"
