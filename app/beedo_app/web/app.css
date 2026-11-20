@@ -164,6 +164,8 @@ button.small { padding: 6px 10px; font-size: 12px; }
 .health { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin: 0 0 14px; font-size: 13px; color: var(--muted); }
 .health b { color: var(--text); }
 .health span + span::before { content: "·"; margin-inline-end: 12px; }
+.checklist li.off { opacity: .45; }
+.checklist .step-on { margin: 0 6px 0 0; accent-color: var(--accent); vertical-align: middle; cursor: pointer; }
 .ma-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
 .ma-form input { width: 64px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font-variant-numeric: tabular-nums; }
 .sw.ma5 { background: var(--ma5); } .sw.ma9 { background: var(--ma9); } .sw.ma18 { background: var(--ma18); }
@@ -172,10 +174,10 @@ button.small { padding: 6px 10px; font-size: 12px; }
 .rsi-head { display: flex; gap: 10px; align-items: baseline; font-size: 12px; font-weight: 600; margin: 10px 0 2px; color: var(--muted); }
 
 .checklist { list-style: none; margin: 0; padding: 0; }
-.checklist li { display: grid; grid-template-columns: 28px minmax(140px, 200px) 1fr auto; gap: 12px; align-items: center;
+.checklist li { display: grid; grid-template-columns: 48px minmax(140px, 200px) 1fr auto; gap: 12px; align-items: center;
   padding: 10px 4px; border-top: 1px solid var(--line); }
 .checklist li:first-child { border-top: 0; }
-.checklist .num { width: 24px; height: 24px; border-radius: 7px; background: var(--panel-2); display: grid; place-items: center; font-size: 12px; font-weight: 700; color: var(--muted); }
+.checklist .num { min-width: 24px; height: 24px; padding: 0 5px; justify-self: start; border-radius: 7px; background: var(--panel-2); display: inline-flex; align-items: center; justify-content: center; gap: 2px; font-size: 12px; font-weight: 700; color: var(--muted); }
 .checklist .name { font-weight: 600; } .checklist .reading { color: var(--muted); font-size: 13px; }
 .checklist .note { display: block; font-size: 12px; color: var(--muted); font-style: italic; margin-top: 2px; }
 
@@ -206,7 +208,7 @@ button.small { padding: 6px 10px; font-size: 12px; }
 
 @media (max-width: 1200px) {
   .grid { grid-template-columns: 1fr 1fr; } .span3 { grid-column: span 2; } .span2 { grid-column: span 2; }
-  .checklist li { grid-template-columns: 28px 1fr auto; } .checklist .reading { grid-column: 2 / 4; }
+  .checklist li { grid-template-columns: 48px 1fr auto; } .checklist .reading { grid-column: 2 / 4; }
 }
 
 /* ---------- 1.5 ---------- */

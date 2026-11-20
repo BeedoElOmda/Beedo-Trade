@@ -121,8 +121,9 @@ function render(d) {
     stat("Resistance", res ? fmt(res) : "–", res ? `${fmt(lv.pct_to_nearest_recent_resistance, 1)}% above` : "none above");
   $("#aCash").textContent = d.actions.cash;
   $("#aShare").textContent = d.actions.shareholder;
-  $("#checklist").innerHTML = d.steps.map((st) => `<li>
-      <span class="num">${st.n}</span><span class="name">${esc(st.name)}</span>
+  // tick box: count this step in the signal (steps 10-11 are judged by eye, so they have none)
+  $("#checklist").innerHTML = d.steps.map((st) => `<li class="${st.off ? "off" : ""}">
+      <span class="num">${[10, 11].includes(st.n) ? "" : `<input type="checkbox" class="step-on" data-n="${st.n}" ${st.off ? "" : "checked"} title="Count this step in the signal" aria-label="Count step ${st.n} in the signal">`}${st.n}</span><span class="name">${esc(st.name)}</span>
       <span class="reading">${esc(st.reading)}${st.note ? `<span class="note">${esc(st.note)}</span>` : ""}</span>
       ${badge(st.rung)}</li>`).join("");
   $("#nUp").innerHTML = d.next.up.map((x) => `<li>${esc(x)}</li>`).join("") || "<li class='muted'>Already fully bullish</li>";
@@ -296,6 +297,19 @@ $("#maForm").addEventListener("submit", async (e) => {
 });
 $("#maReset").addEventListener("click", () => { [8, 13, 200].forEach((v, i) => { $$("#maForm input")[i].value = v; }); $("#maForm").requestSubmit(); });
 
+$("#checklist").addEventListener("change", async (e) => {
+  const cb = e.target.closest(".step-on");
+  if (!cb || !current) return;
+  const off = $$("#checklist .step-on").filter((x) => !x.checked).map((x) => Number(x.dataset.n));
+  const s = await api("save_settings", { steps_off: off });
+  if (!s || s.error) return toast(s ? s.error : "Couldn't save");
+  settings.steps_off = s.steps_off;
+  const r = await api("rescore", current.symbol);
+  if (!r || r.error) return toast(r ? r.error : "Couldn't update the signal");
+  render({ ...current, ...r });
+  toast(off.length ? `Steps not counted: ${off.join(", ")}` : "All steps counted");
+});
+
 /* ---------- market health ---------- */
 async function loadHealth() {
   const h = await api("market_health"), box = $("#health");
@@ -309,6 +323,16 @@ async function loadHealth() {
     <span>${h.advancers} up · ${h.decliners} down today</span>`;
   box.title = "Healthy: EGX30 above its 50- and 200-day averages and most stocks above their 50-day average. Weak: the opposite. TradingView, end of day.";
   box.classList.remove("hidden");
+  drawIndustries(h.industries || []);
+}
+function drawIndustries(rows) {
+  const tone = { Healthy: "r2", Mixed: "r0", Weak: "rm3" };
+  $("#iTable tbody").innerHTML = rows.map((r) => `<tr>
+      <td><b>${esc(r.industry)}</b><div class="muted tiny">${esc(r.sector)}</div></td>
+      <td class="num">${r.stocks}</td><td class="num">${r.above_sma50_pct ?? "–"}%</td><td class="num">${r.above_sma200_pct ?? "–"}%</td>
+      <td class="num">${r.advancers} / ${r.decliners}</td><td class="num">${signed(r.avg_change)}</td>
+      <td>${tone[r.label] ? `<span class="badge ${tone[r.label]}">${esc(r.label)}</span>` : `<span class="muted tiny">${esc(r.label)}</span>`}</td></tr>`).join("")
+    || `<tr><td colspan="7" class="muted center">No industry data.</td></tr>`;
 }
 
 /* ---------- trade plan ---------- */
