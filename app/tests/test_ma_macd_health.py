@@ -5,7 +5,7 @@ ROOT = Path(__file__).resolve().parents[2]
 sys.path[:0] = [str(ROOT / "skills" / "beedo-trade" / "scripts"), str(ROOT / "app")]
 import analyze, fundamentals
 from beedo_app import engine
-from beedo_app.main import _macd, _valid_ma
+from beedo_app.main import _valid_ma
 from test_engine import bars_from
 
 
@@ -27,13 +27,20 @@ def test_chosen_moving_averages_drive_the_signal():
         analyze.MA = old
 
 
+def test_macd_is_step_12():
+    rise = engine.evaluate(analyze.report(bars_from([100 + k * 0.5 + (k % 3) * 0.2 for k in range(120)]), "T", "T"))["steps"]
+    fall = engine.evaluate(analyze.report(bars_from([200 - k * 0.5 - (k % 3) * 0.2 for k in range(120)]), "T", "T"))["steps"]
+    assert len(rise) == 12 and rise[11]["name"] == "MACD (12 / 26 / 9)"
+    assert rise[11]["rung"] > 0 and fall[11]["rung"] < 0
+
+
 def test_valid_ma():
     assert _valid_ma(["8", 13, 200]) == [8, 13, 200]
     assert _valid_ma([13, 8, 200]) is None and _valid_ma([1, 2, 3]) is None and _valid_ma([5, 9, 300]) is None and _valid_ma("x") is None
 
 
 def test_macd():
-    line, sig, hist = _macd([100 + k for k in range(60)])
+    line, sig, hist = analyze.macd([100 + k for k in range(60)])
     assert line[24] is None and line[25] is not None and sig[32] is None and sig[33] is not None
     assert abs(line[-1] - 7.0) < 0.01 and abs(hist[-1]) < 0.01  # straight line: EMA12 - EMA26 = 7, signal catches up
 

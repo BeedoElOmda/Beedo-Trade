@@ -28,7 +28,7 @@ def test_steady_uptrend_is_a_buy():
     out = run(wave(100, 0.4), vol_last=3000)
     assert out["signal"]["rung"] >= 2, out["signal"]
     assert out["actions"]["cash"].startswith(("Buy", "Buy part"))
-    assert len(out["steps"]) == 11
+    assert len(out["steps"]) == 12  # 11 course steps + MACD
 
 
 def test_steady_downtrend_is_a_sell():
