@@ -53,10 +53,15 @@ def beedo_analyze(symbol: str, ma: str = "5,9,18") -> str:
         periods = tuple(int(x) for x in ma.split(","))
         if len(periods) != 3 or not 2 <= periods[0] < periods[1] < periods[2] <= 250:
             return "Error: ma needs three whole numbers, fast < mid < slow, 2 to 250, e.g. 5,9,18"
-        bars, name = _bars(sym)
         with _ma_lock:  # analyze.MA is module state; one analysis at a time keeps each call's periods
             analyze.MA = periods
-            return json.dumps(analyze.report(bars, sym, name), default=str)
+            try:
+                bars, name = _bars(sym)
+                return json.dumps(analyze.report(bars, sym, name), default=str)
+            except analyze.NoHistory as e:  # no or frozen Yahoo history: TradingView snapshot ("snapshot": true)
+                if sym in metals.METALS:
+                    raise
+                return json.dumps(fundamentals.snapshot_report(sym, str(e)), default=str)
     except Exception as e:
         return f"Error: {e}"
 

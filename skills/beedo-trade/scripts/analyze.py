@@ -378,6 +378,17 @@ if __name__ == "__main__":
             out = report(bars, args[0], name)
         else:
             sys.exit(__doc__)
-    except (NoHistory, ConnectionError, ValueError, OSError) as e:
+    except NoHistory as e:
+        sym = args[-1].upper() if args and not args[0].startswith("--csv") else ""
+        if not sym or sym in ("GOLD", "SILVER"):
+            sys.exit(f"ERROR: {e}")
+        import os
+        sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+        import fundamentals  # TradingView snapshot: "snapshot": true, signal capped at Alarm
+        try:
+            out = fundamentals.snapshot_report(sym, str(e))
+        except Exception as e2:
+            sys.exit(f"ERROR: {e} TradingView: {e2}")
+    except (ConnectionError, ValueError, OSError) as e:
         sys.exit(f"ERROR: {e}")
     print(json.dumps(out, indent=1, default=str))

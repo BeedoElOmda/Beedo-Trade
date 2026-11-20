@@ -112,6 +112,82 @@ def market_health():
     return {**health(idx[0], stocks), "industries": industries(stocks)}
 
 
+# ---------- snapshot: when Yahoo has no daily history (or a frozen one) ----------
+SMA_LENGTHS = (5, 6, 8, 9, 10, 13, 15, 20, 21, 30, 50, 100, 200)  # what TradingView's scanner offers (no 18)
+NOT_CHECKED = [4, 7, 9, 10, 11]  # trend, candles, gaps and patterns need daily history
+
+
+def snapshot_report(symbol, reason=""):
+    """An analyze.report()-shaped dict from TradingView's latest values (today and the day before), for stocks without
+    usable daily history. Steps in NOT_CHECKED can't be read; S/R come from monthly pivots and the 52-week range."""
+    import datetime as dt
+    sym = symbol.strip().upper()
+    used = [p if p in SMA_LENGTHS else min(SMA_LENGTHS, key=lambda n: (abs(n - p), n)) for p in analyze.MA]
+    if len(set(used)) < 3:
+        raise ConnectionError(f"TradingView has no moving averages close to {analyze.MA}; try 5 / 9 / 18.")
+    cols = ["description", "open", "high", "low", "close", "close[1]", "volume", "average_volume_10d_calc", "RSI", "RSI[1]",
+            "MACD.macd", "MACD.signal", "MACD.macd[1]", "MACD.signal[1]", "price_52_week_low", "price_52_week_high",
+            "Pivot.M.Classic.S1", "Pivot.M.Classic.S2", "Pivot.M.Classic.R1", "Pivot.M.Classic.R2"] + \
+           [f"SMA{u}" for u in used] + [f"SMA{u}[1]" for u in used]
+    rows = _scan({"symbols": {"tickers": [f"EGX:{sym}"]}, "columns": cols})
+    if not rows:
+        raise ConnectionError(f"TradingView has no data for {sym} either. Check the code, or use a CSV of daily prices.")
+    v = dict(zip(cols, rows[0]))
+    if None in [v["close"], v["close[1]"], v["RSI"], v["RSI[1]"], v["MACD.macd"], v["MACD.signal"]] + [v[f"SMA{u}"] for u in used]:
+        raise ConnectionError(f"TradingView doesn't have enough data for {sym} yet (a new listing?). Use a CSV of daily prices.")
+    c, today = v["close"], dt.date.today().isoformat()
+    r2 = lambda x: None if x is None else round(x, 2)
+    piv = [v[k] for k in ("Pivot.M.Classic.S1", "Pivot.M.Classic.S2", "Pivot.M.Classic.R1", "Pivot.M.Classic.R2") if v[k]]
+    piv = piv if len(set(piv)) > 1 else []  # some stocks get one repeated (meaningless) pivot value
+    sup = sorted({r2(x) for x in piv if x < c}, reverse=True)
+    res = sorted({r2(x) for x in piv if x > c})
+    lo, hi = v["price_52_week_low"], v["price_52_week_high"]
+    pct = lambda x: None if x is None else round(abs(c - x) / c * 100, 2)
+    f, m, s = used
+    now = [v[f"SMA{u}"] for u in used]; prev = [v[f"SMA{u}[1]"] for u in used]
+    def cross(a, b):
+        if None in (prev[a], prev[b]): return []
+        if prev[a] <= prev[b] and now[a] > now[b]: return [(today, "UP")]
+        if prev[a] >= prev[b] and now[a] < now[b]: return [(today, "DOWN")]
+        return []
+    order = f"{f}>{m}>{s} (uptrend order)" if now[0] > now[1] > now[2] else \
+            f"{f}<{m}<{s} (downtrend order)" if now[0] < now[1] < now[2] else "mixed (intermingling)"
+    rsi, rsi1 = v["RSI"], v["RSI[1]"]
+    zone = "overbought >=70" if rsi >= 70 else "oversold <=30" if rsi <= 30 else "bullish 50-70" if rsi > 50 else "bearish 30-50" if rsi < 50 else "centerline 50"
+    ml, ms, ml1, ms1 = v["MACD.macd"], v["MACD.signal"], v["MACD.macd[1]"], v["MACD.signal[1]"]
+    mcross = [] if None in (ml1, ms1) else [(today, "UP")] if ml1 <= ms1 and ml > ms else [(today, "DOWN")] if ml1 >= ms1 and ml < ms else []
+    avg = v["average_volume_10d_calc"] or 0
+    no_candle = {"date": today, "prior_trend": "flat", "shape": "Not checked", "engulfing": None}
+    subs = [f"MA{u}" for p, u in zip(analyze.MA, used) if p != u]
+    return {
+        "symbol": sym, "name": v["description"] or sym, "bars": 0, "snapshot": True,
+        "not_checked": sorted(NOT_CHECKED + ([] if sup or res else [2, 3])),  # no pivots: no recent S/R, no price location
+        "source": "TradingView snapshot (latest session)", "reason": reason,
+        "ma_note": "TradingView has no " + ", ".join(f"MA{p}" for p, u in zip(analyze.MA, used) if p != u) + ", so "
+                   + ", ".join(subs) + " is used instead." if subs else "",
+        "last_bar": {"d": today, "o": v["open"], "h": v["high"], "l": v["low"], "c": c, "v": v["volume"] or 0},
+        "levels": {"recent_90d": {"supports_nearest_first": sup[:3], "resistances_nearest_first": res[:3]},
+                   "historical_1y": {"supports_nearest_first": [r2(lo)] if lo and lo < c else [],
+                                     "resistances_nearest_first": [r2(hi)] if hi and hi > c else []},
+                   "pct_to_nearest_recent_support": pct(sup[0] if sup else None),
+                   "pct_to_nearest_recent_resistance": pct(res[0] if res else None),
+                   "period_high": r2(hi), "period_low": r2(lo)},
+        "trend_swings": {"last_swing_highs_oldest_first": [], "last_swing_lows_oldest_first": [], "higher_high_steps": 0,
+                         "higher_low_steps": 0, "lower_high_steps": 0, "lower_low_steps": 0, "swing_points_last_90d": []},
+        "moving_averages": {"periods": used, f"MA{f}": r2(now[0]), f"MA{m}": r2(now[1]), f"MA{s}": r2(now[2]),
+                            f"price_vs_MA{s}": "above" if c > now[2] else "below", "alignment": order, f"MA{s}_slope_5d_pct": None,
+                            f"alarm_crosses_{f}x{m}": cross(0, 1), f"first_crosses_{f}x{s}": cross(0, 2), f"confirm_crosses_{m}x{s}": cross(1, 2)},
+        "volume": {"today": v["volume"] or 0, "avg20": round(avg), "ratio_vs_avg20": round((v["volume"] or 0) / avg, 2) if avg else None,
+                   "last5": [(today, round(c - v["close[1]"], 2), v["volume"] or 0)], "note": "average of the last 10 days (TradingView)"},
+        "candles_last3": [no_candle] * 3,
+        "rsi14": {"now": round(rsi, 1), "prev": round(rsi1, 1), "zone": zone, "min_max_30d": (round(min(rsi, rsi1), 1), round(max(rsi, rsi1), 1)),
+                  "level_crosses_30d": [], "divergence": ["none detected"]},
+        "gaps_30d": "none", "closes_last10": [(today, round(v["close[1]"], 2)), (today, round(c, 2))],
+        "macd": {"line": round(ml, 3), "signal": round(ms, 3), "hist": round(ml - ms, 3),
+                 "hist_prev": round(ml1 - ms1, 3) if None not in (ml1, ms1) else round(ml - ms, 3), "crosses_30d": mcross},
+    }
+
+
 # ---------- peers ----------
 def _median(rows, key):
     vals = [r[key] for r in rows if isinstance(r.get(key), (int, float))]
@@ -247,11 +323,13 @@ def verdict(quality_level, rung):
     return {"tone": "bad", "short": "Avoid", "text": "Avoid: a weak business without a buy signal."}
 
 
-if __name__ == "__main__":  # python fundamentals.py COMI | --health
+if __name__ == "__main__":  # python fundamentals.py COMI | --health | --snapshot COMI
     import sys
-    if len(sys.argv) != 2:
-        sys.exit("Usage: python fundamentals.py SYMBOL   or   python fundamentals.py --health")
+    if not 2 <= len(sys.argv) <= 3:
+        sys.exit("Usage: python fundamentals.py SYMBOL  |  --health  |  --snapshot SYMBOL")
     try:
-        print(json.dumps(market_health() if sys.argv[1] == "--health" else for_symbol(sys.argv[1]), indent=1, default=str))
+        out = market_health() if sys.argv[1] == "--health" else snapshot_report(sys.argv[2]) if sys.argv[1] == "--snapshot" \
+            else for_symbol(sys.argv[1])
+        print(json.dumps(out, indent=1, default=str))
     except Exception as e:
         sys.exit(f"ERROR: {e}")
