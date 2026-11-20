@@ -24,7 +24,7 @@ def _fetch(ticker):
         hit = _cache.get(ticker)
         if hit and time.time() - hit[0] < CACHE_SECONDS:
             return hit[1]
-    bars, _ = analyze.fetch(ticker)
+    bars, _ = analyze.fetch(ticker, "2y")  # 2 years: long moving averages and the 2Y chart
     with _lock:
         _cache[ticker] = (time.time(), bars)
     return bars

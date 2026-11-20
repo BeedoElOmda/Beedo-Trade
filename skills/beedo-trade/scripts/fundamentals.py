@@ -51,6 +51,42 @@ def market(force=False):
     return rows
 
 
+def _scan(body):
+    req = urllib.request.Request(SCAN_URL, data=json.dumps(body).encode(), headers={"User-Agent": "Mozilla/5.0", "Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=20) as r:
+            return [d["d"] for d in json.load(r).get("data") or []]
+    except Exception as e:
+        raise ConnectionError(f"Could not reach TradingView: {e}") from e
+
+
+def health(index, stocks):
+    """index: (close, change %, SMA50, SMA200, RSI); stocks: [(close, change %, SMA50, SMA200)].
+    Score: index above SMA200 and SMA50 (+1 each, below -1 each), share of stocks above their SMA50 (>=60% +1, <=40% -1)."""
+    close, chg, s50, s200, rsi = index
+    pct = lambda ok, xs: round(100 * sum(map(ok, xs)) / len(xs)) if xs else None
+    above50 = pct(lambda r: r[0] > r[2], [r for r in stocks if None not in (r[0], r[2])])
+    above200 = pct(lambda r: r[0] > r[3], [r for r in stocks if None not in (r[0], r[3])])
+    up = sum(1 for r in stocks if (r[1] or 0) > 0); down = sum(1 for r in stocks if (r[1] or 0) < 0)
+    score = (1 if close > s200 else -1) + (1 if close > s50 else -1) + \
+            (1 if above50 is not None and above50 >= 60 else -1 if above50 is not None and above50 <= 40 else 0)
+    label = "Healthy" if score >= 2 else "Weak" if score <= -2 else "Mixed"
+    return {"label": label, "score": score, "egx30": round(close, 2), "egx30_change": round(chg or 0, 2),
+            "egx30_sma50": round(s50, 2), "egx30_sma200": round(s200, 2), "egx30_rsi": round(rsi, 1) if rsi is not None else None,
+            "above_sma50_pct": above50, "above_sma200_pct": above200, "advancers": up, "decliners": down, "stocks": len(stocks)}
+
+
+def market_health():
+    """EGX30 against its 50- and 200-day averages, plus breadth of every EGX stock (TradingView, end of day)."""
+    idx = _scan({"symbols": {"tickers": ["EGX:EGX30"]}, "columns": ["close", "change", "SMA50", "SMA200", "RSI"]})
+    stocks = _scan({"filter": [{"left": "type", "operation": "equal", "right": "stock"},
+                               {"left": "exchange", "operation": "equal", "right": "EGX"}],
+                    "columns": ["close", "change", "SMA50", "SMA200"], "range": [0, 1000]})
+    if not idx or None in idx[0][:4] or not stocks:
+        raise ConnectionError("TradingView returned no EGX30 or market data.")
+    return health(idx[0], stocks)
+
+
 # ---------- peers ----------
 def _median(rows, key):
     vals = [r[key] for r in rows if isinstance(r.get(key), (int, float))]

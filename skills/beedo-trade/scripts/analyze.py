@@ -165,9 +165,12 @@ def engulf(p, b):
     return None
 
 # ---------- report ----------
+MA = (5, 9, 18)  # fast / mid / slow moving averages of the course; the desktop app sets its own from Settings
+
 def analyze(bars):
     C = [b["c"] for b in bars]; V = [b["v"] for b in bars]
-    ma5, ma9, ma18 = sma(C, 5), sma(C, 9), sma(C, 18)
+    f, m, s = MA
+    ma5, ma9, ma18 = sma(C, f), sma(C, m), sma(C, s)  # names kept from the course: fast, mid, slow
     rsi = rsi_wilder(C)
     last = bars[-1]; i = len(bars) - 1
     r = {"last_bar": last}
@@ -211,17 +214,18 @@ def analyze(bars):
         "swing_points_last_90d": [(bars[j]["d"], t, round(p, 2), bars[j]["v"]) for j, t, p in recent[-10:]],
     }
 
-    # Step 5: moving averages 5 / 9 / 18
+    # Step 5: moving averages fast / mid / slow (course: 5 / 9 / 18)
     slope = None if ma18[i - 5] is None else round((ma18[i] - ma18[i - 5]) / ma18[i - 5] * 100, 2)
-    order = "5>9>18 (uptrend order)" if ma5[i] > ma9[i] > ma18[i] else \
-            "5<9<18 (downtrend order)" if ma5[i] < ma9[i] < ma18[i] else "mixed (intermingling)"
+    order = f"{f}>{m}>{s} (uptrend order)" if ma5[i] > ma9[i] > ma18[i] else \
+            f"{f}<{m}<{s} (downtrend order)" if ma5[i] < ma9[i] < ma18[i] else "mixed (intermingling)"
     r["moving_averages"] = {
-        "MA5": round(ma5[i], 2), "MA9": round(ma9[i], 2), "MA18": round(ma18[i], 2),
-        "price_vs_MA18": "above" if last["c"] > ma18[i] else "below",
-        "alignment": order, "MA18_slope_5d_pct": slope,
-        "alarm_crosses_5x9": crosses(ma5, ma9, bars),
-        "first_crosses_5x18": crosses(ma5, ma18, bars),
-        "confirm_crosses_9x18": crosses(ma9, ma18, bars),
+        "periods": [f, m, s],
+        f"MA{f}": round(ma5[i], 2), f"MA{m}": round(ma9[i], 2), f"MA{s}": round(ma18[i], 2),
+        f"price_vs_MA{s}": "above" if last["c"] > ma18[i] else "below",
+        "alignment": order, f"MA{s}_slope_5d_pct": slope,
+        f"alarm_crosses_{f}x{m}": crosses(ma5, ma9, bars),
+        f"first_crosses_{f}x{s}": crosses(ma5, ma18, bars),
+        f"confirm_crosses_{m}x{s}": crosses(ma9, ma18, bars),
     }
 
     # Step 6: volume
@@ -310,9 +314,12 @@ def selftest():
     assert analyze(cb)["moving_averages"]["alignment"].startswith("5>9>18")
     print("selftest ok")
 
+def min_bars():
+    return max(60, MA[2] + 6)  # the slow MA and its 5-day slope need slow + 6 bars
+
 def report(bars, symbol, name):
-    if len(bars) < 60:
-        raise NoHistory(f"Only {len(bars)} daily bars for {symbol}; the course indicators need 60+.")
+    if len(bars) < min_bars():
+        raise NoHistory(f"Only {len(bars)} daily bars for {symbol}; the indicators need {min_bars()}+ (slow MA {MA[2]}).")
     return {"symbol": symbol.upper(), "name": name, "bars": len(bars), **analyze(bars)}
 
 if __name__ == "__main__":
