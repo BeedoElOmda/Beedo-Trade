@@ -125,7 +125,7 @@ function render(d) {
   $("#checklist").innerHTML = d.steps.map((st) => `<li class="${st.off ? "off" : ""}">
       <span class="num">${[10, 11].includes(st.n) ? "" : `<input type="checkbox" class="step-on" data-n="${st.n}" ${st.off ? "" : "checked"} title="Count this step in the signal" aria-label="Count step ${st.n} in the signal">`}${st.n}</span><span class="name">${esc(st.name)}</span>
       <span class="reading">${esc(st.reading)}${st.note ? `<span class="note">${esc(st.note)}</span>` : ""}</span>
-      ${badge(st.rung)}</li>`).join("");
+      ${badge(st.rung)}${(d.impact || {})[st.n] ? `<span class="impact" title="What the signal would become">${st.off ? "Tick" : "Untick"} → ${esc(d.impact[st.n])}</span>` : ""}</li>`).join("");
   $("#nUp").innerHTML = d.next.up.map((x) => `<li>${esc(x)}</li>`).join("") || "<li class='muted'>Already fully bullish</li>";
   $("#nDown").innerHTML = d.next.down.map((x) => `<li>${esc(x)}</li>`).join("") || "<li class='muted'>Already fully bearish</li>";
   const metal = d.kind === "metal";  // no company behind a metal: hide ratios, rating and combined view
@@ -295,7 +295,7 @@ $("#maForm").addEventListener("submit", async (e) => {
   toast(`Moving averages ${r.ma.join(" / ")} saved`);
   if (current && !current.source.startsWith("CSV")) analyse(current.symbol);
 });
-$("#maReset").addEventListener("click", () => { [8, 13, 200].forEach((v, i) => { $$("#maForm input")[i].value = v; }); $("#maForm").requestSubmit(); });
+$("#maReset").addEventListener("click", () => { [5, 9, 18].forEach((v, i) => { $$("#maForm input")[i].value = v; }); $("#maForm").requestSubmit(); });
 
 $("#checklist").addEventListener("change", async (e) => {
   const cb = e.target.closest(".step-on");
@@ -304,10 +304,11 @@ $("#checklist").addEventListener("change", async (e) => {
   const s = await api("save_settings", { steps_off: off });
   if (!s || s.error) return toast(s ? s.error : "Couldn't save");
   settings.steps_off = s.steps_off;
+  const before = current.signal.label;
   const r = await api("rescore", current.symbol);
   if (!r || r.error) return toast(r ? r.error : "Couldn't update the signal");
   render({ ...current, ...r });
-  toast(off.length ? `Steps not counted: ${off.join(", ")}` : "All steps counted");
+  toast(r.signal.label === before ? `Signal unchanged: ${before}` : `Signal: ${before} → ${r.signal.label}`);
 });
 
 /* ---------- market health ---------- */
@@ -444,7 +445,7 @@ $("#wTable").addEventListener("keydown", (e) => { const tr = e.target.closest("t
   api("fx").then((f) => { if (!f || f.error) return; $("#fxRate").textContent = fmt(f.usd_egp); $("#fxChg").innerHTML = `${signed(f.usd_egp_change)} · ${esc(f.fx_date)}`; $("#fxBox").classList.remove("hidden"); });
   $("#aboutInfo").textContent = `Version ${info.version}. Your settings are saved in ${info.data_dir}.`;
   $("#cash").value = settings.cash; $("#risk").value = settings.risk_pct;
-  (settings.ma || [8, 13, 200]).forEach((v, i) => { $$("#maForm input")[i].value = v; });
+  (settings.ma || [5, 9, 18]).forEach((v, i) => { $$("#maForm input")[i].value = v; });
   loadHealth();
   // Deep links (used for the guide's screenshots): #a=COMI, #p=watchlist&scan, #p=about, &theme=light, &role=shareholder
   const h = new URLSearchParams(location.hash.slice(1));

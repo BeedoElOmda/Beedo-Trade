@@ -165,6 +165,8 @@ button.small { padding: 6px 10px; font-size: 12px; }
 .health b { color: var(--text); }
 .health span + span::before { content: "·"; margin-inline-end: 12px; }
 .checklist li.off { opacity: .45; }
+.checklist li.off .impact { opacity: 1; }
+.checklist .impact { grid-column: -2 / -1; justify-self: end; font-size: 11px; font-weight: 600; color: var(--accent); white-space: nowrap; }
 .checklist .step-on { margin: 0 6px 0 0; accent-color: var(--accent); vertical-align: middle; cursor: pointer; }
 .ma-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
 .ma-form input { width: 64px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font-variant-numeric: tabular-nums; }
