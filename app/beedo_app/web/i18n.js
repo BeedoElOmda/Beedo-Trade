@@ -108,6 +108,10 @@ const AR = {
   "Your holdings are saved only on this computer. Values use the last daily close, which can be delayed. Not investment advice.": "بياناتك محفوظة على هذا الجهاز فقط. القيم محسوبة على آخر إغلاق يومي وقد يكون متأخرًا. ليست نصيحة استثمارية.",
   "Enter the quantity and the price you paid": "أدخل الكمية وسعر الشراء",
 
+  // time machine
+  "Time machine": "آلة الزمن", "Run time machine": "تشغيل آلة الزمن", "Target first": "الهدف أولًا", "Stop first": "الإيقاف أولًا", "Neither": "لا هذا ولا ذاك", "Average R": "متوسط R",
+  "Time machine failed": "تعذّر تشغيل آلة الزمن",
+  "How often would the trade plan above reach its target before its stop? It replays the next 20 trading days 10,000 times from this stock's own daily moves of the past two years, and checks the same plan on past days that had the same signal. A simulation, not a prediction.": "كم مرة تصل خطة التداول أعلاه إلى الهدف قبل وقف الخسارة؟ تعيد آلة الزمن تشغيل أيام التداول العشرين القادمة 10,000 مرة من حركات السهم اليومية خلال العامين الماضيين، وتختبر نفس الخطة في الأيام السابقة التي ظهرت فيها نفس الإشارة. هذه محاكاة وليست توقعًا.",
   // back-test
   "Back-test": "اختبار على الماضي", "Run back-test": "تشغيل الاختبار", "Running…": "جارٍ التشغيل…",
   "Replays the checklist day by day over the past two years. It buys at the close on a First or Confirm Buy and sells at the close on a First or Confirm Sell. Fees and taxes are not counted. Past results do not predict future results.": "يعيد تطبيق قائمة الخطوات يومًا بيوم على العامين الماضيين: يشتري عند الإغلاق مع إشارة شراء أولي أو تأكيد شراء، ويبيع عند الإغلاق مع إشارة بيع أولي أو تأكيد بيع. لا تُحسب العمولات والضرائب. نتائج الماضي لا تتنبأ بالمستقبل.",
@@ -147,6 +151,13 @@ const AR_RULES = [
   [/^(\S+) closed at (\S+): at or (above|below) your alert price (\S+)$/, (m) => `${m[1]} أغلق عند ${m[2]}: عند سعر التنبيه ${m[4]} أو ${m[3] === "above" ? "أعلى" : "أدنى"}`],
   [/^(\d+) closed$/, (m) => `${m[1]} مغلقة`], [/^(\d+) of (\d+)$/, (m) => `${m[1]} من ${m[2]}`],
   [/^(\S+) is on your watchlist$/, (m) => `${m[1]} في قائمة المتابعة`],
+  // time machine
+  [/^within (\d+) trading days$/, (m) => `خلال ${m[1]} يوم تداول`], [/^(\S+)R plan$/, (m) => `خطة ${m[1]}R`],
+  [/^(Close to a coin flip|Close to break-even|Leans toward the target|Leans toward the stop|Strongly toward the target|Strongly toward the stop): the target came first in (\d+)% of the replays that reached one side; a (\S+)R plan needs (\d+)% to break even\.?$/,
+    (m) => `${{ "Close to a coin flip": "قريب من رمي العملة", "Close to break-even": "قريب من التعادل", "Leans toward the target": "يميل نحو الهدف", "Leans toward the stop": "يميل نحو الإيقاف", "Strongly toward the target": "يميل بقوة نحو الهدف", "Strongly toward the stop": "يميل بقوة نحو الإيقاف" }[m[1]]}: وصل السعر إلى الهدف أولًا في ${m[2]}% من عمليات المحاكاة التي بلغت أحد الجانبين، وخطة ${m[3]}R تحتاج ${m[4]}% لتتعادل.`],
+  [/^Same signal \((.+)\) on (\d+) past days: target first (\d+), stop first (\d+), neither (\d+)\.?$/, (m) => `نفس الإشارة (${AR[m[1]] || m[1]}) في ${m[2]} يومًا سابقًا: الهدف أولًا ${m[3]}، الإيقاف أولًا ${m[4]}، لا هذا ولا ذاك ${m[5]}.`],
+  [/^The same signal \((.+)\) appeared on only (\d+) past days: too few to judge\.?$/, (m) => `ظهرت نفس الإشارة (${AR[m[1]] || m[1]}) في ${m[2]} يومًا سابقًا فقط: عدد قليل لا يكفي للحكم.`],
+  [/^Price after (\d+) trading days: median (\S+) EGP, 90% of replays between (\S+) and (\S+?)\.?$/, (m) => `السعر بعد ${m[1]} يوم تداول: الوسيط ${m[2]} جنيه، و90% من عمليات المحاكاة بين ${m[3]} و${m[4]}.`],
 ];
 function tr(text) {
   const k = text.trim();

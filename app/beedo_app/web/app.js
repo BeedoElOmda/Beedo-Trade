@@ -133,7 +133,7 @@ function render(d) {
   $("#verdict").classList.toggle("hidden", metal);
   if (!metal) renderFundamentals(d);
   $$("#tf button").forEach((x) => x.setAttribute("aria-checked", String(x.dataset.tf === "d")));
-  $("#btOut").innerHTML = "";
+  $("#btOut").innerHTML = ""; $("#tmOut").innerHTML = "";
   drawCharts(d);
   updatePlan();
 }
@@ -374,7 +374,7 @@ $("#wTable").addEventListener("keydown", (e) => { const tr = e.target.closest("t
   applyTheme(h.get("theme") || settings.theme); drawChips(); drawAlerts();
   checkUpdate(false);
   if (!h.has("noalerts")) { checkAlerts(false); setInterval(() => checkAlerts(false), 15 * 60 * 1000); }
-  if (h.get("a")) analyse(h.get("a")).then(() => { if (h.has("weekly")) $('#tf [data-tf="w"]').click(); if (h.has("bt")) $("#btBtn").click(); });
+  if (h.get("a")) analyse(h.get("a")).then(() => { if (h.has("weekly")) $('#tf [data-tf="w"]').click(); if (h.has("bt")) $("#btBtn").click(); if (h.has("tm")) $("#tmBtn").click(); });
   else if (h.get("p")) { go(h.get("p")); if (h.has("scan")) $("#scanBtn").click(); if (h.has("run")) $("#runScreener").click(); }
   loadSectors();
   $("#symbol").focus();
@@ -473,6 +473,27 @@ $("#btBtn").addEventListener("click", async () => {
         r.trades.map((t) => `<tr><td>${esc(t.buy_date)}</td><td class="num">${fmt(t.buy)}</td><td>${t.open ? "Still open" : esc(t.sell_date)}</td><td class="num">${fmt(t.sell)}</td><td class="num">${signed(t.pct)}</td></tr>`).join("")}</tbody></table></div>`
         : `<p class="muted">The method gave no First or Confirm Buy in this period, so it stayed in cash.</p>`);
   } finally { btn.disabled = false; btn.textContent = "Run back-test"; }
+});
+
+/* ---------- 1.6: time machine ---------- */
+$("#tmBtn").addEventListener("click", async () => {
+  if (!current) return;
+  const btn = $("#tmBtn"), out = $("#tmOut"), sym = current.symbol;
+  btn.disabled = true; btn.textContent = "Running…";
+  try {
+    const r = await api("timemachine", sym);
+    if (sym !== current.symbol) return;
+    if (!r || r.error) { out.innerHTML = `<div class="plan"><div class="warn">${esc(r ? r.error : "Time machine failed")}</div></div>`; return; }
+    const stat = (k, v, s) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+    const h = r.history, sig = esc(r.signal);
+    const hist = h.enough ? `Same signal (${sig}) on ${h.cases} past days: target first ${h.target}, stop first ${h.stop}, neither ${h.neither}.`
+      : `The same signal (${sig}) appeared on only ${h.cases} past days: too few to judge.`;
+    out.innerHTML = `<div class="stats">${stat("Target first", `${fmt(r.target_pct, 1)}%`, `${fmt(r.target)} EGP`)}${stat("Stop first", `${fmt(r.stop_pct, 1)}%`, `${fmt(r.stop)} EGP`)}
+      ${stat("Neither", `${fmt(r.neither_pct, 1)}%`, `within ${r.days} trading days`)}${stat("Average R", `<span class="${r.avg_r >= 0 ? "pos" : "neg"}">${r.avg_r > 0 ? "+" : ""}${fmt(r.avg_r, 2)}</span>`, `${fmt(r.rr, 1)}R plan`)}</div>
+      <div class="plan"><p><b>${esc(r.verdict)}</b></p>${r.notes.map((n) => `<p class="muted">${esc(n)}</p>`).join("")}
+      <p>${hist}</p><p>Price after ${r.days} trading days: median ${fmt(r.close.median)} EGP, 90% of replays between ${fmt(r.close.p5)} and ${fmt(r.close.p95)}.</p>
+      <p class="muted tiny">${fmt(r.replays, 0)} replays, seed ${r.seed}, daily moves from ${esc(r.from)} to ${esc(r.to)}. A day that touches both the stop and the target counts as the stop.</p></div>`;
+  } finally { btn.disabled = false; btn.textContent = "Run time machine"; }
 });
 
 /* ---------- 1.5: alerts ---------- */
