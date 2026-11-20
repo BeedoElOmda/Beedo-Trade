@@ -6,7 +6,7 @@
 
 Run:  uv run --script mcp_server.py
 Tools: beedo_method (the course method), beedo_analyze (indicators for one EGX stock, GOLD or SILVER),
-beedo_history (raw daily prices), beedo_fundamentals (company rating), beedo_metals (gold and silver in EGP). It runs on the user's own computer, so it can reach Yahoo Finance
+beedo_history (raw daily prices), beedo_fundamentals (company rating), beedo_metals (gold and silver in EGP), beedo_timemachine (odds that a plan hits its target or stop first). It runs on the user's own computer, so it can reach Yahoo Finance
 even when Claude's sandbox cannot.
 """
 import json, sys
@@ -15,7 +15,7 @@ from mcp.server.fastmcp import FastMCP
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-import analyze, fundamentals, metals  # noqa: E402  (same folder)
+import analyze, fundamentals, metals, timemachine  # noqa: E402  (same folder)
 
 
 def _bars(sym):
@@ -80,6 +80,20 @@ def beedo_metals() -> str:
     gold/silver ratio. International prices: Egyptian shop prices add a local premium."""
     try:
         return json.dumps(metals.summary())
+    except Exception as e:
+        return f"Error: {e}"
+
+@mcp.tool()
+def beedo_timemachine(symbol: str, entry: float, stop: float, target: float, days: int = 20) -> str:
+    """Time machine for a buy plan: 10,000 replays of the next `days` trading days built from the stock's own daily
+    moves of the last two years, giving the odds of target first, stop first or neither, the average R, the price
+    range after `days` days and a verdict that weighs the target's R; plus the same plan on every real past day.
+    Make the plan first (workflow step 6), then pass its entry, stop and target. Seed 19, so runs repeat exactly.
+    symbol: EGX code, or GOLD / SILVER."""
+    sym = symbol.strip().upper()
+    try:
+        bars = metals.bars(sym)[0] if sym in metals.METALS else analyze.fetch(sym, "2y")[0]
+        return timemachine.text(timemachine.run(bars, entry, stop, target, max(5, min(days, 60))), sym)
     except Exception as e:
         return f"Error: {e}"
 
