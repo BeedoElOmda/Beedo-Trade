@@ -173,6 +173,7 @@ const reading = [
   h2('4.4  Checklist, triggers and trade plan'),
   ...shot('g_checklist.png', 'The checklist (left), what would change the signal, and the trade plan (right).'),
   P([b('12-step checklist: '), run('each course step with its reading and its rung on the ladder. Steps 10 and 11 (chart patterns) are judged by you on the chart.')]),
+  P([b('Choosing the steps: '), run('each scored step has a tick box beside its number. Untick a step you don\u2019t want to use: it stays on the list with its reading, greyed out, but no longer counts in the signal, the back-test, the time machine, the Watchlist, the Screener or the alerts. Tick it again to bring it back. Your choice is kept for every stock. Leaving out trend or moving averages removes the safety rules built on them (for example, no Confirm without moving averages), so keep those two unless you have a reason.')]),
   P([b('Step 12, MACD: '), run('MACD above its signal line is a buy reading, below it a sell reading. On the same side of zero it counts as First (MACD above its signal and above zero = First Buy; below its signal and below zero = First Sell); on the other side of zero it is only an Alarm. Only a First reading adds to the evidence for the signal, so MACD alone never makes a buy or a sell. The Claude skill keeps the course\u2019s 11 steps.')]),
   P([b('What would change the signal: '), run('the next events up and down, such as "MA9 crossing above MA18 = Confirm Buy" or "a close below 126.81 = support broken".')]),
   P([b('Trade plan: '), run('enter your cash and the most you are willing to lose per trade (default 2%). It shows the entry (last close), a stop just below support, a 2R target, the number of shares, the cost and the loss if the stop is hit. Yellow notes warn when resistance is in the way. On weaker signals the plan is labelled as one to have ready, not a trade for today.')]),
@@ -231,6 +232,7 @@ const fund = [
   numR('num5', [run('Click '), ui('Run screener'), run('. It rates every EGX company, then runs your course checklist on the best 40. This takes 10 to 40 seconds.')]),
   numR('num5', 'The results show the same ratio columns as the Watchlist. Click a column header to sort, for example by P/E or dividend yield. Hover over a row to read its full combined view, and click it to open the full analysis.'),
   gap(80),
+  P([b('Industry health: '), run('under the results, a second table rates every EGX industry from TradingView\u2019s end-of-day data: how many of its stocks are above their 50-day and 200-day averages, how many rose and fell today, and the average change. '), b('Healthy'), run(' means at least 60% are above both averages, '), b('Weak'), run(' 40% or fewer, '), b('Mixed'), run(' in between. Industries with fewer than 3 stocks get no label. The healthiest industries are at the top; it is a good place to look for stocks that the whole sector is carrying.')]),
   callout('tip', 'Use the Screener to find ideas, then check them', 'The Screener narrows about 300 stocks to a short list. Open each result, read its chart and checklist, and confirm the live price and the day’s news before acting.'),
 ];
 
