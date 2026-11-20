@@ -14,6 +14,8 @@ Beedo-Trade is a desktop program for Windows and Mac (source in `app/`): type an
 
 **Gold & Silver (1.3):** a page with international gold prices per gram for 24k, 21k and 18k, silver per gram, the official dollar rate and the gold/silver ratio, all in EGP. Type `GOLD` or `SILVER` anywhere a stock code works to run the course checklist, chart and trade plan (in grams) on the metal, or add them to the watchlist. These are international prices; Egyptian shop prices add a local premium.
 
+**New in 1.6: Time machine.** Under the trade plan, one click shows how often the plan would reach its target before its stop: the next 20 trading days replayed 10,000 times from the stock's own daily moves of the past two years, plus the same plan on every past day that had the same signal, and a one-line verdict that weighs the target's R (a 2R plan breaks even at 1 win in 3). A simulation from past prices, not a prediction. Also in the Claude skill (`beedo_timemachine`). The method is adapted from the `trader-timemachine` skill in [jakeschincariol/day-trader-skill](https://github.com/jakeschincariol/day-trader-skill) (MIT), rebuilt for daily EGX prices because EGX has no free intraday data.
+
 **New in 1.5:**
 
 - **Portfolio:** enter what you own and what you paid; see cost, value, profit or loss, the signal and the shareholder action for each holding.
@@ -33,7 +35,7 @@ Beedo-Trade is a desktop program for Windows and Mac (source in `app/`): type an
 - **Mac:** download the `.dmg` from Releases (`arm64` for Apple Silicon, `x86_64` for Intel), drag Beedo-Trade to Applications, and on first launch allow it under **System Settings → Privacy & Security → Open Anyway** (the app isn't notarised by Apple). Not tested on a real Mac yet: please report problems.
 - **Automatic builds:** publishing a GitHub release builds the Windows installer and both Mac `.dmg` files and attaches them (`.github/workflows/`).
 - **Build it yourself:** install [uv](https://docs.astral.sh/uv/) and Inno Setup (`winget install JRSoftware.InnoSetup`), then from `app/` run `powershell -ExecutionPolicy Bypass -File packaging\build.ps1`.
-- **How it decides:** `app/beedo_app/engine.py` turns the course rules into code and uses the same `analyze.py`, `fundamentals.py` and `metals.py` as the Claude skill, so the numbers match. Chart patterns (steps 10 and 11) are left for you to judge on the chart, where the swing points are marked.
+- **How it decides:** `app/beedo_app/engine.py` turns the course rules into code and uses the same `analyze.py`, `fundamentals.py`, `metals.py` and `timemachine.py` as the Claude skill, so the numbers match. Chart patterns (steps 10 and 11) are left for you to judge on the chart, where the swing points are marked.
 
 ## Claude skill
 
@@ -44,6 +46,7 @@ Ask Claude things like:
 - "Analyse COMI with my course method."
 - "I have 50,000 EGP. Should I buy TMGH? Give me entry, stop and target."
 - "Compare SWDY, ETEL and EAST. Which has the best setup?"
+- "Run the time machine on that COMI plan: what are the odds?"
 
 ## What it checks (11 steps)
 
@@ -67,9 +70,10 @@ The full rules are in [`skills/beedo-trade/references/course-rules.md`](skills/b
 |---|---|
 | `skills/beedo-trade/SKILL.md` | The method and the report format Claude follows |
 | `skills/beedo-trade/scripts/analyze.py` | Downloads a year of daily prices (Yahoo Finance, e.g. `COMI.CA`) and calculates the MA crossovers, RSI, swing points, levels, volume, candles and gaps. It can also read a CSV of daily prices you supply (`--csv`). Uses only Python's standard library. |
-| `skills/beedo-trade/scripts/mcp_server.py` | Beedo-Trade as its own MCP server for Claude Desktop. Tools: `beedo_method` (the method and course rules), `beedo_analyze` (the indicators for one stock, or for GOLD / SILVER), `beedo_history` (raw daily prices), `beedo_fundamentals` and `beedo_metals`. Prompt: `beedo_trade_analysis`. It runs on your own computer, so it can download price history even when Claude's sandbox can't. Claude Code uses the skill instead. |
+| `skills/beedo-trade/scripts/mcp_server.py` | Beedo-Trade as its own MCP server for Claude Desktop. Tools: `beedo_method` (the method and course rules), `beedo_analyze` (the indicators for one stock, or for GOLD / SILVER), `beedo_history` (raw daily prices), `beedo_fundamentals`, `beedo_metals` and `beedo_timemachine`. Prompt: `beedo_trade_analysis`. It runs on your own computer, so it can download price history even when Claude's sandbox can't. Claude Code uses the skill instead. |
 | `skills/beedo-trade/scripts/fundamentals.py` | Company rating (Strong / Fair / Weak) from standard rules on TradingView's market data, with the ratios behind it. MCP tool: `beedo_fundamentals`. A second opinion; it never changes the course signal. |
 | `skills/beedo-trade/scripts/metals.py` | Gold (24k, 21k, 18k) and silver in EGP per gram, the dollar rate and the gold/silver ratio. MCP tool: `beedo_metals`. `GOLD` and `SILVER` also work as symbols for the course checklist. |
+| `skills/beedo-trade/scripts/timemachine.py` | Time machine: odds that a buy plan reaches its target or its stop first, from 10,000 seeded replays of the stock's own daily moves plus the same plan on real past days. MCP tool: `beedo_timemachine`. Shared with the app. |
 | EGX MCP server (installed by the script) | Today's TradingView snapshot for EGX stocks, plus gold and silver prices in EGP. Third-party project: [M-Abdelmegeed/EGX-Data-MCP-Server](https://github.com/M-Abdelmegeed/EGX-Data-MCP-Server). It is downloaded at install time, not included in this package. |
 
 ## Install
@@ -152,4 +156,4 @@ These requests contain only the stock code or the request itself. No personal da
 
 ## License
 
-[MIT](LICENSE), for the app and the skill. The EGX MCP server downloaded by the installer is a separate project with its own terms.
+[MIT](LICENSE), for the app and the skill. The time machine's method is adapted from [jakeschincariol/day-trader-skill](https://github.com/jakeschincariol/day-trader-skill) (MIT). The EGX MCP server downloaded by the installer is a separate project with its own terms.
