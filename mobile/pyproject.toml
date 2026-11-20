@@ -1,0 +1,26 @@
+# Beedo-Trade phone app, packaged with BeeWare Briefcase.
+# The build (.github/workflows/build-android.yml) first copies app/beedo_app to src/beedo_app and the skill
+# scripts to src/beedotrade/engine, so the phone runs exactly the desktop engine. Version comes from app/pyproject.toml.
+[tool.briefcase]
+project_name = "Beedo-Trade"
+bundle = "io.github.beedoelomda"
+version = "0.0.0"
+url = "https://github.com/BeedoElOmda/Beedo-Trade"
+license.file = "LICENSE"
+author = "BeedoElOmda"
+
+[tool.briefcase.app.beedotrade]
+formal_name = "Beedo-Trade"
+description = "Egyptian Exchange (EGX) technical analysis with the Beedo course method"
+sources = ["src/beedotrade", "src/beedo_app"]
+requires = ["certifi"]
+
+[tool.briefcase.app.beedotrade.android]
+requires = ["toga-android~=0.5.0"]
+base_theme = "Theme.MaterialComponents.Light.DarkActionBar"
+build_gradle_dependencies = [
+    "com.google.android.material:material:1.12.0",
+    "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0",
+]
+# The app talks to its own engine at http://127.0.0.1 (plain HTTP inside the phone)
+android_manifest_application_attrs_extra_content = 'android:usesCleartextTraffic="true"'
