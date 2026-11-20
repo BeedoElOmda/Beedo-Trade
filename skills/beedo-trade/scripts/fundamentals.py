@@ -76,15 +76,40 @@ def health(index, stocks):
             "above_sma50_pct": above50, "above_sma200_pct": above200, "advancers": up, "decliners": down, "stocks": len(stocks)}
 
 
+MIN_INDUSTRY = 3  # fewer stocks than this: breadth means little, so no label
+
+
+def industries(stocks):
+    """stocks: [(close, change %, SMA50, SMA200, sector, industry)] -> one row per industry, healthiest first.
+    Score: share above SMA50 and share above SMA200 (>=60% +1 each, <=40% -1 each). 2 = Healthy, -2 = Weak."""
+    groups = {}
+    for r in stocks:
+        groups.setdefault((r[5] or "Other", r[4] or ""), []).append(r)
+    out = []
+    for (ind, sec), rs in groups.items():
+        h = health((1, 0, 0, 0, None), rs)  # dummy index: only the breadth figures are used here
+        a50, a200 = h["above_sma50_pct"], h["above_sma200_pct"]
+        side = lambda p: 0 if p is None else 1 if p >= 60 else -1 if p <= 40 else 0
+        score = side(a50) + side(a200)
+        chg = [r[1] for r in rs if r[1] is not None]
+        label = "Too few stocks" if len(rs) < MIN_INDUSTRY else "Healthy" if score >= 2 else "Weak" if score <= -2 else "Mixed"
+        out.append({"industry": ind, "sector": sec, "stocks": len(rs), "label": label, "score": score,
+                    "above_sma50_pct": a50, "above_sma200_pct": a200, "advancers": h["advancers"], "decliners": h["decliners"],
+                    "avg_change": round(sum(chg) / len(chg), 2) if chg else None})
+    out.sort(key=lambda x: (x["label"] == "Too few stocks", -x["score"], -(x["above_sma50_pct"] or 0)))
+    return out
+
+
 def market_health():
-    """EGX30 against its 50- and 200-day averages, plus breadth of every EGX stock (TradingView, end of day)."""
+    """EGX30 against its 50- and 200-day averages, breadth of every EGX stock, and the same breadth per industry
+    (TradingView, end of day)."""
     idx = _scan({"symbols": {"tickers": ["EGX:EGX30"]}, "columns": ["close", "change", "SMA50", "SMA200", "RSI"]})
     stocks = _scan({"filter": [{"left": "type", "operation": "equal", "right": "stock"},
                                {"left": "exchange", "operation": "equal", "right": "EGX"}],
-                    "columns": ["close", "change", "SMA50", "SMA200"], "range": [0, 1000]})
+                    "columns": ["close", "change", "SMA50", "SMA200", "sector", "industry"], "range": [0, 1000]})
     if not idx or None in idx[0][:4] or not stocks:
         raise ConnectionError("TradingView returned no EGX30 or market data.")
-    return health(idx[0], stocks)
+    return {**health(idx[0], stocks), "industries": industries(stocks)}
 
 
 # ---------- peers ----------
@@ -222,11 +247,11 @@ def verdict(quality_level, rung):
     return {"tone": "bad", "short": "Avoid", "text": "Avoid: a weak business without a buy signal."}
 
 
-if __name__ == "__main__":  # python fundamentals.py COMI
+if __name__ == "__main__":  # python fundamentals.py COMI | --health
     import sys
     if len(sys.argv) != 2:
-        sys.exit("Usage: python fundamentals.py SYMBOL")
+        sys.exit("Usage: python fundamentals.py SYMBOL   or   python fundamentals.py --health")
     try:
-        print(json.dumps(for_symbol(sys.argv[1]), indent=1, default=str))
+        print(json.dumps(market_health() if sys.argv[1] == "--health" else for_symbol(sys.argv[1]), indent=1, default=str))
     except Exception as e:
         sys.exit(f"ERROR: {e}")

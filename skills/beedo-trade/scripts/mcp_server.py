@@ -6,7 +6,8 @@
 
 Run:  uv run --script mcp_server.py
 Tools: beedo_method (the course method), beedo_analyze (indicators for one EGX stock, GOLD or SILVER),
-beedo_history (raw daily prices), beedo_fundamentals (company rating), beedo_metals (gold and silver in EGP), beedo_timemachine (odds that a plan hits its target or stop first). It runs on the user's own computer, so it can reach Yahoo Finance
+beedo_history (raw daily prices), beedo_fundamentals (company rating), beedo_metals (gold and silver in EGP), beedo_timemachine (odds that a plan hits its target or stop first),
+beedo_market_health (EGX30, market breadth and health per industry). It runs on the user's own computer, so it can reach Yahoo Finance
 even when Claude's sandbox cannot.
 """
 import json, sys
@@ -16,6 +17,8 @@ from mcp.server.fastmcp import FastMCP
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
 import analyze, fundamentals, metals, timemachine  # noqa: E402  (same folder)
+import threading  # noqa: E402
+_ma_lock = threading.Lock()
 
 
 def _bars(sym):
@@ -39,15 +42,31 @@ def beedo_method() -> str:
     return body + "\n\n---\n\n" + RULES.read_text(encoding="utf-8")
 
 @mcp.tool()
-def beedo_analyze(symbol: str) -> str:
-    """Course indicators for one EGX stock from a year of daily prices: S/R levels, trend swing steps,
-    MA 5/9/18 crossovers (Alarm/First/Confirm), volume vs 20-day average, reversal candles, RSI 14 zone and
-    divergence, gaps. symbol: 4-letter EGX code such as COMI, TMGH, SWDY, or GOLD / SILVER (EGP per gram,
-    international price at the official dollar rate)."""
+def beedo_analyze(symbol: str, ma: str = "8,13,200") -> str:
+    """Course indicators for one EGX stock from two years of daily prices: S/R levels, trend swing steps,
+    fast/mid/slow moving-average crossovers (Alarm/First/Confirm), volume vs 20-day average, reversal candles,
+    RSI 14 zone and divergence, gaps, MACD 12/26/9 (step 12). symbol: 4-letter EGX code such as COMI, TMGH, SWDY,
+    or GOLD / SILVER (EGP per gram, international price at the official dollar rate).
+    ma: fast,mid,slow moving averages, default "8,13,200"; "5,9,18" is the course's own set."""
     sym = symbol.strip().upper()
     try:
+        periods = tuple(int(x) for x in ma.split(","))
+        if len(periods) != 3 or not 2 <= periods[0] < periods[1] < periods[2] <= 250:
+            return "Error: ma needs three whole numbers, fast < mid < slow, 2 to 250, e.g. 5,9,18"
         bars, name = _bars(sym)
-        return json.dumps(analyze.report(bars, sym, name), default=str)
+        with _ma_lock:  # analyze.MA is module state; one analysis at a time keeps each call's periods
+            analyze.MA = periods
+            return json.dumps(analyze.report(bars, sym, name), default=str)
+    except Exception as e:
+        return f"Error: {e}"
+
+@mcp.tool()
+def beedo_market_health() -> str:
+    """Market health from TradingView's end-of-day data: EGX30 against its 50- and 200-day averages, the share of all
+    EGX stocks above their 50- and 200-day averages, advancers and decliners, a Healthy / Mixed / Weak label, and the
+    same breadth for every industry (healthiest first; under 3 stocks = no label). Context for a signal, not a rung."""
+    try:
+        return json.dumps(fundamentals.market_health(), default=str)
     except Exception as e:
         return f"Error: {e}"
 
@@ -102,7 +121,7 @@ def beedo_trade_analysis(symbol: str, position: str = "unknown") -> str:
     """Analyse one EGX stock with the Beedo course method."""
     return (f"Analyse {symbol.upper()} with my Beedo-Trade course method. My position: {position} "
             "(cash holder, shareholder or unknown). Call beedo_method first, then beedo_analyze, "
-            "and give the full report with the signal, both roles' actions and the 11-step checklist.")
+            "and give the full report with the signal, both roles' actions and the 12-step checklist.")
 
 if __name__ == "__main__":
     mcp.run()

@@ -2,6 +2,7 @@
 
 Usage:  python analyze.py COMI                 (EGX code; ".CA" is added for Yahoo)
         python analyze.py --csv prices.csv [SYMBOL]   (daily prices you supply)
+        python analyze.py --ma 5,9,18 COMI     (fast,mid,slow moving averages; default 8,13,200)
         python analyze.py --selftest
 Stdlib only. Daily bars come from Yahoo Finance (COMI -> COMI.CA).
 """
@@ -28,7 +29,7 @@ class NoHistory(Exception):
     """Yahoo has no daily prices for this symbol (common for smaller EGX stocks)."""
 
 # ---------- data ----------
-def fetch(symbol, rng="1y"):
+def fetch(symbol, rng="2y"):  # 2 years: a 200-day MA needs 206 trading days
     ysym = symbol.upper() if ("." in symbol or "=" in symbol) else symbol.upper() + ".CA"  # GC=F, EGP=X etc. are passed as-is
     data, err = None, None
     for host in ("query1", "query2"):  # query2 sometimes answers when query1 is blocked
@@ -180,7 +181,7 @@ def engulf(p, b):
     return None
 
 # ---------- report ----------
-MA = (5, 9, 18)  # fast / mid / slow moving averages of the course; the desktop app sets its own from Settings
+MA = (8, 13, 200)  # fast / mid / slow moving averages (the course used 5 / 9 / 18); --ma or the app's Settings change them
 
 def analyze(bars):
     C = [b["c"] for b in bars]; V = [b["v"] for b in bars]
@@ -306,6 +307,8 @@ def analyze(bars):
     return r
 
 def selftest():
+    global MA
+    MA = (5, 9, 18)  # the checks below use short histories
     up = [100 + k for k in range(60)]
     assert rsi_wilder(up)[-1] == 100.0
     assert abs(rsi_wilder([100 - k for k in range(60)])[-1]) < 1e-9
@@ -344,6 +347,13 @@ def report(bars, symbol, name):
 
 if __name__ == "__main__":
     args = sys.argv[1:]
+    if args[:1] == ["--ma"] and len(args) >= 2:
+        try:
+            MA = tuple(int(x) for x in args[1].split(","))
+            assert len(MA) == 3 and 2 <= MA[0] < MA[1] < MA[2] <= 250
+        except (ValueError, AssertionError):
+            sys.exit("ERROR: --ma needs three whole numbers, fast < mid < slow, 2 to 250, e.g. --ma 5,9,18")
+        args = args[2:]
     if args == ["--selftest"]:
         selftest(); sys.exit()
     try:
