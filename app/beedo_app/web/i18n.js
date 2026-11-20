@@ -49,13 +49,13 @@ const AR = {
 
   // analyze page
   "Analyse an EGX stock with your course method": "حلّل سهمًا في البورصة المصرية بمنهج دورتك",
-  "Type a 4-letter code, or pick one below. You get the signal, the actions for your position, the chart and the 11-step checklist.": "اكتب رمز السهم أو اختر من الأسماء أدناه. ستحصل على الإشارة، وما يجب فعله، والرسم البياني، وقائمة الخطوات الإحدى عشرة.",
+  "Type a 4-letter code, or pick one below. You get the signal, the actions for your position, the chart and the 12-step checklist.": "اكتب رمز السهم أو اختر من الأسماء أدناه. ستحصل على الإشارة، وما يجب فعله، والرسم البياني، وقائمة الخطوات الاثنتي عشرة.",
   "Volume": "حجم التداول", "Support": "الدعم", "Resistance": "المقاومة", "vs 20-day average": "مقارنة بمتوسط 20 يومًا",
   "none below": "لا يوجد دعم أدنى", "none above": "لا توجد مقاومة أعلى",
   "Combined view: company + chart": "الرؤية المجمّعة: الشركة + الرسم البياني",
   "Key figures": "أهم الأرقام", "Chart": "الرسم البياني", "Daily": "يومي", "Weekly": "أسبوعي",
   "Support / resistance": "الدعم / المقاومة", "Swing points": "القمم والقيعان",
-  "Company rating": "تقييم الشركة", "11-step checklist": "قائمة الخطوات الإحدى عشرة", "Each step lands on one rung of the ladder": "كل خطوة تقع على درجة من سلّم الإشارات",
+  "Company rating": "تقييم الشركة", "12-step checklist": "قائمة الخطوات الاثنتي عشرة", "MACD (12 / 26 / 9)": "مؤشر MACD (12 / 26 / 9)", "Each step lands on one rung of the ladder": "كل خطوة تقع على درجة من سلّم الإشارات",
   "What would change the signal": "ما الذي يغيّر الإشارة", "Upward": "صعودًا", "Downward": "هبوطًا",
   "Already fully bullish": "الإشارة صاعدة بالكامل", "Already fully bearish": "الإشارة هابطة بالكامل",
   "Trade plan": "خطة الصفقة", "Cash (EGP)": "السيولة (جنيه)", "Max risk per trade (%)": "أقصى مخاطرة للصفقة (%)",
@@ -141,7 +141,7 @@ const AR = {
 
   // about
   "About Beedo-Trade": "عن Beedo-Trade", "The signal ladder": "سلّم الإشارات", "Where the numbers come from": "مصدر الأرقام", "Important": "تنبيه مهم",
-  "Beedo-Trade applies the Beedo technical-analysis course to Egyptian Exchange stocks, the same way every time: 11 steps, one signal, and separate advice for a cash holder and a shareholder.": "يطبّق Beedo-Trade دورة Beedo للتحليل الفني على أسهم البورصة المصرية بالطريقة نفسها في كل مرة: 11 خطوة، إشارة واحدة، ونصيحة منفصلة لصاحب السيولة ولحامل السهم.",
+  "Beedo-Trade applies the Beedo technical-analysis course to Egyptian Exchange stocks, the same way every time: 12 steps (the 11 course steps plus MACD), one signal, and separate advice for a cash holder and a shareholder.": "يطبّق Beedo-Trade دورة Beedo للتحليل الفني على أسهم البورصة المصرية بالطريقة نفسها في كل مرة: 12 خطوة (خطوات الدورة الإحدى عشرة ومؤشر MACD)، إشارة واحدة، ونصيحة منفصلة لصاحب السيولة ولحامل السهم.",
   "Alarm = early warning, get ready. First = start a position (or start reducing). Confirm = several signals agree, act fully. Trend and moving averages set the ceiling: candles and RSI alone can't confirm a move against them, and in a sideways market the cash holder waits for a breakout.": "التنبيه = إنذار مبكر، استعد. الأولي = ابدأ الشراء (أو ابدأ التخفيف). التأكيد = عدة إشارات متفقة، نفّذ بالكامل. الاتجاه والمتوسطات المتحركة يحددان السقف: الشموع ومؤشر RSI وحدهما لا يؤكدان حركة عكسهما، وفي السوق العرضي ينتظر صاحب السيولة الاختراق.",
   "This is a learning and decision-support tool. It is": "هذه أداة للتعلّم ودعم القرار. وهي", "not investment advice": "ليست نصيحة استثمارية",
   ", it does not know your full financial situation, and it never places orders. Free data can be delayed: always check the live price and the day's disclosures before trading.": "، ولا تعرف وضعك المالي الكامل، ولا تنفّذ أي أوامر. البيانات المجانية قد تكون متأخرة: راجع دائمًا السعر اللحظي وإفصاحات اليوم قبل التداول.",
