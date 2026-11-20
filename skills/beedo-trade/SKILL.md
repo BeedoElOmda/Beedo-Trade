@@ -1,6 +1,6 @@
 ---
 name: beedo-trade
-description: Beedo-Trade analyses Egyptian Exchange (EGX) stocks with the user's own technical-analysis course method (support/resistance, 2H/2L trend, moving-average crossovers (default 8/13/200, the course's 5/9/18 on request), RSI zones and divergence, volume, reversal candles, gaps, chart patterns, MACD) and gives an Alarm / First / Confirm Buy or Sell signal, with separate actions for a cash holder and a shareholder. Use this skill whenever the user asks about an EGX or Egyptian stock (COMI, TMGH, SWDY, ETEL, EAST, FWRY, any 4-letter EGX code or a Cairo-listed company name), asks "should I buy/sell/hold X", wants a technical analysis, a buy or sell signal, entry/exit levels or a trade plan for Egyptian stocks, compares EGX stocks, or mentions Beedo, Beedo-Trade or "my course method", even if they don't name the skill.
+description: Beedo-Trade analyses Egyptian Exchange (EGX) stocks with the user's own technical-analysis course method (support/resistance, 2H/2L trend, moving-average crossovers (5/9/18 by default, other periods on request), RSI zones and divergence, volume, reversal candles, gaps, chart patterns, MACD) and gives an Alarm / First / Confirm Buy or Sell signal, with separate actions for a cash holder and a shareholder. Use this skill whenever the user asks about an EGX or Egyptian stock (COMI, TMGH, SWDY, ETEL, EAST, FWRY, any 4-letter EGX code or a Cairo-listed company name), asks "should I buy/sell/hold X", wants a technical analysis, a buy or sell signal, entry/exit levels or a trade plan for Egyptian stocks, compares EGX stocks, or mentions Beedo, Beedo-Trade or "my course method", even if they don't name the skill.
 ---
 
 # Beedo-Trade
@@ -13,7 +13,7 @@ The full rulebook is in `references/course-rules.md`. Read it before your first 
 
 | Need | Tool |
 |---|---|
-| Daily history + course indicators (fast/mid/slow MA crosses, RSI 14, MACD 12/26/9, swings, S/R, volume, candles, gaps) | `beedo_analyze`, or `python -I <skill-dir>/scripts/analyze.py SYMBOL` (see "Getting the price history" below for the fallbacks). Moving averages default to 8 / 13 / 200; pass `ma="5,9,18"` (script: `--ma 5,9,18`) when the user wants the course's own |
+| Daily history + course indicators (fast/mid/slow MA crosses, RSI 14, MACD 12/26/9, swings, S/R, volume, candles, gaps) | `beedo_analyze`, or `python -I <skill-dir>/scripts/analyze.py SYMBOL` (see "Getting the price history" below for the fallbacks). Moving averages default to the course's 5 / 9 / 18; pass e.g. `ma="8,13,200"` (script: `--ma 8,13,200`) when the user wants other periods |
 | Market health: EGX30 against its 50- and 200-day averages, breadth of all EGX stocks, and health per industry | `beedo_market_health`, or `python -I <skill-dir>/scripts/fundamentals.py --health` |
 | Today's TradingView snapshot (close, RSI, pivots S1-S3/R1-R3, Bollinger, MACD) | `egx-mcp` tool `stock_data_egx` |
 | Quick price only | `egx-mcp` tool `stock_price_egx` |
@@ -29,10 +29,10 @@ The `trader-*` skills are optional: if they are not available, do the sizing and
 If the egx-mcp tools are not loaded in this session, the price history alone is enough for the analysis.
 
 ### Getting the price history (try in this order)
-The indicators use two years of daily prices from Yahoo Finance (`COMI` → `COMI.CA`): a 200-day average needs at least 206 trading days.
+The indicators use two years of daily prices from Yahoo Finance (`COMI` → `COMI.CA`): the default 5 / 9 / 18 needs 60 trading days; a 200-day slow average needs at least 206.
 1. **`beedo-trade` MCP server**, if its tools are loaded: `beedo_analyze` gives the same output as the script, and `beedo_history` gives the raw daily bars. Prefer it: it runs on the user's own computer, so it reaches Yahoo even when your sandbox can't.
 2. **The script**: `python -I <skill-dir>/scripts/analyze.py SYMBOL`, or `uv run --no-project python <skill-dir>/scripts/analyze.py SYMBOL` if `python` is not on PATH. It uses only Python's standard library.
-3. **A CSV of daily prices from the user**: `analyze.py --csv <file> SYMBOL`. It accepts the usual exports (Date, Open, High, Low, Close or Price, Volume; ISO or d/m/Y or m/d/Y dates; volumes like 1.2M). Ask for at least 206 trading days (about 10 months); with `--ma 5,9,18`, 60 are enough.
+3. **A CSV of daily prices from the user**: `analyze.py --csv <file> SYMBOL`. It accepts the usual exports (Date, Open, High, Low, Close or Price, Volume; ISO or d/m/Y or m/d/Y dates; volumes like 1.2M). Ask for at least 60 trading days, ideally a year (206 or more if the user uses a 200-day slow average).
 4. **Snapshot only** (`stock_data_egx`): RSI, SMA5/10/20, pivots and today's candle, but no history. Steps 1, 4, 6, 10 and 11 can't be checked. Mark them "not checked" and cap the signal at **Alarm**, because the course never confirms without trend and MA history.
 
 What the errors mean:
@@ -60,7 +60,7 @@ Go through the 12 steps in this order (the 11 course steps plus MACD), and give 
 2. **Recent S/R**: `levels.recent_90d`. As a second opinion, add TradingView's *Classic* monthly pivots (`Pivot.M.Classic.*`); ignore the Camarilla set, which is often inconsistent for EGX.
 3. **Price location**: which pricing zone of the course table (before/at/below support, before/at/failed resistance). "At" ≈ within about 1.5%.
 4. **Trend**: use the step counts in `trend_swings` (`higher_high_steps`, `lower_low_steps`, …). A step is one swing beating the previous one. Two steps up in both highs and lows identifies an uptrend; three confirms it. Same for down.
-5. **Moving averages** (fast / mid / slow from `moving_averages.periods`, default 8 / 13 / 200): latest crossover of fast×mid (Alarm), fast×slow (First), mid×slow (Confirm), and its date; the MA order; the slow MA's slope. A newer cross overrides an older one.
+5. **Moving averages** (fast / mid / slow from `moving_averages.periods`, default 5 / 9 / 18): latest crossover of fast×mid (Alarm), fast×slow (First), mid×slow (Confirm), and its date; the MA order; the slow MA's slope. A newer cross overrides an older one.
 6. **Volume**: today vs 20-day average, plus the price/volume combination over the last 5 days.
 7. **Reversal candles**: the script's shape in its trend context. A reversal candle needs the next candle to confirm it, so a candle on the latest bar is only an Alarm.
 8. **RSI**: zone, direction, recent crosses of 30/50/70, divergence.
@@ -119,7 +119,7 @@ Use this structure, in English (Arabic course terms in brackets are fine). Keep 
 | 11 | Continuation patterns | ... | ... |
 | 12 | MACD 12/26/9 | ... | ... |
 
-**What would change the signal:** <the next trigger up, e.g. "MA13 crossing above MA200 = Confirm Buy"; and the next trigger down, e.g. "close below 125.8 support = First Sell">
+**What would change the signal:** <the next trigger up, e.g. "MA9 crossing above MA18 = Confirm Buy"; and the next trigger down, e.g. "close below 125.8 support = First Sell">
 
 _Course-method analysis for learning and decision support, not investment advice. Check the live price and today's disclosures before trading._
 ```
