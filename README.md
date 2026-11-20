@@ -8,13 +8,13 @@ It comes in two forms: a **desktop app** for Windows and Mac (no Claude needed),
 
 ## Standalone app for Windows and Mac (no Claude needed)
 
-Beedo-Trade is a desktop program for Windows and Mac (source in `app/`): type an EGX code and get the signal, the cash holder and shareholder actions, an interactive chart (candles, moving averages you choose, support and resistance, swing points, volume, RSI, MACD, 5D to 2Y range), the 11-step checklist, a trade-plan calculator and a watchlist scanner. Light and dark themes.
+Beedo-Trade is a desktop program for Windows and Mac (source in `app/`): type an EGX code and get the signal, the cash holder and shareholder actions, an interactive chart (candles, moving averages you choose, support and resistance, swing points, volume, RSI, MACD, 5D to 2Y range), the checklist (the 11 course steps plus MACD as step 12), a trade-plan calculator and a watchlist scanner. Light and dark themes.
 
 **Company fundamentals (1.2):** each stock also gets a Strong / Fair / Weak company rating from standard rules (P/E, P/B, return on equity, margin, debt, growth, dividend), compared with similar companies, plus a **combined view** that joins it with the course signal. The **Screener** rates every EGX company and lists the strong ones that are in a buy zone. Fundamentals come from TradingView's market data and are not part of the Beedo technical course.
 
 **Gold & Silver (1.3):** a page with international gold prices per gram for 24k, 21k and 18k, silver per gram, the official dollar rate and the gold/silver ratio, all in EGP. Type `GOLD` or `SILVER` anywhere a stock code works to run the course checklist, chart and trade plan (in grams) on the metal, or add them to the watchlist. These are international prices; Egyptian shop prices add a local premium.
 
-**New in 1.7: your own moving averages, MACD and market health.** Set the fast, mid and slow moving averages under the chart (default 8 / 13 / 200; the course uses 5 / 9 / 18). They draw the chart and give the signals: fast × mid = Alarm, fast × slow = First, mid × slow = Confirm. The chart adds a MACD 12 / 26 / 9 pane and 5D, 1M, 3M, 6M, 1Y and 2Y buttons. A market-health line on the Analyze page says Healthy, Mixed or Weak, from the EGX30 against its 50- and 200-day averages and how many EGX stocks are above theirs (TradingView, end of day). The Claude skill keeps the course's 5 / 9 / 18.
+**New in 1.7: your own moving averages, MACD and market health.** Set the fast, mid and slow moving averages under the chart (default 8 / 13 / 200; the course uses 5 / 9 / 18). They draw the chart and give the signals: fast × mid = Alarm, fast × slow = First, mid × slow = Confirm. The chart adds a MACD 12 / 26 / 9 pane, also step 12 of the app's checklist (MACD above its signal and above zero = First Buy, below both = First Sell; only a First reading counts as evidence), and 5D, 1M, 3M, 6M, 1Y and 2Y buttons. A market-health line on the Analyze page says Healthy, Mixed or Weak, from the EGX30 against its 50- and 200-day averages and how many EGX stocks are above theirs (TradingView, end of day). The Claude skill keeps the course's 5 / 9 / 18.
 
 **New in 1.6: Time machine.** Under the trade plan, one click shows how often the plan would reach its target before its stop: the next 20 trading days replayed 10,000 times from the stock's own daily moves of the past two years, plus the same plan on every past day that had the same signal, and a one-line verdict that weighs the target's R (a 2R plan breaks even at 1 win in 3). A simulation from past prices, not a prediction. Also in the Claude skill (`beedo_timemachine`). The method is adapted from the `trader-timemachine` skill in [jakeschincariol/day-trader-skill](https://github.com/jakeschincariol/day-trader-skill) (MIT), rebuilt for daily EGX prices because EGX has no free intraday data.
 
@@ -50,7 +50,7 @@ Ask Claude things like:
 - "Compare SWDY, ETEL and EAST. Which has the best setup?"
 - "Run the time machine on that COMI plan: what are the odds?"
 
-## What it checks (11 steps)
+## What it checks (11 steps; the desktop app adds MACD as step 12)
 
 1. Historical support and resistance
 2. Recent support and resistance
