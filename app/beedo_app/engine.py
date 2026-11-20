@@ -9,6 +9,8 @@ import analyze  # shared skill script (on sys.path via main.py / tests): MA peri
 RUNGS = {-3: "Confirm Sell", -2: "First Sell", -1: "Alarm Sell", 0: "Hold",
          1: "Alarm Buy", 2: "First Buy", 3: "Confirm Buy"}
 NEAR = 1.5  # % distance that counts as "at" a level (course: price testing support/resistance)
+SCORED = (1, 2, 3, 4, 5, 6, 7, 8, 9, 12)  # steps 10-11 are judged by eye
+OFF = set()  # steps the user switched off (Settings): still shown, but they don't count
 
 ACTIONS = {  # course: trend tables, RSI table and pricing-zone table
     3: ("Buy the full position.", "Hold, or add on pullbacks."),
@@ -168,11 +170,19 @@ def evaluate(r):
         txt += f"; last cross {way.lower()} on {d}"
     steps.append(_step(12, "MACD (12 / 26 / 9)", txt, rung))
 
-    return {"steps": steps, **_overall(steps, close, ds, dr, trend_rung, ma_rung, rsi_rung, now,
-                                       confirmed_down, confirmed_up, lv, ma)}
+    off = OFF & set(SCORED)
+    for s in steps:
+        if s["n"] in off:
+            s["off"] = True
+            s["note"] = (s["note"] + " " if s["note"] else "") + "Switched off: not counted in the signal."
+    if 4 in off: trend_rung, confirmed_down, confirmed_up = 0, False, False
+    if 5 in off: ma_rung = 0
+    if 8 in off: rsi_rung = 0
+    return {"steps": steps, **_overall([{**s, "rung": 0} if s.get("off") else s for s in steps], close, ds, dr, trend_rung,
+                                       ma_rung, rsi_rung, now, confirmed_down, confirmed_up, lv, ma, off)}
 
 
-def _overall(steps, close, ds, dr, trend_rung, ma_rung, rsi_rung, rsi_now, confirmed_down, confirmed_up, lv, ma):
+def _overall(steps, close, ds, dr, trend_rung, ma_rung, rsi_rung, rsi_now, confirmed_down, confirmed_up, lv, ma, off=frozenset()):
     by = {s["n"]: s["rung"] for s in steps}
     # MACD (12) supports a side only when it is clearly on it: crossed AND on the same side of zero
     support_buy = [n for n in (1, 2, 3, 6, 7, 9) if by[n] > 0] + ([8] if rsi_rung > 0 else []) + ([12] if by.get(12, 0) >= 2 else [])
@@ -180,9 +190,9 @@ def _overall(steps, close, ds, dr, trend_rung, ma_rung, rsi_rung, rsi_now, confi
 
     def side(sign):
         sup = support_buy if sign > 0 else support_sell
-        vol_ok = by[6] * sign > 0          # Confirm needs volume behind the move, not just "not against"
-        trend_ok = trend_rung * sign >= 0  # and no identified trend in the opposite direction
-        rsi_side = (rsi_now > 50) if sign > 0 else (rsi_now < 50)
+        vol_ok = by[6] * sign > 0 or 6 in off  # Confirm needs volume behind the move, not just "not against"
+        trend_ok = trend_rung * sign >= 0      # and no identified trend in the opposite direction
+        rsi_side = ((rsi_now > 50) if sign > 0 else (rsi_now < 50)) or 8 in off
         if ma_rung * sign == 3 and rsi_side and vol_ok and trend_ok:
             return 3
         rsi_turn = rsi_rung * sign >= 2  # RSI turning from the extreme, or crossing 50, in this direction
@@ -203,20 +213,21 @@ def _overall(steps, close, ds, dr, trend_rung, ma_rung, rsi_rung, rsi_now, confi
     if buy == 3 and dr is not None and dr <= NEAR:
         buy = 2; capped[1].append("price is pressing against resistance")
     # Course: sideways market = cash holder waits for a breakout (step 3 shows a break out of the range)
-    if trend_rung == 0 and abs(by[3]) < 2 and abs(ma_rung) < 3 and max(buy, sell) > 1:
+    if 4 not in off and trend_rung == 0 and abs(by[3]) < 2 and abs(ma_rung) < 3 and max(buy, sell) > 1:
         for sd in (1, -1): capped[sd].append("the market is moving sideways: wait for a breakout")
         buy, sell = min(buy, 1), min(sell, 1)
     # Course: price above the MA = no sell recommendation; below it = no buy recommendation
     slow = ma["periods"][2]
     above = close > ma[f"MA{slow}"]
-    if above and sell > 1:
+    if 5 in off: pass  # moving averages switched off: no price-vs-slow-MA caps
+    elif above and sell > 1:
         sell = 1; capped[-1].append(f"price is still above MA{slow}")
-    if not above and buy > 1:
+    elif not above and buy > 1:
         buy = 1; capped[1].append(f"price is still below MA{slow}")
 
     if buy > sell: rung = buy
     elif sell > buy: rung = -sell
-    elif buy == 1: rung = 1 if above else -1  # equally weak evidence: price's side of the slow MA decides
+    elif buy == 1 and 5 not in off: rung = 1 if above else -1  # equally weak evidence: price's side of the slow MA decides
     else:
         rung = 0
         if buy: reason.append("buy and sell evidence balance out")

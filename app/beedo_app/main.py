@@ -31,7 +31,7 @@ SETTINGS = DATA_DIR / "settings.json"
 # Ratios shown as columns in the Watchlist and Screener tables
 TABLE_FIGURES = ("market_cap", "pe", "pb", "roe", "net_margin", "debt_to_equity", "eps_growth", "dividend_yield", "perf_ytd")
 DEFAULTS = {"watchlist": ["COMI", "TMGH", "SWDY", "ETEL", "EAST", "EGAL"], "cash": 50000, "risk_pct": 2,
-            "theme": "dark", "lang": "en", "alerts": [], "portfolio": [], "signals": {}, "ma": [8, 13, 200]}
+            "theme": "dark", "lang": "en", "alerts": [], "portfolio": [], "signals": {}, "ma": [8, 13, 200], "steps_off": []}
 REPO = "BeedoElOmda/Beedo-Trade"
 
 
@@ -68,7 +68,9 @@ class Api:
         self._save_lock = threading.Lock()  # settings are read-changed-written from several threads
         self._daily = {}  # symbol -> daily bars of the last analysis (weekly view, back-test)
         self._window = None  # private: pywebview exposes public attributes to the page and would crawl the whole window object
-        analyze.MA = tuple(_valid_ma(self.get_settings()["ma"]) or DEFAULTS["ma"])
+        s = self.get_settings()
+        analyze.MA = tuple(_valid_ma(s["ma"]) or DEFAULTS["ma"])
+        engine.OFF.update(n for n in s["steps_off"] if n in engine.SCORED)
 
     # ---------- settings ----------
     def get_settings(self):
@@ -86,6 +88,10 @@ class Api:
             with self._lock:
                 analyze.MA = tuple(ma)
                 self._cache.clear()  # old analyses used the old averages
+        if patch and "steps_off" in patch:
+            off = sorted({int(n) for n in patch["steps_off"] if int(n) in engine.SCORED})
+            patch = {**patch, "steps_off": off}
+            engine.OFF.clear(); engine.OFF.update(off)
         with self._save_lock:
             s = {**self.get_settings(), **(patch or {})}
             try:
@@ -147,6 +153,17 @@ class Api:
             return self._build(analyze.load_csv(path), sym, f"{sym} (from {Path(path).name})", f"CSV: {Path(path).name}")
         except Exception as e:
             return {"error": f"Could not read the CSV: {e}"}
+
+    def rescore(self, symbol):
+        """The checklist and signal again for the last analysis, after steps were switched on or off (no download)."""
+        sym = (symbol or "").upper()
+        rep = self._cache.get(sym)
+        if not rep:
+            return {"error": "Analyse the stock first."}
+        ev = engine.evaluate(rep)
+        fund = self._fundamentals(sym) if sym not in metals.METALS else None
+        verdict = fundamentals.verdict(fund.get("quality", {}).get("level"), ev["signal"]["rung"]) if fund else None
+        return {**ev, "verdict": verdict}
 
     def plan(self, symbol, cash, risk_pct):
         rep = self._cache.get((symbol or "").upper())
