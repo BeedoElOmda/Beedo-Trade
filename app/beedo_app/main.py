@@ -31,7 +31,7 @@ SETTINGS = DATA_DIR / "settings.json"
 # Ratios shown as columns in the Watchlist and Screener tables
 TABLE_FIGURES = ("market_cap", "pe", "pb", "roe", "net_margin", "debt_to_equity", "eps_growth", "dividend_yield", "perf_ytd")
 DEFAULTS = {"watchlist": ["COMI", "TMGH", "SWDY", "ETEL", "EAST", "EGAL"], "cash": 50000, "risk_pct": 2,
-            "theme": "dark", "lang": "en", "alerts": [], "portfolio": [], "signals": {}, "ma": [8, 13, 200], "steps_off": []}
+            "theme": "dark", "lang": "en", "alerts": [], "portfolio": [], "signals": {}, "ma": [5, 9, 18], "steps_off": []}
 REPO = "BeedoElOmda/Beedo-Trade"
 
 
@@ -121,6 +121,7 @@ class Api:
         else:
             out["fundamentals"] = self._fundamentals(symbol)
             out["verdict"] = fundamentals.verdict(out["fundamentals"].get("quality", {}).get("level"), out["signal"]["rung"])
+        out["impact"] = engine.impact(rep)
         with self._lock:
             self._cache[symbol.upper()] = rep
             self._daily[symbol.upper()] = bars
@@ -163,7 +164,7 @@ class Api:
         ev = engine.evaluate(rep)
         fund = self._fundamentals(sym) if sym not in metals.METALS else None
         verdict = fundamentals.verdict(fund.get("quality", {}).get("level"), ev["signal"]["rung"]) if fund else None
-        return {**ev, "verdict": verdict}
+        return {**ev, "verdict": verdict, "impact": engine.impact(rep)}
 
     def plan(self, symbol, cash, risk_pct):
         rep = self._cache.get((symbol or "").upper())

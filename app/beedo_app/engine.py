@@ -182,6 +182,22 @@ def evaluate(r):
                                        ma_rung, rsi_rung, now, confirmed_down, confirmed_up, lv, ma, off)}
 
 
+def impact(r):
+    """{step: signal label} for each scored step whose tick would change today's signal:
+    for a ticked step, the signal if it were unticked; for an unticked step, the signal if it were ticked again."""
+    base = evaluate(r)["signal"]["label"]
+    out, saved = {}, set(OFF)
+    try:
+        for n in SCORED:
+            OFF.clear(); OFF.update(saved ^ {n})
+            label = evaluate(r)["signal"]["label"]
+            if label != base:
+                out[n] = label
+    finally:
+        OFF.clear(); OFF.update(saved)
+    return out
+
+
 def _overall(steps, close, ds, dr, trend_rung, ma_rung, rsi_rung, rsi_now, confirmed_down, confirmed_up, lv, ma, off=frozenset()):
     by = {s["n"]: s["rung"] for s in steps}
     # MACD (12) supports a side only when it is clearly on it: crossed AND on the same side of zero
