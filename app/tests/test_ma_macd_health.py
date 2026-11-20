@@ -91,3 +91,23 @@ def test_impact_shows_which_ticks_change_the_signal():
         assert engine.evaluate(rep)["signal"]["label"] == label
     engine.OFF.clear()
     assert engine.evaluate(rep)["signal"]["label"] == base  # impact() leaves the switches as they were
+
+
+def test_snapshot_fallback_caps_at_alarm(monkeypatch):
+    # A strong snapshot (every readable step bullish) must still stop at Alarm Buy, with the history steps "Not checked"
+    vals = {"description": "Test Co", "open": 10, "high": 10.6, "low": 9.9, "close": 10.5, "close[1]": 10, "volume": 3000,
+            "average_volume_10d_calc": 1000, "RSI": 62, "RSI[1]": 55, "MACD.macd": 0.3, "MACD.signal": 0.1,
+            "MACD.macd[1]": 0.05, "MACD.signal[1]": 0.08, "price_52_week_low": 7, "price_52_week_high": 12,
+            "Pivot.M.Classic.S1": 9.5, "Pivot.M.Classic.S2": 9, "Pivot.M.Classic.R1": 11.5, "Pivot.M.Classic.R2": 12}
+    sma = {5: (10.3, 10.1), 9: (10.1, 10.0), 20: (9.8, 9.7)}
+    def fake_scan(body):
+        cols = body["columns"]
+        return [[vals.get(c, sma.get(int(c[3:].split("[")[0]), (None, None))[1 if "[1]" in c else 0] if c.startswith("SMA") else None)
+                 for c in cols]]
+    monkeypatch.setattr(fundamentals, "_scan", fake_scan)
+    rep = fundamentals.snapshot_report("TEST")  # 5/9/18 -> 5/9/20 (TradingView has no SMA18)
+    assert rep["snapshot"] and rep["moving_averages"]["periods"] == [5, 9, 20] and "MA18" in rep["ma_note"]
+    ev = engine.evaluate(rep)
+    assert ev["signal"]["label"] == "Alarm Buy" and "snapshot" in ev["signal"]["why"]
+    assert all(s["reading"].startswith("Not checked") for s in ev["steps"] if s["n"] in (4, 7, 9, 10, 11))
+    assert ev["steps"][11]["label"] == "First Buy" and "10-day" in ev["steps"][5]["reading"]
