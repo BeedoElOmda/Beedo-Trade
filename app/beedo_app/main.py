@@ -35,23 +35,6 @@ DEFAULTS = {"watchlist": ["COMI", "TMGH", "SWDY", "ETEL", "EAST", "EGAL"], "cash
 REPO = "BeedoElOmda/Beedo-Trade"
 
 
-def _ema(xs, n):
-    out, e = [], None
-    for i, x in enumerate(xs):
-        e = (sum(xs[:n]) / n if i == n - 1 else None) if e is None else e + (x - e) * 2 / (n + 1)
-        out.append(e)
-    return out
-
-
-def _macd(closes, fast=12, slow=26, sig=9):
-    """MACD 12/26/9: line = EMA12 - EMA26, signal = EMA9 of the line, histogram = line - signal."""
-    line = [a - b if None not in (a, b) else None for a, b in zip(_ema(closes, fast), _ema(closes, slow))]
-    start = slow - 1
-    signal = [None] * start + _ema(line[start:], sig)
-    hist = [a - b if None not in (a, b) else None for a, b in zip(line, signal)]
-    return line, signal, hist
-
-
 def _valid_ma(ma):
     """Three whole numbers, fast < mid < slow, 2..250 (Yahoo gives about 500 trading days)."""
     try:
@@ -66,7 +49,7 @@ def _series(bars):
     rsi = analyze.rsi_wilder(closes)
     line = lambda xs: [{"time": b["d"], "value": round(x, 2)} for b, x in zip(bars, xs) if x is not None]
     f, m, s = analyze.MA
-    md, sg, hist = _macd(closes)
+    md, sg, hist = analyze.macd(closes)
     return {
         "candles": [{"time": b["d"], "open": b["o"], "high": b["h"], "low": b["l"], "close": b["c"]} for b in bars],
         "volume": [{"time": b["d"], "value": b["v"], "up": b["c"] >= b["o"]} for b in bars],

@@ -1,6 +1,6 @@
 """Beedo-Trade signal engine: the course rules (skills/beedo-trade/SKILL.md + course-rules.md) as code.
 
-Input is the dict from analyze.report(); output is the 11-step checklist, the overall signal,
+Input is the dict from analyze.report(); output is the 12-step checklist (11 course steps + MACD), the overall signal,
 the actions for a cash holder and a shareholder, and what would change the signal.
 Rungs are integers: -3 Confirm Sell .. 0 Hold .. +3 Confirm Buy.
 """
@@ -157,14 +157,26 @@ def evaluate(r):
     steps.append(_step(11, "Continuation patterns", "Look for ascending, descending or symmetrical triangles on the marked swing points", 0,
                        "Judged on the chart; not scored automatically."))
 
+    # 12. MACD 12/26/9: line above its signal = momentum up; on the positive side of zero = stronger
+    m = r["macd"]
+    up, pos = m["line"] > m["signal"], m["line"] > 0
+    rung = (2 if pos else 1) if up else (-1 if pos else -2)
+    txt = (f"MACD {m['line']} {'above' if up else 'below'} its signal {m['signal']}, {'above' if pos else 'below'} zero; "
+           f"histogram {'growing' if abs(m['hist']) > abs(m['hist_prev']) else 'shrinking'}")
+    if m["crosses_30d"]:
+        d, way = m["crosses_30d"][-1]
+        txt += f"; last cross {way.lower()} on {d}"
+    steps.append(_step(12, "MACD (12 / 26 / 9)", txt, rung))
+
     return {"steps": steps, **_overall(steps, close, ds, dr, trend_rung, ma_rung, rsi_rung, now,
                                        confirmed_down, confirmed_up, lv, ma)}
 
 
 def _overall(steps, close, ds, dr, trend_rung, ma_rung, rsi_rung, rsi_now, confirmed_down, confirmed_up, lv, ma):
     by = {s["n"]: s["rung"] for s in steps}
-    support_buy = [n for n in (1, 2, 3, 6, 7, 9) if by[n] > 0] + ([8] if rsi_rung > 0 else [])
-    support_sell = [n for n in (1, 2, 3, 6, 7, 9) if by[n] < 0] + ([8] if rsi_rung < 0 else [])
+    # MACD (12) supports a side only when it is clearly on it: crossed AND on the same side of zero
+    support_buy = [n for n in (1, 2, 3, 6, 7, 9) if by[n] > 0] + ([8] if rsi_rung > 0 else []) + ([12] if by.get(12, 0) >= 2 else [])
+    support_sell = [n for n in (1, 2, 3, 6, 7, 9) if by[n] < 0] + ([8] if rsi_rung < 0 else []) + ([12] if by.get(12, 0) <= -2 else [])
 
     def side(sign):
         sup = support_buy if sign > 0 else support_sell
