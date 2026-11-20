@@ -18,6 +18,7 @@ The full rulebook is in `references/course-rules.md`. Read it before your first 
 | Quick price only | `egx-mcp` tool `stock_price_egx` |
 | Company fundamentals: Strong / Fair / Weak rating, the rules behind it, key ratios | `beedo_fundamentals`, or `python -I <skill-dir>/scripts/fundamentals.py SYMBOL` |
 | Gold / silver in EGP per gram (24k, 21k, 18k), dollar rate, gold/silver ratio | `beedo_metals`, or `python -I <skill-dir>/scripts/metals.py`. If neither works: `egx-mcp` tools `gold_price`, `silver_price` |
+| Odds that a buy plan reaches its target or its stop first (time machine) | `beedo_timemachine`, or `python -I <skill-dir>/scripts/timemachine.py SYMBOL --entry E --stop S --target T` |
 | The course checklist on gold or silver | `beedo_analyze` or `analyze.py` with `GOLD` or `SILVER` as the symbol (EGP per gram) |
 | Position size, when the user has set limits (max loss per trade, cash buffer, per-stock cap) | `trader-budget` skill, if installed (amounts in EGP) |
 | Check a planned order against those limits | `trader-risk` skill, if installed |
@@ -128,6 +129,7 @@ If the signal is only Alarm or Hold, you may still give the plan, but label it *
   - If the user has set limits (max loss per trade, cash buffer), use `trader-budget` and then `trader-risk`. If not, ask for their max loss per trade only if they want a firm size.
 - **Gap risk**: a stop is a plan, not a guarantee; EGX can open below it.
 - Claude does not place EGX orders; the user trades in their own broker app.
+- **Time machine** (when the user asks "what are the odds", "replay this trade", "how often does this hit the target", or wants to test the plan): pass the plan's entry, stop and target to `beedo_timemachine` (or `timemachine.py`). It replays the next 20 trading days 10,000 times from the stock's own daily moves of the last two years, and checks the same plan on every real past day. Report, in this order: target first / stop first / neither, the price range after 20 days, the average R, the history line, then the verdict line exactly as printed, and the seed. A 2R plan only needs the target first about 1 time in 3 to break even, so never judge it by target-first vs stop-first alone: the verdict already weighs the R. If the history and the replays disagree, say so. Say once that it is a simulation from past prices, not a prediction: news, earnings and devaluations can do things those two years never did. EGX has no free intraday prices, so it works on whole days.
 
 ### 7. Company rating and combined view (stocks only)
 The rating is a second opinion from standard fundamental rules. It is not part of the technical course, and it never changes the signal or the rung. Say that in one short clause when you show it. Leave the line out for gold and silver, and when no rating is available.
