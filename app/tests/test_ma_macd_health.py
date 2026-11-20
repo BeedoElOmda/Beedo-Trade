@@ -70,3 +70,24 @@ def test_industry_health():
     by = {r["industry"]: r for r in rows}
     assert by["Banks"]["label"] == "Healthy" and by["Brokers"]["label"] == "Weak" and by["Oil"]["label"] == "Too few stocks"
     assert rows[0]["industry"] == "Banks" and rows[-1]["industry"] == "Oil"
+
+
+def test_frozen_price_feed_is_refused():
+    flat = [dict(d=f"2026-01-{k:02d}", o=71.05, h=71.05, l=71.05, c=71.05, v=0) for k in range(1, 29)] * 3
+    try:
+        analyze.report(flat, "ORAS", "Orascom"); assert False
+    except analyze.NoHistory as e:
+        assert "frozen" in str(e)
+
+
+def test_impact_shows_which_ticks_change_the_signal():
+    from test_engine import wave
+    rep = analyze.report(bars_from(wave(100, 0.4), vol_last=3000), "T", "T")
+    base = engine.evaluate(rep)["signal"]["label"]
+    imp = engine.impact(rep)
+    assert imp and all(label != base for label in imp.values())
+    for n, label in imp.items():  # each listed step really gives that signal when unticked
+        engine.OFF.clear(); engine.OFF.add(n)
+        assert engine.evaluate(rep)["signal"]["label"] == label
+    engine.OFF.clear()
+    assert engine.evaluate(rep)["signal"]["label"] == base  # impact() leaves the switches as they were
