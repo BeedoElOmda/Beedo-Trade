@@ -50,3 +50,23 @@ def test_market_health():
     assert fundamentals.health((80, -1, 100, 90, 40), [(1, -1, 2, 2)] * 7)["label"] == "Weak"
     h = fundamentals.health((95, 0, 100, 90, 50), [(2, 1, 1, 1)] * 5 + [(1, -1, 2, 2)] * 5)
     assert h["label"] == "Mixed" and h["above_sma50_pct"] == 50 and (h["advancers"], h["decliners"]) == (5, 5)
+
+
+def test_switched_off_steps_do_not_count():
+    from test_engine import wave
+    bars = bars_from(wave(100, 0.4), vol_last=3000)
+    on = engine.evaluate(analyze.report(bars, "T", "T"))
+    assert on["signal"]["rung"] >= 2
+    engine.OFF.update({4, 5, 8, 12})  # trend, moving averages, RSI and MACD off: only weak evidence is left
+    off = engine.evaluate(analyze.report(bars, "T", "T"))
+    assert all(s.get("off") for s in off["steps"] if s["n"] in (4, 5, 8, 12))
+    assert off["steps"][4]["rung"] == on["steps"][4]["rung"]  # still shown as read
+    assert off["signal"]["rung"] < on["signal"]["rung"]
+
+
+def test_industry_health():
+    up, down = (2, 1, 1, 1, "Finance", "Banks"), (1, -1, 2, 2, "Finance", "Brokers")
+    rows = fundamentals.industries([up] * 4 + [down] * 3 + [(1, 0, 2, 2, "Energy", "Oil")])
+    by = {r["industry"]: r for r in rows}
+    assert by["Banks"]["label"] == "Healthy" and by["Brokers"]["label"] == "Weak" and by["Oil"]["label"] == "Too few stocks"
+    assert rows[0]["industry"] == "Banks" and rows[-1]["industry"] == "Oil"
