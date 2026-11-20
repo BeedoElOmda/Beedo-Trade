@@ -178,8 +178,32 @@ def evaluate(r):
     if 4 in off: trend_rung, confirmed_down, confirmed_up = 0, False, False
     if 5 in off: ma_rung = 0
     if 8 in off: rsi_rung = 0
-    return {"steps": steps, **_overall([{**s, "rung": 0} if s.get("off") else s for s in steps], close, ds, dr, trend_rung,
-                                       ma_rung, rsi_rung, now, confirmed_down, confirmed_up, lv, ma, off)}
+    unread = set(r.get("not_checked") or [])  # snapshot: steps without data count as Hold
+    out = {"steps": steps, **_overall([{**s, "rung": 0} if s.get("off") or s["n"] in unread else s for s in steps], close, ds, dr, trend_rung,
+                                      ma_rung, rsi_rung, now, confirmed_down, confirmed_up, lv, ma, off)}
+    if r.get("snapshot"):
+        _snapshot_limits(out, r)
+    return out
+
+
+def _snapshot_limits(out, r):
+    """TradingView snapshot only: steps that need daily history are not checked, and the signal stops at Alarm
+    (course: never First or Confirm without the trend and moving-average history)."""
+    for s in out["steps"]:
+        if s["n"] in r["not_checked"]:
+            s.update(rung=0, label=RUNGS[0], note="", reading="Not checked: no support or resistance levels available"
+                     if s["n"] in (2, 3) else "Not checked: needs daily price history")
+    out["steps"][0]["note"] = "From the 52-week low and high (TradingView)."
+    out["steps"][1]["note"] = "From TradingView's monthly pivots." if r["levels"]["recent_90d"]["supports_nearest_first"] + \
+        r["levels"]["recent_90d"]["resistances_nearest_first"] else "TradingView has no usable pivots for this stock."
+    out["steps"][4]["note"] = r.get("ma_note", "")
+    out["steps"][5]["reading"] = out["steps"][5]["reading"].replace("20-day average", "10-day average")
+    sig = out["signal"]
+    if abs(sig["rung"]) > 1:
+        rung = 1 if sig["rung"] > 0 else -1
+        why = f"{sig['why']}; capped at Alarm because only a snapshot is available, without daily history"
+        out["signal"] = {"rung": rung, "label": RUNGS[rung], "why": why}
+        out["actions"] = {"cash": ACTIONS[rung][0], "shareholder": ACTIONS[rung][1]}
 
 
 def impact(r):

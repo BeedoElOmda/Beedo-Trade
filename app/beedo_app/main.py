@@ -111,11 +111,13 @@ class Api:
         b, name = analyze.fetch(sym, "2y")  # 2 years: room for a 200-day MA and the 2Y chart
         return b, name, "Yahoo Finance (daily)", "stock"
 
-    def _build(self, bars, symbol, name, source, kind="stock"):
-        rep = analyze.report(bars, symbol, name)
+    def _build(self, bars, symbol, name, source, kind="stock", rep=None):
+        """rep given = TradingView snapshot (no daily bars): no chart, back-test or time machine."""
+        rep = rep or analyze.report(bars, symbol, name)
         out = {"symbol": symbol.upper(), "name": name, "source": source, "kind": kind, "last_bar": rep["last_bar"],
                "levels": rep["levels"], "rsi": rep["rsi14"], "ma": {f"MA{p}": rep["moving_averages"][f"MA{p}"] for p in rep["moving_averages"]["periods"]},
-               "volume_ratio": rep["volume"]["ratio_vs_avg20"], **engine.evaluate(rep), "chart": _series(bars)}
+               "volume_ratio": rep["volume"]["ratio_vs_avg20"], **engine.evaluate(rep), "chart": _series(bars) if bars else None,
+               "snapshot": bool(rep.get("snapshot")), "reason": rep.get("reason", "")}
         if kind == "metal":  # no company behind a metal: no ratios, rating or combined view
             out["fundamentals"], out["verdict"] = None, None
         else:
@@ -124,8 +126,19 @@ class Api:
         out["impact"] = engine.impact(rep)
         with self._lock:
             self._cache[symbol.upper()] = rep
-            self._daily[symbol.upper()] = bars
+            if bars:
+                self._daily[symbol.upper()] = bars
+            else:
+                self._daily.pop(symbol.upper(), None)
         return out
+
+    @staticmethod
+    def _snapshot(sym, why):
+        """Yahoo has no usable history for an EGX stock: fall back to TradingView's latest values (signal capped at Alarm)."""
+        try:
+            return fundamentals.snapshot_report(sym, why)
+        except Exception as e:
+            raise analyze.NoHistory(f"{why} TradingView: {e}") from e
 
     @staticmethod
     def _fundamentals(symbol):
@@ -139,7 +152,14 @@ class Api:
         if not sym.isalnum() or not 2 <= len(sym) <= 6:
             return {"error": "Enter an EGX code such as COMI, TMGH or SWDY."}
         try:
-            bars, name, source, kind = self._bars(sym)
+            try:
+                bars, name, source, kind = self._bars(sym)
+                analyze.report(bars, sym, name)  # raises NoHistory for short or frozen data
+            except analyze.NoHistory as e:
+                if sym in metals.METALS:
+                    raise
+                rep = self._snapshot(sym, str(e))
+                return self._build(None, sym, rep["name"], rep["source"], "stock", rep)
             return self._build(bars, sym, name, source, kind)
         except Exception as e:  # shown in the UI, never a crash
             return {"error": str(e), "symbol": sym}
@@ -181,12 +201,20 @@ class Api:
 
     def _technical_row(self, sym, fund=None):
         try:
-            bars, name, _, kind = self._bars(sym)
-            rep = analyze.report(bars, sym, name)
+            try:
+                bars, name, _, kind = self._bars(sym)
+                rep = analyze.report(bars, sym, name)
+            except analyze.NoHistory as e:
+                if sym in metals.METALS:
+                    raise
+                bars, kind = None, "stock"
+                rep = self._snapshot(sym, str(e))
+                name = rep["name"]
             ev = engine.evaluate(rep)
             with self._lock:
                 self._cache[sym] = rep
-                self._daily[sym] = bars
+                if bars:
+                    self._daily[sym] = bars
             if kind == "metal":
                 return {"symbol": sym, "name": name, "close": rep["last_bar"]["c"], "date": rep["last_bar"]["d"],
                         "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"], "action": ev["actions"]["shareholder"],
