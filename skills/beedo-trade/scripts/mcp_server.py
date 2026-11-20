@@ -42,12 +42,12 @@ def beedo_method() -> str:
     return body + "\n\n---\n\n" + RULES.read_text(encoding="utf-8")
 
 @mcp.tool()
-def beedo_analyze(symbol: str, ma: str = "8,13,200") -> str:
+def beedo_analyze(symbol: str, ma: str = "5,9,18") -> str:
     """Course indicators for one EGX stock from two years of daily prices: S/R levels, trend swing steps,
     fast/mid/slow moving-average crossovers (Alarm/First/Confirm), volume vs 20-day average, reversal candles,
     RSI 14 zone and divergence, gaps, MACD 12/26/9 (step 12). symbol: 4-letter EGX code such as COMI, TMGH, SWDY,
     or GOLD / SILVER (EGP per gram, international price at the official dollar rate).
-    ma: fast,mid,slow moving averages, default "8,13,200"; "5,9,18" is the course's own set."""
+    ma: fast,mid,slow moving averages, default "5,9,18" (the course's own); e.g. "8,13,200" for longer ones."""
     sym = symbol.strip().upper()
     try:
         periods = tuple(int(x) for x in ma.split(","))

@@ -2,7 +2,7 @@
 
 Usage:  python analyze.py COMI                 (EGX code; ".CA" is added for Yahoo)
         python analyze.py --csv prices.csv [SYMBOL]   (daily prices you supply)
-        python analyze.py --ma 5,9,18 COMI     (fast,mid,slow moving averages; default 8,13,200)
+        python analyze.py --ma 8,13,200 COMI   (fast,mid,slow moving averages; default 5,9,18)
         python analyze.py --selftest
 Stdlib only. Daily bars come from Yahoo Finance (COMI -> COMI.CA).
 """
@@ -181,7 +181,7 @@ def engulf(p, b):
     return None
 
 # ---------- report ----------
-MA = (8, 13, 200)  # fast / mid / slow moving averages (the course used 5 / 9 / 18); --ma or the app's Settings change them
+MA = (5, 9, 18)  # fast / mid / slow moving averages of the course; --ma or the app's Settings change them
 
 def analyze(bars):
     C = [b["c"] for b in bars]; V = [b["v"] for b in bars]
@@ -343,6 +343,11 @@ def min_bars():
 def report(bars, symbol, name):
     if len(bars) < min_bars():
         raise NoHistory(f"Only {len(bars)} daily bars for {symbol}; the indicators need {min_bars()}+ (slow MA {MA[2]}).")
+    # A dead feed (Yahoo's ORAS.CA: one price, no trading range, for months) would give false signals
+    last20 = bars[-20:]
+    if len({(b["o"], b["h"], b["l"], b["c"]) for b in last20}) == 1 and last20[0]["h"] == last20[0]["l"]:
+        raise NoHistory(f"The price data for {symbol} is frozen: the same price ({last20[-1]['c']}) with no trading range for "
+                        "the last 20 days or more, so the source isn't updating this stock. Use a CSV of daily prices instead.")
     return {"symbol": symbol.upper(), "name": name, "bars": len(bars), **analyze(bars)}
 
 if __name__ == "__main__":
@@ -352,7 +357,7 @@ if __name__ == "__main__":
             MA = tuple(int(x) for x in args[1].split(","))
             assert len(MA) == 3 and 2 <= MA[0] < MA[1] < MA[2] <= 250
         except (ValueError, AssertionError):
-            sys.exit("ERROR: --ma needs three whole numbers, fast < mid < slow, 2 to 250, e.g. --ma 5,9,18")
+            sys.exit("ERROR: --ma needs three whole numbers, fast < mid < slow, 2 to 250, e.g. --ma 8,13,200")
         args = args[2:]
     if args == ["--selftest"]:
         selftest(); sys.exit()
