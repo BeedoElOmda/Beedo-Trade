@@ -121,6 +121,21 @@ def rsi_wilder(closes, n=14):
         out[i + 1] = val(ag, al)
     return out
 
+def ema(xs, n):
+    out, e = [], None
+    for i, x in enumerate(xs):
+        e = (sum(xs[:n]) / n if i == n - 1 else None) if e is None else e + (x - e) * 2 / (n + 1)
+        out.append(e)
+    return out
+
+def macd(closes, fast=12, slow=26, sig=9):
+    """MACD 12/26/9: line = EMA12 - EMA26, signal = EMA9 of the line, histogram = line - signal."""
+    line = [a - b if None not in (a, b) else None for a, b in zip(ema(closes, fast), ema(closes, slow))]
+    start = slow - 1
+    signal = [None] * start + ema(line[start:], sig) if len(closes) > start else [None] * len(closes)
+    hist = [a - b if None not in (a, b) else None for a, b in zip(line, signal)]
+    return line, signal, hist
+
 def crosses(fast, slow, bars, lookback=40):
     ev = []
     for i in range(max(1, len(bars) - lookback), len(bars)):
@@ -283,6 +298,11 @@ def analyze(bars):
                          "vol_ratio": round(b["v"] / avg20, 2) if avg20 else None, "filled_since": filled})
     r["gaps_30d"] = gaps or "none"
     r["closes_last10"] = [(b["d"], round(b["c"], 2)) for b in bars[-10:]]
+
+    # Step 12 (desktop app): MACD 12 / 26 / 9
+    ml, ms, mh = macd(C)
+    r["macd"] = {"line": round(ml[i], 3), "signal": round(ms[i], 3), "hist": round(mh[i], 3), "hist_prev": round(mh[i - 1], 3),
+                 "crosses_30d": crosses(ml, ms, bars, lookback=30)}
     return r
 
 def selftest():
