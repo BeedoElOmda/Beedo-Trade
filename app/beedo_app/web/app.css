@@ -161,6 +161,11 @@ button.small { padding: 6px 10px; font-size: 12px; }
 .toggles label { display: inline-flex; gap: 6px; align-items: center; cursor: pointer; }
 .toggles input { accent-color: var(--accent); }
 .sw { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
+.health { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; margin: 0 0 14px; font-size: 13px; color: var(--muted); }
+.health b { color: var(--text); }
+.health span + span::before { content: "·"; margin-inline-end: 12px; }
+.ma-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+.ma-form input { width: 64px; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px; padding: 5px 8px; font-variant-numeric: tabular-nums; }
 .sw.ma5 { background: var(--ma5); } .sw.ma9 { background: var(--ma9); } .sw.ma18 { background: var(--ma18); }
 .sw.lvl { background: linear-gradient(90deg, var(--sup) 50%, var(--res) 50%); } .sw.swg { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
 .chart { height: 420px; } .chart.rsi { height: 140px; }

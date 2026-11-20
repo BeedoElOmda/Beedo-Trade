@@ -29,7 +29,12 @@ const AR = {
   "trend and moving averages are still up": "الاتجاه والمتوسطات المتحركة ما زالت صاعدة",
   "price is pressing against resistance": "السعر يضغط على مستوى المقاومة",
   "the market is moving sideways: wait for a breakout": "السوق يتحرك عرضيًا: انتظر الاختراق",
-  "price is still above MA18": "السعر ما زال أعلى من متوسط 18", "price is still below MA18": "السعر ما زال أدنى من متوسط 18",
+  "MACD 12 / 26 / 9": "ماكد MACD 12 / 26 / 9", "line, signal and histogram": "الخط والإشارة والأعمدة",
+  "Moving averages (fast / mid / slow)": "المتوسطات المتحركة (سريع / متوسط / بطيء)", "Apply": "تطبيق", "Default 8 / 13 / 200": "الافتراضي 8 / 13 / 200",
+  "Fast moving average": "المتوسط السريع", "Mid moving average": "المتوسط الأوسط", "Slow moving average": "المتوسط البطيء", "Chart range": "مدة الرسم",
+  "Fast, mid and slow moving averages. They draw the chart lines and give the signals: fast x mid = Alarm, fast x slow = First, mid x slow = Confirm.": "المتوسطات المتحركة السريع والأوسط والبطيء. تُرسم على الشارت وتعطي الإشارات: السريع × الأوسط = تنبيه، السريع × البطيء = أولي، الأوسط × البطيء = تأكيد.",
+  "Moving averages must be three whole numbers, fast < mid < slow, between 2 and 250.": "يجب أن تكون المتوسطات ثلاثة أعداد صحيحة، السريع < الأوسط < البطيء، بين 2 و250.",
+  "Healthy: EGX30 above its 50- and 200-day averages and most stocks above their 50-day average. Weak: the opposite. TradingView, end of day.": "قوي: مؤشر EGX30 أعلى من متوسطي 50 و200 يوم ومعظم الأسهم أعلى من متوسط 50 يومًا. ضعيف: العكس. المصدر TradingView، نهاية اليوم.",
   "buy and sell evidence balance out": "دلائل الشراء والبيع متعادلة",
 
   // what to do
@@ -62,7 +67,7 @@ const AR = {
 
   // checklist step names
   "Historical support & resistance": "الدعم والمقاومة التاريخيان", "Recent support & resistance": "الدعم والمقاومة الحديثان", "Price location": "موقع السعر",
-  "Trend": "الاتجاه", "Moving averages 5 / 9 / 18": "المتوسطات المتحركة 5 / 9 / 18", "Reversal candles": "الشموع الانعكاسية", "RSI (14)": "مؤشر RSI (14)",
+  "Trend": "الاتجاه", "Reversal candles": "الشموع الانعكاسية", "RSI (14)": "مؤشر RSI (14)",
   "Price gaps": "الفجوات السعرية", "Reversal patterns": "النماذج الانعكاسية", "Continuation patterns": "النماذج الاستمرارية",
   "Judged on the chart; not scored automatically.": "تُقيَّم على الرسم البياني ولا تُحسب آليًا.",
 
@@ -151,6 +156,14 @@ const AR_RULES = [
   [/^(\S+) closed at (\S+): at or (above|below) your alert price (\S+)$/, (m) => `${m[1]} أغلق عند ${m[2]}: عند سعر التنبيه ${m[4]} أو ${m[3] === "above" ? "أعلى" : "أدنى"}`],
   [/^(\d+) closed$/, (m) => `${m[1]} مغلقة`], [/^(\d+) of (\d+)$/, (m) => `${m[1]} من ${m[2]}`],
   [/^(\S+) is on your watchlist$/, (m) => `${m[1]} في قائمة المتابعة`],
+  // 1.7: moving averages you choose, market health
+  [/^Moving averages (\d+) \/ (\d+) \/ (\d+)$/, (m) => `المتوسطات المتحركة ${m[1]} / ${m[2]} / ${m[3]}`],
+  [/^price is still (above|below) MA(\d+)$/, (m) => `السعر ما زال ${m[1] === "above" ? "أعلى" : "أدنى"} من متوسط ${m[2]}`],
+  [/^Moving averages (.+) saved$/, (m) => `تم حفظ المتوسطات المتحركة ${m[1]}`],
+  [/^Market: (Healthy|Mixed|Weak)$/, (m) => `السوق: ${{ Healthy: "قوي", Mixed: "متذبذب", Weak: "ضعيف" }[m[1]]}`],
+  [/^(above|below) its 50-day average, (above|below) its 200-day$/, (m) => `${m[1] === "above" ? "أعلى" : "أدنى"} من متوسط 50 يومًا، و${m[2] === "above" ? "أعلى" : "أدنى"} من متوسط 200 يوم`],
+  [/^(\d+)% of (\d+) stocks above their 50-day average \((\d+)% above 200-day\)$/, (m) => `${m[1]}% من ${m[2]} سهمًا أعلى من متوسط 50 يومًا (${m[3]}% أعلى من متوسط 200 يوم)`],
+  [/^(\d+) up · (\d+) down today$/, (m) => `${m[1]} صاعد · ${m[2]} هابط اليوم`],
   // time machine
   [/^within (\d+) trading days$/, (m) => `خلال ${m[1]} يوم تداول`], [/^(\S+)R plan$/, (m) => `خطة ${m[1]}R`],
   [/^(Close to a coin flip|Close to break-even|Leans toward the target|Leans toward the stop|Strongly toward the target|Strongly toward the stop): the target came first in (\d+)% of the replays that reached one side; a (\S+)R plan needs (\d+)% to break even\.?$/,

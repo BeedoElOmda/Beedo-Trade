@@ -200,6 +200,8 @@ function drawCharts(d, chart = d.chart) {
   if (charts) charts.destroy();
   const pc = LC.createChart($("#priceChart"), chartOpts());
   const rc = LC.createChart($("#rsiChart"), { ...chartOpts(), timeScale: { ...chartOpts().timeScale, visible: false } });
+  const mc = LC.createChart($("#macdChart"), { ...chartOpts(), timeScale: { ...chartOpts().timeScale, visible: false } });
+  (chart.periods || []).forEach((p, i) => { $$(".ma-lbl")[i].textContent = `MA${p}`; });
   const candles = pc.addCandlestickSeries({ upColor: css("--r2"), downColor: css("--rm3"), wickUpColor: css("--r2"), wickDownColor: css("--rm3"), borderVisible: false });
   candles.setData(chart.candles);
   candles.priceScale().applyOptions({ scaleMargins: { top: 0.06, bottom: 0.24 } });
@@ -231,9 +233,21 @@ function drawCharts(d, chart = d.chart) {
   rsi.priceScale().applyOptions({ autoScale: false, scaleMargins: { top: 0.1, bottom: 0.1 } });
   rsi.applyOptions({ autoscaleInfoProvider: () => ({ priceRange: { minValue: 0, maxValue: 100 } }) });
 
+  // MACD 12/26/9, padded like RSI so all three charts share bar indexes
+  const pad = (pts) => { const m = new Map(pts.map((p) => [p.time, p.value])); return chart.candles.map((c) => (m.has(c.time) ? { time: c.time, value: m.get(c.time) } : { time: c.time })); };
+  const histData = () => pad(chart.macd_hist).map((p) => (p.value == null ? p : { ...p, color: (p.value >= 0 ? css("--r2") : css("--rm3")) + "88" }));
+  const mHist = mc.addHistogramSeries({ priceLineVisible: false, lastValueVisible: false });
+  mHist.setData(histData());
+  const mLine = mc.addLineSeries({ color: css("--ma18"), lineWidth: 2, priceLineVisible: false, crosshairMarkerVisible: false });
+  mLine.setData(pad(chart.macd));
+  const mSig = mc.addLineSeries({ color: css("--ma9"), lineWidth: 2, priceLineVisible: false, crosshairMarkerVisible: false });
+  mSig.setData(pad(chart.macd_signal));
+
   let syncing = false;
-  const sync = (from, to) => from.timeScale().subscribeVisibleLogicalRangeChange((r) => { if (syncing || !r) return; syncing = true; to.timeScale().setVisibleLogicalRange(r); syncing = false; });
-  sync(pc, rc); sync(rc, pc);
+  const all = [pc, rc, mc];
+  all.forEach((from) => from.timeScale().subscribeVisibleLogicalRangeChange((r) => {
+    if (syncing || !r) return; syncing = true; all.forEach((to) => to !== from && to.timeScale().setVisibleLogicalRange(r)); syncing = false;
+  }));
 
   const state = { ma5: true, ma9: true, ma18: true, levels: true, swings: true };
   $$("#toggles input").forEach((cb) => { cb.checked = state[cb.dataset.layer]; });
@@ -242,21 +256,60 @@ function drawCharts(d, chart = d.chart) {
     drawLevels(state.levels); drawSwings(state.swings);
   };
   apply();
-  const fit = () => { const n = chart.candles.length; pc.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - 130), to: n + 3 }); };
-  fit();
+  // Period buttons: show the candles of the last N calendar days (5D .. 2Y); works for daily and weekly candles
+  const fit = () => {
+    const c = chart.candles, n = c.length, last = new Date(c[n - 1].time);
+    const cut = new Date(last - rangeDays * 864e5).toISOString().slice(0, 10);
+    const shown = c.filter((x) => x.time > cut).length;
+    pc.timeScale().setVisibleLogicalRange({ from: Math.max(0, n - Math.max(shown, 2)) - 0.5, to: n + 1 });
+  };
+  fit(); requestAnimationFrame(fit);  // again after the RSI and MACD panes settle, or their first layout resets the range
   charts = {
     fit,
     toggle: (k, v) => { state[k] = v; apply(); },
     restyle: () => {
-      [pc, rc].forEach((c) => c.applyOptions(chartOpts())); rc.applyOptions({ timeScale: { visible: false } });
+      all.forEach((c) => c.applyOptions(chartOpts())); rc.applyOptions({ timeScale: { visible: false } }); mc.applyOptions({ timeScale: { visible: false } });
+      mHist.setData(histData()); mLine.applyOptions({ color: css("--ma18") }); mSig.applyOptions({ color: css("--ma9") });
       candles.applyOptions({ upColor: css("--r2"), downColor: css("--rm3"), wickUpColor: css("--r2"), wickDownColor: css("--rm3") });
       mas.ma5.applyOptions({ color: css("--ma5") }); mas.ma9.applyOptions({ color: css("--ma9") }); mas.ma18.applyOptions({ color: css("--ma18") });
       vol.setData(volData()); apply();
     },
-    destroy: () => { pc.remove(); rc.remove(); },
+    destroy: () => all.forEach((c) => c.remove()),
   };
 }
 $$("#toggles input").forEach((cb) => cb.addEventListener("change", () => charts && charts.toggle(cb.dataset.layer, cb.checked)));
+let rangeDays = 183;
+$$("#rng button").forEach((b) => b.addEventListener("click", () => {
+  rangeDays = Number(b.dataset.days);
+  $$("#rng button").forEach((x) => x.setAttribute("aria-checked", String(x === b)));
+  if (charts) charts.fit();
+}));
+// Moving averages: fast / mid / slow, saved in settings; they drive the chart and the signals (Alarm, First, Confirm)
+$("#maForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const ma = $$("#maForm input").map((x) => Number(x.value));
+  const r = await api("save_settings", { ma });
+  if (!r || r.error) return toast(r ? r.error : "Couldn't save");
+  settings.ma = r.ma;
+  toast(`Moving averages ${r.ma.join(" / ")} saved`);
+  if (current && !current.source.startsWith("CSV")) analyse(current.symbol);
+});
+$("#maReset").addEventListener("click", () => { [8, 13, 200].forEach((v, i) => { $$("#maForm input")[i].value = v; }); $("#maForm").requestSubmit(); });
+
+/* ---------- market health ---------- */
+async function loadHealth() {
+  const h = await api("market_health"), box = $("#health");
+  if (!h || h.error) { box.classList.add("hidden"); return; }
+  const tone = { Healthy: "r2", Mixed: "r0", Weak: "rm3" }[h.label];
+  const side = (avg) => (h.egx30 > avg ? "above" : "below");
+  box.innerHTML = `<span class="badge ${tone}">Market: ${esc(h.label)}</span>
+    <span><b>EGX30 ${fmt(h.egx30, 0)}</b> ${signed(h.egx30_change)}</span>
+    <span>${side(h.egx30_sma50)} its 50-day average, ${side(h.egx30_sma200)} its 200-day</span>
+    <span>${h.above_sma50_pct}% of ${h.stocks} stocks above their 50-day average (${h.above_sma200_pct}% above 200-day)</span>
+    <span>${h.advancers} up · ${h.decliners} down today</span>`;
+  box.title = "Healthy: EGX30 above its 50- and 200-day averages and most stocks above their 50-day average. Weak: the opposite. TradingView, end of day.";
+  box.classList.remove("hidden");
+}
 
 /* ---------- trade plan ---------- */
 let planTimer;
@@ -367,6 +420,8 @@ $("#wTable").addEventListener("keydown", (e) => { const tr = e.target.closest("t
   api("fx").then((f) => { if (!f || f.error) return; $("#fxRate").textContent = fmt(f.usd_egp); $("#fxChg").innerHTML = `${signed(f.usd_egp_change)} · ${esc(f.fx_date)}`; $("#fxBox").classList.remove("hidden"); });
   $("#aboutInfo").textContent = `Version ${info.version}. Your settings are saved in ${info.data_dir}.`;
   $("#cash").value = settings.cash; $("#risk").value = settings.risk_pct;
+  (settings.ma || [8, 13, 200]).forEach((v, i) => { $$("#maForm input")[i].value = v; });
+  loadHealth();
   // Deep links (used for the guide's screenshots): #a=COMI, #p=watchlist&scan, #p=about, &theme=light, &role=shareholder
   const h = new URLSearchParams(location.hash.slice(1));
   if ((h.get("lang") || settings.lang) === "ar") { settings.lang = "ar"; startArabic(); }
