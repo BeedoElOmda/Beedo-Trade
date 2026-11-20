@@ -4,7 +4,10 @@ from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
 import certifi
-import webview
+try:
+    import webview
+except ImportError:  # Android / iOS: no desktop window; the phone app shows serve() in its own web view
+    webview = None
 
 # Packaged Python on macOS has no root certificates of its own, so every HTTPS request failed with
 # CERTIFICATE_VERIFY_FAILED. Use the certifi bundle shipped inside the app; read on each new connection.
