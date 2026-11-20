@@ -31,18 +31,48 @@ SETTINGS = DATA_DIR / "settings.json"
 # Ratios shown as columns in the Watchlist and Screener tables
 TABLE_FIGURES = ("market_cap", "pe", "pb", "roe", "net_margin", "debt_to_equity", "eps_growth", "dividend_yield", "perf_ytd")
 DEFAULTS = {"watchlist": ["COMI", "TMGH", "SWDY", "ETEL", "EAST", "EGAL"], "cash": 50000, "risk_pct": 2,
-            "theme": "dark", "lang": "en", "alerts": [], "portfolio": [], "signals": {}}
+            "theme": "dark", "lang": "en", "alerts": [], "portfolio": [], "signals": {}, "ma": [8, 13, 200]}
 REPO = "BeedoElOmda/Beedo-Trade"
+
+
+def _ema(xs, n):
+    out, e = [], None
+    for i, x in enumerate(xs):
+        e = (sum(xs[:n]) / n if i == n - 1 else None) if e is None else e + (x - e) * 2 / (n + 1)
+        out.append(e)
+    return out
+
+
+def _macd(closes, fast=12, slow=26, sig=9):
+    """MACD 12/26/9: line = EMA12 - EMA26, signal = EMA9 of the line, histogram = line - signal."""
+    line = [a - b if None not in (a, b) else None for a, b in zip(_ema(closes, fast), _ema(closes, slow))]
+    start = slow - 1
+    signal = [None] * start + _ema(line[start:], sig)
+    hist = [a - b if None not in (a, b) else None for a, b in zip(line, signal)]
+    return line, signal, hist
+
+
+def _valid_ma(ma):
+    """Three whole numbers, fast < mid < slow, 2..250 (Yahoo gives about 500 trading days)."""
+    try:
+        f, m, s = (int(x) for x in ma)
+    except (TypeError, ValueError):
+        return None
+    return [f, m, s] if 2 <= f < m < s <= 250 else None
 
 
 def _series(bars):
     closes = [b["c"] for b in bars]
     rsi = analyze.rsi_wilder(closes)
     line = lambda xs: [{"time": b["d"], "value": round(x, 2)} for b, x in zip(bars, xs) if x is not None]
+    f, m, s = analyze.MA
+    md, sg, hist = _macd(closes)
     return {
         "candles": [{"time": b["d"], "open": b["o"], "high": b["h"], "low": b["l"], "close": b["c"]} for b in bars],
         "volume": [{"time": b["d"], "value": b["v"], "up": b["c"] >= b["o"]} for b in bars],
-        "ma5": line(analyze.sma(closes, 5)), "ma9": line(analyze.sma(closes, 9)), "ma18": line(analyze.sma(closes, 18)),
+        # keys ma5/ma9/ma18 are the fast/mid/slow slots of the chart; "periods" says which MAs they are
+        "ma5": line(analyze.sma(closes, f)), "ma9": line(analyze.sma(closes, m)), "ma18": line(analyze.sma(closes, s)), "periods": [f, m, s],
+        "macd": line(md), "macd_signal": line(sg), "macd_hist": [{"time": b["d"], "value": round(x, 3)} for b, x in zip(bars, hist) if x is not None],
         "rsi": line(rsi),
         "swings": [{"time": bars[i]["d"], "type": t, "price": p} for i, t, p in analyze.swings(bars) if i >= len(bars) - 120],
     }
@@ -55,6 +85,7 @@ class Api:
         self._save_lock = threading.Lock()  # settings are read-changed-written from several threads
         self._daily = {}  # symbol -> daily bars of the last analysis (weekly view, back-test)
         self._window = None  # private: pywebview exposes public attributes to the page and would crawl the whole window object
+        analyze.MA = tuple(_valid_ma(self.get_settings()["ma"]) or DEFAULTS["ma"])
 
     # ---------- settings ----------
     def get_settings(self):
@@ -64,6 +95,14 @@ class Api:
             return dict(DEFAULTS)
 
     def save_settings(self, patch):
+        if patch and "ma" in patch:
+            ma = _valid_ma(patch["ma"])
+            if not ma:
+                return {"error": "Moving averages must be three whole numbers, fast < mid < slow, between 2 and 250."}
+            patch = {**patch, "ma": ma}
+            with self._lock:
+                analyze.MA = tuple(ma)
+                self._cache.clear()  # old analyses used the old averages
         with self._save_lock:
             s = {**self.get_settings(), **(patch or {})}
             try:
@@ -80,13 +119,13 @@ class Api:
         if sym in metals.METALS:
             b, name = metals.bars(sym)
             return b, name, metals.SOURCE, "metal"
-        b, name = analyze.fetch(sym)
+        b, name = analyze.fetch(sym, "2y")  # 2 years: room for a 200-day MA and the 2Y chart
         return b, name, "Yahoo Finance (daily)", "stock"
 
     def _build(self, bars, symbol, name, source, kind="stock"):
         rep = analyze.report(bars, symbol, name)
         out = {"symbol": symbol.upper(), "name": name, "source": source, "kind": kind, "last_bar": rep["last_bar"],
-               "levels": rep["levels"], "rsi": rep["rsi14"], "ma": {k: rep["moving_averages"][k] for k in ("MA5", "MA9", "MA18")},
+               "levels": rep["levels"], "rsi": rep["rsi14"], "ma": {f"MA{p}": rep["moving_averages"][f"MA{p}"] for p in rep["moving_averages"]["periods"]},
                "volume_ratio": rep["volume"]["ratio_vs_avg20"], **engine.evaluate(rep), "chart": _series(bars)}
         if kind == "metal":  # no company behind a metal: no ratios, rating or combined view
             out["fundamentals"], out["verdict"] = None, None
@@ -165,6 +204,12 @@ class Api:
         syms = [s.strip().upper() for s in symbols or [] if s.strip()][:40]
         with ThreadPoolExecutor(max_workers=6) as ex:
             return list(ex.map(self._technical_row, syms))
+
+    def market_health(self):
+        try:
+            return fundamentals.market_health()
+        except Exception as e:
+            return {"error": str(e)}
 
     def metals(self):
         try:

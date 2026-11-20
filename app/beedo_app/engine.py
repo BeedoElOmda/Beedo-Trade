@@ -4,6 +4,8 @@ Input is the dict from analyze.report(); output is the 11-step checklist, the ov
 the actions for a cash holder and a shareholder, and what would change the signal.
 Rungs are integers: -3 Confirm Sell .. 0 Hold .. +3 Confirm Buy.
 """
+import analyze  # shared skill script (on sys.path via main.py / tests): MA periods and min_bars()
+
 RUNGS = {-3: "Confirm Sell", -2: "First Sell", -1: "Alarm Sell", 0: "Hold",
          1: "Alarm Buy", 2: "First Buy", 3: "Confirm Buy"}
 NEAR = 1.5  # % distance that counts as "at" a level (course: price testing support/resistance)
@@ -75,8 +77,9 @@ def evaluate(r):
     confirmed_up = ts["higher_high_steps"] >= 3
     steps.append(_step(4, "Trend", txt, rung))
 
-    # 5. Moving averages 5/9/18: state of the ladder (5x9 Alarm, 5x18 First, 9x18 Confirm)
-    m5, m9, m18 = ma["MA5"], ma["MA9"], ma["MA18"]
+    # 5. Moving averages fast/mid/slow (course 5/9/18): fast x mid Alarm, fast x slow First, mid x slow Confirm
+    pf, pm, ps = ma["periods"]
+    m5, m9, m18 = ma[f"MA{pf}"], ma[f"MA{pm}"], ma[f"MA{ps}"]
     if m5 > m9 > m18: rung = 3
     elif m5 < m9 < m18: rung = -3
     elif m5 > m18 and m5 > m9: rung = 2
@@ -85,13 +88,13 @@ def evaluate(r):
     elif m5 < m9: rung = -1
     else: rung = 0
     ma_rung = rung
-    last_cross = max((e + [k] for k, evs in (("5x9", ma["alarm_crosses_5x9"]), ("5x18", ma["first_crosses_5x18"]),
-                                             ("9x18", ma["confirm_crosses_9x18"])) for e in map(list, evs)),
+    last_cross = max((e + [k] for k, evs in ((f"{pf}x{pm}", ma[f"alarm_crosses_{pf}x{pm}"]), (f"{pf}x{ps}", ma[f"first_crosses_{pf}x{ps}"]),
+                                             (f"{pm}x{ps}", ma[f"confirm_crosses_{pm}x{ps}"])) for e in map(list, evs)),
                      default=None, key=lambda e: e[0])
-    txt = f"MA5 {m5} | MA9 {m9} | MA18 {m18}: {ma['alignment']}"
+    txt = f"MA{pf} {m5} | MA{pm} {m9} | MA{ps} {m18}: {ma['alignment']}"
     if last_cross:
         txt += f"; last cross {last_cross[2]} {last_cross[1]} on {last_cross[0]}"
-    steps.append(_step(5, "Moving averages 5 / 9 / 18", txt, rung))
+    steps.append(_step(5, f"Moving averages {pf} / {pm} / {ps}", txt, rung))
 
     # 6. Volume confirms the move (price up + volume up = buyers, price down + volume up = sellers)
     ratio = vol["ratio_vs_avg20"] or 0
@@ -192,15 +195,16 @@ def _overall(steps, close, ds, dr, trend_rung, ma_rung, rsi_rung, rsi_now, confi
         for sd in (1, -1): capped[sd].append("the market is moving sideways: wait for a breakout")
         buy, sell = min(buy, 1), min(sell, 1)
     # Course: price above the MA = no sell recommendation; below it = no buy recommendation
-    above = close > ma["MA18"]
+    slow = ma["periods"][2]
+    above = close > ma[f"MA{slow}"]
     if above and sell > 1:
-        sell = 1; capped[-1].append("price is still above MA18")
+        sell = 1; capped[-1].append(f"price is still above MA{slow}")
     if not above and buy > 1:
-        buy = 1; capped[1].append("price is still below MA18")
+        buy = 1; capped[1].append(f"price is still below MA{slow}")
 
     if buy > sell: rung = buy
     elif sell > buy: rung = -sell
-    elif buy == 1: rung = 1 if above else -1  # equally weak evidence: price's side of MA18 decides
+    elif buy == 1: rung = 1 if above else -1  # equally weak evidence: price's side of the slow MA decides
     else:
         rung = 0
         if buy: reason.append("buy and sell evidence balance out")
@@ -225,14 +229,15 @@ def _overall(steps, close, ds, dr, trend_rung, ma_rung, rsi_rung, rsi_now, confi
 
 
 def _next_triggers(ma, lv, close):
-    m5, m9, m18 = ma["MA5"], ma["MA9"], ma["MA18"]
+    pf, pm, ps = ma["periods"]
+    m5, m9, m18 = ma[f"MA{pf}"], ma[f"MA{pm}"], ma[f"MA{ps}"]
     up, down = [], []
-    if not m5 > m9: up.append("MA5 crossing above MA9 = Alarm Buy")
-    if not m5 > m18: up.append("MA5 crossing above MA18 = First Buy")
-    if not m9 > m18: up.append("MA9 crossing above MA18 = Confirm Buy")
-    if not m5 < m9: down.append("MA5 crossing below MA9 = Alarm Sell")
-    if not m5 < m18: down.append("MA5 crossing below MA18 = First Sell")
-    if not m9 < m18: down.append("MA9 crossing below MA18 = Confirm Sell")
+    if not m5 > m9: up.append(f"MA{pf} crossing above MA{pm} = Alarm Buy")
+    if not m5 > m18: up.append(f"MA{pf} crossing above MA{ps} = First Buy")
+    if not m9 > m18: up.append(f"MA{pm} crossing above MA{ps} = Confirm Buy")
+    if not m5 < m9: down.append(f"MA{pf} crossing below MA{pm} = Alarm Sell")
+    if not m5 < m18: down.append(f"MA{pf} crossing below MA{ps} = First Sell")
+    if not m9 < m18: down.append(f"MA{pm} crossing below MA{ps} = Confirm Sell")
     s = (lv["recent_90d"]["supports_nearest_first"] or [None])[0]
     res = (lv["recent_90d"]["resistances_nearest_first"] or [None])[0]
     if res: up.append(f"a close above {res} on above-average volume = breakout")
@@ -279,15 +284,15 @@ def weekly(bars):
     return out
 
 
-def rungs(bars, report, start=60):
-    """(i, rung) for each day from bar `start` on: the signal using only bars[:i] (the indicators need 60 bars)."""
-    return [(i, evaluate(report(bars[:i]))["signal"]["rung"]) for i in range(start, len(bars) + 1)]
+def rungs(bars, report, start=None):
+    """(i, rung) for each day from bar `start` on: the signal using only bars[:i] (the indicators need analyze.min_bars())."""
+    return [(i, evaluate(report(bars[:i]))["signal"]["rung"]) for i in range(start or analyze.min_bars(), len(bars) + 1)]
 
 
 def backtest(bars, report):
     """Replays the checklist day by day, each day seeing only the bars up to that day.
     Buys at the close on a First or Confirm Buy, sells at the close on a First or Confirm Sell. No fees or taxes."""
-    START = 60  # the indicators need 60 bars
+    START = analyze.min_bars()  # 60 bars, or slow MA + 6
     if len(bars) <= START:
         return {"error": "Not enough price history to back-test."}
     trades, entry = [], None
