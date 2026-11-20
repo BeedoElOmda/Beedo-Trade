@@ -85,6 +85,7 @@ const welcome = [
   bullet([b('A trade plan'), run(' sized to your cash and risk')]),
   bullet([b('A watchlist'), run(' that scans all your stocks at once')]),
   bullet([b('A time machine'), run(' that shows how often the trade plan would reach its target before its stop')]),
+  bullet([b('Your own moving averages, MACD and market health'), run(': choose the three averages behind the chart and the signals, add MACD, zoom from 5 days to 2 years, and see at a glance whether the whole market is healthy')]),
   h2('What you need'),
   dataTable([3000, 6026], ['Requirement', 'Details'], [
     ['Windows 10 or 11 (64-bit)', 'Any recent Windows PC.'],
@@ -161,17 +162,27 @@ const reading = [
   gap(80),
   P([run('The bar underneath shows where today’s price sits between the 52-week low (left) and high (right). Hover over a figure for a short explanation. A dash (–) means the company hasn’t reported that figure.')]),
   h2('4.3  The chart'),
-  ...shot('g_chart.png', 'Candles with MA 5 / 9 / 18, support (S) and resistance (R) lines, swing arrows, volume and RSI.'),
-  bullet([b('Moving averages: '), run('MA5 (pink), MA9 (yellow), MA18 (blue). The course\u2019s crossovers are 5\u00D79 = Alarm, 5\u00D718 = First, 9\u00D718 = Confirm.')]),
+  ...shot('g_chart.png', 'Candles with MA 8 / 13 / 200, support (S) and resistance (R) lines, swing arrows, volume, RSI and MACD.'),
+  bullet([b('Moving averages: '), run('fast (pink), mid (yellow) and slow (blue), by default MA8, MA13 and MA200. Their crossovers give the signals: fast\u00D7mid = Alarm, fast\u00D7slow = First, mid\u00D7slow = Confirm. See 4.5 to change them.')]),
+  bullet([b('Period buttons: '), ui('5D'), run(', '), ui('1M'), run(', '), ui('3M'), run(', '), ui('6M'), run(' (the default), '), ui('1Y'), run(' and '), ui('2Y'), run(' zoom the chart to that much history. Prices are daily, so 5D shows five candles.')]),
   bullet([b('S1 / S2 and R1 / R2: '), run('the nearest recent support (green) and resistance (red) levels.')]),
   bullet([b('Arrows: '), run('swing highs (red, pointing down) and swing lows (green, pointing up). Use them to judge patterns such as head and shoulders, double tops or triangles (checklist steps 10 and 11).')]),
   bullet([b('RSI panel: '), run('with the 30, 50 and 70 lines.')]),
+  bullet([b('MACD panel: '), run('MACD 12 / 26 / 9. The blue line is the 12-day average minus the 26-day average, the yellow line is its 9-day signal, and the bars show the gap between them (green above zero, red below). The blue line crossing above the yellow one is a sign of rising momentum; crossing below, of falling momentum. MACD is shown for reading only: it doesn\u2019t change the signal.')]),
   bullet([b('Controls: '), run('scroll the mouse wheel over the chart to zoom, drag to move back in time, and use the tick boxes above the chart to show or hide each layer.')]),
   h2('4.4  Checklist, triggers and trade plan'),
   ...shot('g_checklist.png', 'The 11-step checklist (left), what would change the signal, and the trade plan (right).'),
   P([b('11-step checklist: '), run('each course step with its reading and its rung on the ladder. Steps 10 and 11 (chart patterns) are judged by you on the chart.')]),
   P([b('What would change the signal: '), run('the next events up and down, such as "MA9 crossing above MA18 = Confirm Buy" or "a close below 126.81 = support broken".')]),
   P([b('Trade plan: '), run('enter your cash and the most you are willing to lose per trade (default 2%). It shows the entry (last close), a stop just below support, a 2R target, the number of shares, the cost and the loss if the stop is hit. Yellow notes warn when resistance is in the way. On weaker signals the plan is labelled as one to have ready, not a trade for today.')]),
+  h2('4.5  Choosing your moving averages'),
+  P([run('Under the MACD panel are three boxes: the fast, mid and slow moving averages. Type new numbers (whole numbers from 2 to 250, fast smaller than mid, mid smaller than slow) and click '), ui('Apply'), run('. The stock is analysed again straight away, and your choice is kept for every stock until you change it. '), ui('Default 8 / 13 / 200'), run(' puts the defaults back. To follow the course exactly, enter 5, 9 and 18.')]),
+  P('The three averages drive the chart lines, checklist step 5, the signal, the back-test and the time machine. A slow average of 200 needs at least 206 trading days of prices, so very new stocks show a message instead of a signal. The Claude skill always uses the course\u2019s 5 / 9 / 18.'),
+  callout('warn', 'Longer averages, fewer signals', 'With a 200-day slow average, First and Confirm signals come months apart, and the back-test and time machine cover fewer days. Short averages react faster but give more false alarms.'),
+  h2('4.6  Market health'),
+  ...shot('g_health.png', 'Market health at the top of the Analyze page.'),
+  P([run('The line above the analysis shows the whole Egyptian market at a glance, from TradingView\u2019s end-of-day data. It is '), b('Healthy'), run(' when the EGX30 index is above its 50- and 200-day averages and at least 60% of EGX stocks are above their own 50-day average, '), b('Weak'), run(' when the opposite holds, and '), b('Mixed'), run(' in between. It also shows the EGX30 and its change today, the share of stocks above their 50- and 200-day averages, and how many stocks rose and fell today.')]),
+  P('A buy signal in a weak market carries more risk: most stocks are falling with the index. The market line uses fixed 50- and 200-day averages, whatever averages you choose for the chart.'),
 ];
 
 const watch = [
@@ -247,7 +258,7 @@ const metalsSec = [
 
 const csv = [
   h1('8. Portfolio, alerts and more tools'),
-  P('Versions 1.5 and 1.6 add tools for following what you own and for checking the method itself.'),
+  P('Versions 1.5 to 1.7 add tools for following what you own and for checking the method itself.'),
   h2('8.1  Portfolio'),
   ...shot('g_portfolio.png', 'The Portfolio page: cost, value and profit or loss of each holding, with the signal and the shareholder action.', 560),
   numR('num8', [run('Open '), ui('Portfolio'), run(' in the left menu.')]),
