@@ -18,7 +18,7 @@ else:
     sys.path.insert(0, str(BASE.parent))
 
 import analyze  # noqa: E402  (shared with the Claude skill, so numbers always match)
-import fundamentals, metals  # noqa: E402  (also shared with the skill)
+import fundamentals, metals, timemachine  # noqa: E402  (also shared with the skill)
 from beedo_app import engine  # noqa: E402
 
 from beedo_app import __version__ as VERSION  # noqa: E402  (single source: beedo_app/__init__.py)
@@ -218,6 +218,21 @@ class Api:
     def backtest(self, symbol):
         try:
             return engine.backtest(self._history(symbol, "2y"), lambda b: analyze.report(b, symbol, ""))
+        except Exception as e:
+            return {"error": str(e)}
+
+    def timemachine(self, symbol):
+        """Odds that the trade plan reaches its target or its stop first: 10,000 replays, plus the same plan on past days with the same signal."""
+        sym = (symbol or "").upper()
+        try:
+            p = self.plan(sym, None, 2)
+            if p.get("error"):
+                return p
+            bars = self._history(sym, "2y")
+            days = engine.rungs(bars, lambda b: analyze.report(b, sym, ""))
+            today = days[-1][1]
+            starts = [i - 1 for i, r in days[:-1] if r == today]  # bars[i - 1] is the day that signal appeared
+            return {**timemachine.run(bars, p["entry"], p["stop"], p["target"], starts=starts), "signal": engine.RUNGS[today]}
         except Exception as e:
             return {"error": str(e)}
 

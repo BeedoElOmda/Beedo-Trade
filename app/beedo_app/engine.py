@@ -279,6 +279,11 @@ def weekly(bars):
     return out
 
 
+def rungs(bars, report, start=60):
+    """(i, rung) for each day from bar `start` on: the signal using only bars[:i] (the indicators need 60 bars)."""
+    return [(i, evaluate(report(bars[:i]))["signal"]["rung"]) for i in range(start, len(bars) + 1)]
+
+
 def backtest(bars, report):
     """Replays the checklist day by day, each day seeing only the bars up to that day.
     Buys at the close on a First or Confirm Buy, sells at the close on a First or Confirm Sell. No fees or taxes."""
@@ -291,8 +296,7 @@ def backtest(bars, report):
         trades.append({"buy_date": entry["d"], "buy": entry["c"], "sell_date": b["d"], "sell": b["c"],
                        "pct": round((b["c"] / entry["c"] - 1) * 100, 2), "open": still_open})
 
-    for i in range(START, len(bars) + 1):
-        rung = evaluate(report(bars[:i]))["signal"]["rung"]
+    for i, rung in rungs(bars, report):
         if entry is None and rung >= 2:
             entry = bars[i - 1]
         elif entry is not None and rung <= -2:
