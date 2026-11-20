@@ -1,0 +1,56 @@
+name: Build Android app
+
+# Builds the Android test app (an APK anyone can install, signed with a test key) with BeeWare Briefcase.
+# Runs when a release is published (the APK is attached to it), or by hand from the Actions tab.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Release tag to attach the APK to (e.g. v1.7.2). Leave empty to only build."
+        required: false
+
+permissions:
+  contents: write   # needed to attach files to a release
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+      - name: Copy the desktop engine and screens into the phone project
+        run: |
+          cp LICENSE mobile/
+          cp -r app/beedo_app mobile/src/beedo_app
+          mkdir -p mobile/src/beedotrade/engine
+          cp skills/beedo-trade/scripts/{analyze,fundamentals,metals,timemachine}.py mobile/src/beedotrade/engine/
+          VERSION=$(grep -m1 '^version' app/pyproject.toml | cut -d'"' -f2)
+          sed -i "s/^version = \"0.0.0\"/version = \"$VERSION\"/" mobile/pyproject.toml
+          echo "VERSION=$VERSION" >> "$GITHUB_ENV"
+      - name: Build the APK
+        working-directory: mobile
+        run: |
+          pip install briefcase
+          briefcase create android --no-input
+          briefcase build android --no-input
+          briefcase package android -p debug-apk --no-input
+          mkdir -p ../out && cp dist/*.apk "../out/Beedo-Trade-${VERSION}-android.apk"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Beedo-Trade-android
+          path: out/*.apk
+          if-no-files-found: error
+      - name: Attach to the release
+        if: github.event_name == 'release' || inputs.tag != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: gh release upload "$TAG" out/*.apk || echo "The APK is already attached to $TAG; kept it."
