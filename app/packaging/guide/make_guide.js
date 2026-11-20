@@ -111,7 +111,11 @@ const install = [
   h2('2.1  Installing on a Mac'),
   numR('num7', [run('Download the '), b('.dmg'), run(' file for your Mac from the Releases page: '), b('arm64'), run(' for Apple Silicon Macs (M1 and later), '), b('x86_64'), run(' for Intel Macs. To check, open the Apple menu and choose About This Mac.')]),
   numR('num7', [run('Open the .dmg and drag '), b('Beedo-Trade'), run(' onto the '), b('Applications'), run(' folder.')]),
-  numR('num7', [run('The first time, macOS blocks the app because it isn’t signed by an Apple-registered developer. Open it once, close the warning, then go to '), ui('System Settings → Privacy & Security'), run(', scroll down and click '), ui('Open Anyway'), run('. On older macOS versions, right-click the app and choose '), ui('Open'), run(' instead.')]),
+  numR('num7', [run('Open Beedo-Trade from Applications. The first time, macOS shows '), b('"Beedo-Trade" Not Opened: Apple could not verify "Beedo-Trade" is free of malware'), run('. Click '), ui('Done'), run('.')]),
+  numR('num7', [run('Open '), ui('System Settings → Privacy & Security'), run(', scroll down to '), b('Security'), run(', and next to '), b('"Beedo-Trade" was blocked to protect your Mac'), run(' click '), ui('Open Anyway'), run('. Enter your Mac password or use Touch ID.')]),
+  numR('num7', [run('Open Beedo-Trade again and click '), ui('Open Anyway'), run(' once more. From now on it opens normally. On older macOS versions, right-click the app and choose '), ui('Open'), run(' instead.')]),
+  callout('note', 'Why the Mac warns about Beedo-Trade', [run('macOS shows this warning for every app that Apple has not checked (notarized), which needs a paid Apple developer account. It does not mean malware was found. If '), ui('Open Anyway'), run(' does not appear, open '), b('Terminal'), run(' and run: '), b('xattr -dr com.apple.quarantine /Applications/Beedo-Trade.app')]),
+  gap(),
   numR('num7', [run('To uninstall, drag Beedo-Trade from Applications to the Trash. Your settings are in '), b('~/Library/Application Support/BeedoTrade'), run('.')]),
 ];
 
@@ -315,6 +319,7 @@ const trouble = [
   dataTable([3300, 5726], ['Problem', 'What to do'], [
     ['Setup: "Access is denied" (Error 5)', 'Choose "Install for me only" and keep the suggested folder, or choose "Install for all users" to install into Program Files (needs administrator approval).'],
     ['"Windows protected your PC"', 'Click More info, then Run anyway. The app isn\u2019t code-signed.'],
+    ['Mac: "Beedo-Trade" Not Opened (Apple could not verify…)', 'Click Done, then System Settings → Privacy & Security → Open Anyway, and open the app again (section 2.1).'],
     ['The app window stays blank', 'Install Microsoft Edge WebView2 (free from Microsoft), then start Beedo-Trade again.'],
     ['"Yahoo Finance has no price history"', 'Yahoo doesn\u2019t carry that stock. Use Import CSV (section 9).'],
     ['"Could not reach Yahoo Finance"', 'Check your internet connection, firewall or VPN, then try again.'],
