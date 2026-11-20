@@ -78,6 +78,7 @@ button.small { padding: 6px 10px; font-size: 12px; }
 .notice { border-radius: 12px; padding: 14px 16px; margin-bottom: 16px; border: 1px solid; }
 .notice.error { background: color-mix(in srgb, var(--rm3) 10%, transparent); border-color: color-mix(in srgb, var(--rm3) 45%, transparent); }
 .notice > b { display: block; margin-bottom: 4px; }
+.notice.alertish { background: color-mix(in srgb, var(--rm1) 12%, transparent); border-color: color-mix(in srgb, var(--rm1) 45%, transparent); }
 
 .hero-top { display: flex; justify-content: space-between; gap: 16px; }
 .sym { font-size: 28px; font-weight: 800; letter-spacing: .02em; line-height: 1.1; }

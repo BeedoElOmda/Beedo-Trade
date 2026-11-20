@@ -108,7 +108,7 @@ function render(d) {
   $("#rSym").textContent = d.symbol;
   $("#rName").textContent = d.name;
   $("#rClose").textContent = `${fmt(d.last_bar.c)} EGP`;
-  $("#rDate").textContent = `Close of ${d.last_bar.d} · ${d.source}`;
+  $("#rDate").textContent = d.snapshot ? d.source : `Close of ${d.last_bar.d} · ${d.source}`;
   $("#rBadge").outerHTML = `<div class="badge big ${rcls(s.rung)}" id="rBadge">${esc(s.label)}</div>`;
   $("#rWhy").textContent = s.why.charAt(0).toUpperCase() + s.why.slice(1) + ".";
   ladder($("#ladder"), s.rung);
@@ -135,7 +135,12 @@ function render(d) {
   if (!metal) renderFundamentals(d);
   $$("#tf button").forEach((x) => x.setAttribute("aria-checked", String(x.dataset.tf === "d")));
   $("#btOut").innerHTML = ""; $("#tmOut").innerHTML = "";
-  drawCharts(d);
+  // TradingView snapshot (no daily history): no chart, back-test or time machine
+  const snap = !!d.snapshot;
+  $("#snapNote").classList.toggle("hidden", !snap);
+  if (snap) $("#snapNote").innerHTML = `<b>Snapshot only: the signal stops at Alarm</b>${esc((d.reason || "").split(". ")[0].replace(/\.?$/, "."))} Steps that need daily history are marked "Not checked". Import a CSV of daily prices for the full checklist.`;
+  [$("#priceChart").closest(".card"), $("#btBtn").closest(".card"), $("#tmBtn").closest(".card")].forEach((c) => c.classList.toggle("hidden", snap));
+  if (snap) { if (charts) { charts.destroy(); charts = null; } } else drawCharts(d);
   updatePlan();
 }
 

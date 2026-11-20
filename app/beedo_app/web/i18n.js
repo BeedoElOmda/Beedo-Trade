@@ -165,6 +165,10 @@ const AR_RULES = [
   // 1.7: moving averages you choose, market health
   [/^Moving averages (\d+) \/ (\d+) \/ (\d+)$/, (m) => `المتوسطات المتحركة ${m[1]} / ${m[2]} / ${m[3]}`],
   [/^price is still (above|below) MA(\d+)$/, (m) => `السعر ما زال ${m[1] === "above" ? "أعلى" : "أدنى"} من متوسط ${m[2]}`],
+  [/^Snapshot only: the signal stops at Alarm$/, () => "لقطة فقط: الإشارة لا تتجاوز مستوى التنبيه"],
+  [/^Not checked: needs daily price history$/, () => "لم تُفحص: تحتاج أسعارًا يومية تاريخية"],
+  [/^Not checked: no support or resistance levels available$/, () => "لم تُفحص: لا توجد مستويات دعم أو مقاومة"],
+  [/^TradingView snapshot \(latest session\)$/, () => "لقطة من TradingView (آخر جلسة)"],
   [/^Steps not counted: (.+)$/, (m) => `خطوات غير محسوبة: ${m[1]}`],
   [/^Signal unchanged: (.+)$/, (m) => `الإشارة لم تتغير: ${AR[m[1]] || m[1]}`],
   [/^Signal: (.+) → (.+)$/, (m) => `الإشارة: ${AR[m[1]] || m[1]} ← ${AR[m[2]] || m[2]}`],
