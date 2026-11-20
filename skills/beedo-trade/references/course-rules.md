@@ -77,6 +77,7 @@ Downtrend confirmation signs: price breaks support, volume above average, MAs cr
 | MA5 crosses MA18 | **First Buy** | **First Sell** |
 | MA9 crosses MA18 | **Confirm Buy**: act | **Confirm Sell**: act |
 
+- Beedo-Trade lets the user choose the three averages (default 8 / 13 / 200). The roles stay the same: fast = MA5, mid = MA9, slow = MA18 in the table above and the rules below.
 - Full uptrend order: MA5 > MA9 > MA18. Downtrend order: MA5 < MA9 < MA18. Mixed order during corrections/consolidations is normal ("intermingling"); the main trend can still be intact.
 - When the slow and fast MAs cross *and* price breaks resistance → Confirm Buy (with no reversal candles). Cross + support break → Confirm Sell.
 
