@@ -8,10 +8,15 @@ from beedo_app.main import Api
 
 
 def test_api_exposes_only_methods():
-    api = Api()
-    api._window = object()  # what main() assigns at run time
-    public = [n for n in dir(api) if not n.startswith("_")]
-    assert public and all(callable(getattr(api, n)) for n in public), [n for n in public if not callable(getattr(api, n))]
+    import analyze
+    old = analyze.MA
+    try:
+        api = Api()  # sets analyze.MA from the user's settings; the other tests use the course's 5/9/18
+        api._window = object()  # what main() assigns at run time
+        public = [n for n in dir(api) if not n.startswith("_")]
+        assert public and all(callable(getattr(api, n)) for n in public), [n for n in public if not callable(getattr(api, n))]
+    finally:
+        analyze.MA = old
 
 
 def test_https_uses_bundled_certificates():
