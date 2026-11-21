@@ -5,7 +5,7 @@ description: Beedo-Trade analyses Egyptian Exchange (EGX) stocks with the user's
 
 # Beedo-Trade
 
-Version 2.1.0, the same method as the Beedo-Trade app 2.1.0 (score signal, 12 steps, weekly check).
+Version 2.2.0, the same method as the Beedo-Trade app 2.2.0 (score signal, 12 steps, weekly check).
 
 Analyse an EGX stock the way the user's own course teaches, then turn the result into a clear signal and, if wanted, a trade plan. The user built this method in their MBA technical-analysis course; the value of this skill is applying *their* rules consistently, not general TA opinions.
 
