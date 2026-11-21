@@ -127,3 +127,21 @@ def test_signal_is_the_score_of_ticked_steps():
         ["Alarm Buy", "Alarm Buy", "Hold", "Hold", "Hold", "Alarm Sell", "Alarm Sell"]
     assert engine._score([{"rung": 3}, {"rung": 3}, {"rung": 3}])["signal"]["label"] == "Confirm Buy"
     assert engine._score([{"rung": 3}, {"rung": 2}])["signal"]["label"] == "First Buy"
+
+
+def test_score_alerts():
+    rows = {"AAA": {"symbol": "AAA", "close": 10, "rung": 2, "score": 6}, "BBB": {"symbol": "BBB", "close": 10, "rung": -1, "score": -3}}
+    hits = engine.alerts(rows, [{"symbol": "AAA", "score": 5}, {"symbol": "BBB", "score": -5}, {"symbol": "BBB", "score": -3}], {})
+    assert [h["symbol"] for h in hits] == ["AAA", "BBB"] and "+6" in hits[0]["text"] and "-3" in hits[1]["text"]
+
+
+def test_weekly_signal():
+    from test_engine import wave
+    from beedo_app.main import Api
+    daily = bars_from(wave(100, 0.4) * 6, vol_last=3000)  # about 2 years of trading days
+    import datetime as dt
+    for k, b in enumerate(daily):  # real calendar days, so the bars group into weeks
+        b["d"] = str(dt.date(2024, 1, 1) + dt.timedelta(days=k))
+    w = Api._weekly_signal(daily, "T")
+    assert w and set(w) == {"label", "rung", "score"} and w["label"] == engine.RUNGS[w["rung"]]
+    assert Api._weekly_signal(daily[:100], "T") is None  # 20 weeks: too few for the checklist
