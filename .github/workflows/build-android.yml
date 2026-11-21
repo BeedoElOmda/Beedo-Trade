@@ -44,6 +44,12 @@ jobs:
           C=build/beedotrade/android/gradle/app/src/main/res/values/colors.xml
           sed -i -E 's|(name="colorPrimary">)[^<]*|\1#1D45A7|; s|(name="colorPrimaryDark">)[^<]*|\1#3F70E6|; s|(name="colorAccent">)[^<]*|\1#109EA5|' "$C"
           cat "$C"
+          # Daily alert check and notifications: the Java job, and the permission to show notifications (Android 13+)
+          J=build/beedotrade/android/gradle/app/src/main/java/io/github/beedoelomda/beedotrade
+          mkdir -p "$J" && cp android/AlertWorker.java "$J/"
+          M=build/beedotrade/android/gradle/app/src/main/AndroidManifest.xml
+          sed -i 's|<application|<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />\n    <application|' "$M"
+          grep -n "POST_NOTIFICATIONS" "$M"
           briefcase build android --no-input
           briefcase package android -p debug-apk --no-input
           mkdir -p ../out && cp dist/*.apk "../out/Beedo-Trade-${VERSION}-android.apk"
@@ -76,6 +82,9 @@ jobs:
           emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
           script: |
             adb install -r out/*.apk
+            adb shell pm grant io.github.beedoelomda.beedotrade android.permission.POST_NOTIFICATIONS
+            adb shell run-as io.github.beedoelomda.beedotrade mkdir -p files
+            adb shell run-as io.github.beedoelomda.beedotrade touch files/beedo_test_alerts
             adb logcat -c
             adb shell monkey -p io.github.beedoelomda.beedotrade -c android.intent.category.LAUNCHER 1
             sleep 45
@@ -87,8 +96,14 @@ jobs:
             echo "===== on screen =====" && (grep -o 'text="[^"]\+"' ui.xml | head -60 || true)
             grep -A12 "FATAL EXCEPTION" logcat.txt | sed 's/^.*AndroidRuntime: //' | head -12 | while IFS= read -r l; do echo "::error title=crash::$l"; done
             grep "python.stderr" logcat.txt | sed 's/^.*python.stderr: //' | tail -10 | while IFS= read -r l; do echo "::warning title=python::$l"; done
+            adb shell dumpsys notification --noredact > notif.txt || true
+            echo "===== notifications =====" && (grep -E "pkg=io.github.beedoelomda|android.title=|android.text=" notif.txt | head -20 || true)
+            echo "===== alert job =====" && (grep -E "Beedo-Trade alert check|BeedoAlerts" logcat.txt | head -10 || true)
+            grep -E "Beedo-Trade alert check|BeedoAlerts" logcat.txt | head -5 | while IFS= read -r l; do echo "::notice title=alert job::$l"; done
             ! grep -q "FATAL EXCEPTION" logcat.txt
             grep -q "Beedo-Trade developer mode" logcat.txt
+            grep -q "Beedo-Trade alert check" logcat.txt
+            grep -q "pkg=io.github.beedoelomda.beedotrade" notif.txt
       - name: Attach to the release
         if: github.event_name == 'release' || inputs.tag != ''
         env:
