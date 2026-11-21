@@ -93,6 +93,7 @@ jobs:
         if: github.event_name == 'release' || inputs.tag != ''
         env:
           GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}  # this job has no checkout, so gh needs the repository named
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
         # --clobber: a rebuilt (fixed) test APK replaces the one already attached under the same name
         run: gh release upload "$TAG" out/*.apk --clobber
