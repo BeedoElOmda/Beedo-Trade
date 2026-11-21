@@ -34,12 +34,12 @@ class BeedoTrade(toga.App):
     def startup(self):
         os.environ["APPDATA"] = str(self.paths.data)  # settings.json lives in the app's private storage
         threading.Thread(target=_engine, daemon=True).start()
-        self.web = toga.WebView(style=toga.style.Pack(flex=1))
+        self.web = toga.WebView()
         self.web.set_content("http://127.0.0.1/", STARTING % "Starting Beedo-Trade…")
         self.main_window = toga.MainWindow(title=self.formal_name)
         self.main_window.content = self.web
         self.main_window.show()
-        asyncio.ensure_future(self._open())  # never block the screen while the engine starts
+        self.loop.create_task(self._open())  # never block the screen while the engine starts
 
     async def _open(self):
         for _ in range(150):  # up to 30 s
