@@ -9,7 +9,7 @@ HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE / "engine"))  # analyze.py, fundamentals.py, metals.py, timemachine.py (copied at build time)
 PORT = 8765
 STARTING = """<html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;height:100vh;display:grid;place-items:center;background:#0E3A9E;color:#DCEBFF;font:16px sans-serif">
+<body style="margin:0;height:100vh;display:grid;place-items:center;background:linear-gradient(160deg,#3F70E6,#1D45A7 55%,#109EA5);color:#fff;font:16px sans-serif">
 <div>%s</div></body></html>"""
 
 
@@ -39,6 +39,10 @@ class BeedoTrade(toga.App):
         self.main_window = toga.MainWindow(title=self.formal_name)
         self.main_window.content = self.web
         self.main_window.show()
+        try:  # the page draws its own top bar in the icon's gradient
+            self._impl.native.getSupportActionBar().hide()
+        except Exception:
+            traceback.print_exc()
         self.loop.create_task(self._open())  # never block the screen while the engine starts
 
     async def _open(self):
