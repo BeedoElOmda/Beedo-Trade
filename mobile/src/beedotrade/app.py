@@ -10,7 +10,7 @@ sys.path.insert(0, str(HERE / "engine"))  # analyze.py, fundamentals.py, metals.
 PORT = 8765
 STARTING = """<html><head><meta name="viewport" content="width=device-width,initial-scale=1"></head>
 <body style="margin:0;height:100vh;display:grid;place-items:center;background:linear-gradient(160deg,#3F70E6,#1D45A7 55%,#109EA5);color:#fff;font:16px sans-serif">
-<div>%s</div></body></html>"""
+<div>{msg}</div></body></html>"""
 
 
 def _engine():
@@ -35,7 +35,7 @@ class BeedoTrade(toga.App):
         os.environ["APPDATA"] = str(self.paths.data)  # settings.json lives in the app's private storage
         threading.Thread(target=_engine, daemon=True).start()
         self.web = toga.WebView()
-        self.web.set_content("http://127.0.0.1/", STARTING % "Starting Beedo-Trade…")
+        self.web.set_content("http://127.0.0.1/", STARTING.replace("{msg}", "Starting Beedo-Trade…"))
         self.main_window = toga.MainWindow(title=self.formal_name)
         self.main_window.content = self.web
         self.main_window.show()
@@ -51,7 +51,7 @@ class BeedoTrade(toga.App):
                 self.web.url = f"http://127.0.0.1:{PORT}/index.html"
                 return
             await asyncio.sleep(0.2)
-        self.web.set_content("http://127.0.0.1/", STARTING % "Beedo-Trade could not start its engine. Close the app and open it again.")
+        self.web.set_content("http://127.0.0.1/", STARTING.replace("{msg}", "Beedo-Trade could not start its engine. Close the app and open it again."))
 
 
 def main():
