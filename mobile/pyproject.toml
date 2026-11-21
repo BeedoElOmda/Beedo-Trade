@@ -14,8 +14,8 @@ formal_name = "Beedo-Trade"
 description = "Egyptian Exchange (EGX) technical analysis with the Beedo course method"
 sources = ["src/beedotrade", "src/beedo_app"]
 requires = ["certifi"]
-icon = "icons/beedotrade"  # PNGs made from icon.svg by make_icons.py
-splash_background_color = "#1D4ED8"  # splash screen and adaptive-icon background
+icon = "icons/beedotrade"  # PNGs made from app/packaging/icon.png by make_icons.py
+splash_background_color = "#1D45A7"  # splash screen and adaptive-icon background
 
 [tool.briefcase.app.beedotrade.android]
 requires = ["toga-android~=0.5.0"]
