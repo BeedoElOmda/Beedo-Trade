@@ -35,7 +35,7 @@ SETTINGS = DATA_DIR / "settings.json"
 # Ratios shown as columns in the Watchlist and Screener tables
 TABLE_FIGURES = ("market_cap", "pe", "pb", "roe", "net_margin", "debt_to_equity", "eps_growth", "dividend_yield", "perf_ytd")
 DEFAULTS = {"watchlist": ["COMI", "TMGH", "SWDY", "ETEL", "EAST", "EGAL"], "cash": 50000, "risk_pct": 2,
-            "theme": "dark", "lang": "en", "alerts": [], "portfolio": [], "signals": {}, "ma": [5, 9, 18], "steps_off": []}
+            "theme": "system", "lang": "en", "alerts": [], "portfolio": [], "signals": {}, "ma": [5, 9, 18], "steps_off": []}
 REPO = "BeedoElOmda/Beedo-Trade"
 
 
