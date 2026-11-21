@@ -35,6 +35,10 @@ class BeedoTrade(toga.App):
         os.environ["APPDATA"] = str(self.paths.data)  # settings.json lives in the app's private storage
         threading.Thread(target=_engine, daemon=True).start()
         self.web = toga.WebView()
+        try:  # the page keeps the last results in localStorage to show them offline
+            self.web._impl.native.getSettings().setDomStorageEnabled(True)
+        except Exception:
+            traceback.print_exc()
         self.web.set_content("http://127.0.0.1/", STARTING.replace("{msg}", "Starting Beedo-Trade…"))
         self.main_window = toga.MainWindow(title=self.formal_name)
         self.main_window.content = self.web
