@@ -181,9 +181,25 @@ def evaluate(r):
     unread = set(r.get("not_checked") or [])  # snapshot: steps without data count as Hold
     out = {"steps": steps, **_overall([{**s, "rung": 0} if s.get("off") or s["n"] in unread else s for s in steps], close, ds, dr, trend_rung,
                                       ma_rung, rsi_rung, now, confirmed_down, confirmed_up, lv, ma, off)}
+    out.update(_score([s for s in steps if s["n"] in SCORED and not s.get("off") and s["n"] not in unread]))
     if r.get("snapshot"):
         _snapshot_limits(out, r)
     return out
+
+
+SCORE_CUTS = ((9, 3), (5, 2), (2, 1))  # total of the ticked steps' rungs needed for Confirm, First, Alarm (and minus for sells)
+
+
+def _score(counted):
+    """The signal is the sum of the ticked steps' rungs (each -3 Confirm Sell .. +3 Confirm Buy), so every tick
+    box moves it; 10 scored steps make -30 .. +30."""
+    total = sum(s["rung"] for s in counted)
+    rung = next((r * (1 if total > 0 else -1) for cut, r in SCORE_CUTS if abs(total) >= cut), 0)
+    why = (f"score {total:+d} from {len(counted)} ticked steps "
+           f"(Confirm at 9 or more, First at 5, Alarm at 2; the same below zero for sells)")
+    cash, share = ACTIONS[rung]
+    return {"score": total, "signal": {"rung": rung, "label": RUNGS[rung], "why": why},
+            "actions": {"cash": cash, "shareholder": share}}
 
 
 def _snapshot_limits(out, r):
