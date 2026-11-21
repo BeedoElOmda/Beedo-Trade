@@ -214,27 +214,38 @@ button.small { padding: 6px 10px; font-size: 12px; }
   .checklist li { grid-template-columns: 48px 1fr auto; } .checklist .reading { grid-column: 2 / 4; }
 }
 
-/* Phones (the Android app, a narrow window): menu on top, one column */
+/* Phones (the Android app, a narrow window): slim header, tab bar at the bottom, one column of cards */
 @media (max-width: 760px) {
   .shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); height: 100dvh; }
-  .sidebar { padding: 8px 10px 6px; gap: 6px; border-right: 0; border-bottom: 1px solid var(--line); }
+  .sidebar { flex-direction: row; align-items: center; justify-content: flex-end; padding: 8px 12px; gap: 8px;
+    border-right: 0; border-bottom: 1px solid var(--line); }
   [dir="rtl"] .sidebar { border-left: 0; }
-  .brand { display: none; }
-  nav { flex-direction: row; overflow-x: auto; gap: 2px; scrollbar-width: none; }
-  .nav-item { flex-direction: column; gap: 2px; padding: 6px 10px; font-size: 11px; white-space: nowrap; }
-  .sidebar-foot { flex-direction: row; flex-wrap: wrap; align-items: center; margin-top: 0; padding: 0; gap: 6px; }
-  .sidebar-foot .fx { padding: 4px 8px; } .fx .k { width: auto; }
-  main { padding: 12px 12px 32px; }
-  .grid { grid-template-columns: minmax(0, 1fr); } .span2, .span3 { grid-column: auto; }
+  .brand { margin-inline-end: auto; padding: 0; } .brand .logo { width: 30px; height: 30px; border-radius: 9px; }
+  .brand .logo svg { width: 18px; height: 18px; } .brand-sub, .ver { display: none; } .brand-name { font-size: 15px; }
+  .sidebar-foot { flex-direction: row; align-items: center; margin: 0; padding: 0; gap: 6px; }
+  #fxBox, #guideBtn, #version { display: none !important; }  /* the dollar rate is on Gold & Silver; no PDF viewer here */
+  .sidebar-foot button { border-radius: 999px; padding: 6px 12px; }
+  nav { position: fixed; inset: auto 0 0 0; z-index: 20; flex-direction: row; gap: 0; justify-content: space-around;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: var(--panel); border-top: 1px solid var(--line);
+    box-shadow: 0 -6px 20px rgba(0, 0, 0, .18); }
+  .nav-item { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 3px; padding: 6px 2px; border-radius: 12px;
+    font-size: 10.5px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .nav-item svg { width: 22px; height: 22px; }
+  .nav-item.active { background: none; color: var(--accent-2); } .nav-item.active svg { color: var(--accent-2); }
+  main { padding: 14px 14px 96px; }
+  .card { border-radius: 20px; padding: 16px; }
+  .grid { grid-template-columns: minmax(0, 1fr); gap: 12px; } .span2, .span3 { grid-column: auto; }
   .stats { grid-template-columns: 1fr 1fr; } .hero-top { flex-wrap: wrap; gap: 8px; }
-  .search { min-width: 0; max-width: none; flex: 1 1 100%; }
+  .search { min-width: 0; max-width: none; flex: 1 1 100%; border-radius: 999px; }
+  .search button.primary { border-radius: 999px; }
   #csvBtn, #printBtn { display: none !important; }  /* no file dialog or printing in the phone app yet */
   .kf { grid-template-columns: 1fr 1fr; }
-  .chart { height: 320px; }
+  .chart { height: 300px; }
   .checklist li { grid-template-columns: 48px 1fr auto; } .checklist .reading { grid-column: 1 / -1; }
   .checklist li > .badge { grid-row: 1; grid-column: 3; }
   .card-head { flex-wrap: wrap; gap: 8px; }
   .segmented { margin-left: 0; }
+  .toast { bottom: calc(84px + env(safe-area-inset-bottom)); }
 }
 
 /* ---------- 1.5 ---------- */
