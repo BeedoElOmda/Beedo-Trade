@@ -1,5 +1,5 @@
 """Makes the desktop icons (.ico for Windows, .icns for macOS) and the start-up splash from icon.png,
-the Beedo-Trade icon (1024 x 1024, transparent corners). The Android icons come from mobile/icon.svg (same design)."""
+the Beedo-Trade icon (1024 x 1024, transparent corners). mobile/make_icons.py makes the Android icons from the same file."""
 import sys
 from pathlib import Path
 from PIL import Image, ImageDraw
