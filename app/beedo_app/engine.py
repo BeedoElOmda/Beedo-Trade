@@ -409,6 +409,10 @@ def alerts(rows, price_alerts, last_signals):
         if a.get("below") and r["close"] <= a["below"]:
             out.append({"symbol": r["symbol"], "kind": "below",
                         "text": f"{r['symbol']} closed at {r['close']}: at or below your alert price {a['below']}"})
+        sc = a.get("score")  # +5 = tell me at a score of +5 or more; -5 = at -5 or less
+        if sc and r.get("score") is not None and (r["score"] >= sc if sc > 0 else r["score"] <= sc):
+            out.append({"symbol": r["symbol"], "kind": "score",
+                        "text": f"{r['symbol']}: score {r['score']:+d} ({RUNGS[r['rung']]}) reached your alert score {sc:+d}"})
     for sym, r in rows.items():
         old = last_signals.get(sym)
         if old is not None and old != r["rung"]:

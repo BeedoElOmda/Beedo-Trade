@@ -128,6 +128,7 @@ class Api:
             out["fundamentals"] = self._fundamentals(symbol)
             out["verdict"] = fundamentals.verdict(out["fundamentals"].get("quality", {}).get("level"), out["signal"]["rung"])
         out["impact"] = engine.impact(rep)
+        out["weekly"] = self._weekly_signal(bars, symbol) if bars else None
         with self._lock:
             self._cache[symbol.upper()] = rep
             if bars:
@@ -135,6 +136,15 @@ class Api:
             else:
                 self._daily.pop(symbol.upper(), None)
         return out
+
+    @staticmethod
+    def _weekly_signal(bars, symbol):
+        """The same checklist on weekly candles (2 years of days = about 104 weeks); None when there are too few weeks."""
+        try:
+            ev = engine.evaluate(analyze.report(engine.weekly(bars), symbol, ""))
+        except analyze.NoHistory:
+            return None
+        return {"label": ev["signal"]["label"], "rung": ev["signal"]["rung"], "score": ev["score"]}
 
     @staticmethod
     def _snapshot(sym, why):
@@ -221,12 +231,12 @@ class Api:
                     self._daily[sym] = bars
             if kind == "metal":
                 return {"symbol": sym, "name": name, "close": rep["last_bar"]["c"], "date": rep["last_bar"]["d"],
-                        "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"], "action": ev["actions"]["shareholder"],
+                        "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"], "score": ev.get("score"), "action": ev["actions"]["shareholder"],
                         "quality": "Metal", "quality_level": None, "quality_score": None, "verdict": None}
             fund = fund or self._fundamentals(sym)
             q = fund.get("quality", {})
             return {"symbol": sym, "name": name, "close": rep["last_bar"]["c"], "date": rep["last_bar"]["d"],
-                    "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"], "action": ev["actions"]["shareholder"],
+                    "rsi": rep["rsi14"]["now"], "ma": rep["moving_averages"]["alignment"], **ev["signal"], "score": ev.get("score"), "action": ev["actions"]["shareholder"],
                     "quality": q.get("label"), "quality_level": q.get("level"), "quality_score": q.get("score"),
                     "verdict": fundamentals.verdict(q.get("level"), ev["signal"]["rung"]),
                     **{k: (fund.get("figures") or {}).get(k) for k in TABLE_FIGURES}}
