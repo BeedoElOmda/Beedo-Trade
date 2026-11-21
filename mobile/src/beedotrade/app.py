@@ -13,10 +13,15 @@ STARTING = """<html><head><meta name="viewport" content="width=device-width,init
 <div>{msg}</div></body></html>"""
 
 
-def _engine():
+def _engine(ctx):
     """Runs the desktop app's server; any start-up error goes to the log (logcat: python.stderr)."""
     try:
         from beedo_app import main  # after APPDATA is set: main reads it when it loads
+        try:
+            from beedotrade import alerts
+            main.NOTIFY = alerts.notifier(ctx)  # the app's 15-minute alert check also shows phone notifications
+        except Exception:
+            traceback.print_exc()
         main.serve(port=PORT)
     except Exception:
         traceback.print_exc()
@@ -33,7 +38,8 @@ def _listening():
 class BeedoTrade(toga.App):
     def startup(self):
         os.environ["APPDATA"] = str(self.paths.data)  # settings.json lives in the app's private storage
-        threading.Thread(target=_engine, daemon=True).start()
+        ctx = self._impl.native.getApplicationContext()
+        threading.Thread(target=_engine, args=(ctx,), daemon=True).start()
         self.web = toga.WebView()
         try:  # the page keeps the last results in localStorage to show them offline
             self.web._impl.native.getSettings().setDomStorageEnabled(True)
@@ -48,6 +54,18 @@ class BeedoTrade(toga.App):
         except Exception:
             traceback.print_exc()
         self.loop.create_task(self._open())  # never block the screen while the engine starts
+        try:  # alerts: notification permission (Android 13+) and the daily check after the close
+            from java import jclass
+            worker = jclass("io.github.beedoelomda.beedotrade.AlertWorker")
+            worker.askPermission(self._impl.native)
+            worker.schedule(ctx)
+            flag = Path(ctx.getFilesDir().getPath()) / "beedo_test_alerts"  # put there by the emulator test
+            if flag.exists():
+                flag.unlink()
+                os.environ["BEEDO_TEST_NOTIFY"] = "1"
+                worker.runNow(ctx)
+        except Exception:
+            traceback.print_exc()
 
     async def _open(self):
         for _ in range(150):  # up to 30 s
