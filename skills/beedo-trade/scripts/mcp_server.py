@@ -57,7 +57,7 @@ def beedo_analyze(symbol: str, ma: str = "5,9,18") -> str:
             analyze.MA = periods
             try:
                 bars, name = _bars(sym)
-                return json.dumps(analyze.report(bars, sym, name), default=str)
+                return json.dumps({**analyze.report(bars, sym, name), "weekly": analyze.weekly_view(bars)}, default=str)
             except analyze.NoHistory as e:  # no or frozen Yahoo history: TradingView snapshot ("snapshot": true)
                 if sym in metals.METALS:
                     raise

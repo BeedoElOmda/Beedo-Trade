@@ -340,6 +340,38 @@ def selftest():
 def min_bars():
     return max(60, MA[2] + 6)  # the slow MA and its 5-day slope need slow + 6 bars
 
+def weekly_bars(bars):
+    """Daily bars -> weekly bars (Monday to Sunday), dated by the first trading day of each week."""
+    import datetime as dt
+    out, key = [], None
+    for b in bars:
+        k = dt.date.fromisoformat(b["d"][:10]).isocalendar()[:2]
+        if k != key:
+            key = k
+            out.append(dict(b))
+        else:
+            w = out[-1]
+            w["h"], w["l"], w["c"], w["v"] = max(w["h"], b["h"]), min(w["l"], b["l"]), b["c"], w["v"] + b["v"]
+    return out
+
+def weekly_view(bars):
+    """The longer trend: the course readings on weekly candles (2 years of days = about 104 weeks), for a weekly check
+    of the daily signal. Kept out of report() because the app replays report() day by day."""
+    w = weekly_bars(bars)
+    if len(w) < min_bars():
+        return {"note": f"only {len(w)} weeks of prices; the weekly check needs {min_bars()}"}
+    a = analyze(w)
+    ma, f, m, s = a["moving_averages"], *a["moving_averages"]["periods"]
+    t = a["trend_swings"]
+    return {"weeks": len(w), "close": a["last_bar"]["c"],
+            "trend_steps": {k: t[k] for k in ("higher_high_steps", "higher_low_steps", "lower_high_steps", "lower_low_steps")},
+            "moving_averages": {"periods": ma["periods"], "alignment": ma["alignment"], f"price_vs_MA{s}": ma[f"price_vs_MA{s}"],
+                                f"alarm_crosses_{f}x{m}": ma[f"alarm_crosses_{f}x{m}"], f"first_crosses_{f}x{s}": ma[f"first_crosses_{f}x{s}"],
+                                f"confirm_crosses_{m}x{s}": ma[f"confirm_crosses_{m}x{s}"]},
+            "rsi14": {k: a["rsi14"][k] for k in ("now", "zone", "divergence")},
+            "macd": {k: a["macd"][k] for k in ("line", "signal", "hist")},
+            "volume_ratio_vs_avg20": a["volume"]["ratio_vs_avg20"]}
+
 def report(bars, symbol, name):
     if len(bars) < min_bars():
         raise NoHistory(f"Only {len(bars)} daily bars for {symbol}; the indicators need {min_bars()}+ (slow MA {MA[2]}).")
@@ -366,7 +398,8 @@ if __name__ == "__main__":
             sys.exit(__doc__)
         if args[:1] == ["--csv"] and len(args) >= 2:
             sym = args[2] if len(args) > 2 else "CSV"
-            out = report(load_csv(args[1]), sym, f"{sym} (from {args[1]})")
+            bars = load_csv(args[1])
+            out = report(bars, sym, f"{sym} (from {args[1]})")
         elif args[0].upper() in ("GOLD", "SILVER"):  # EGP per gram, see metals.py
             import os
             sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))  # sibling import under python -I
@@ -391,4 +424,6 @@ if __name__ == "__main__":
             sys.exit(f"ERROR: {e} TradingView: {e2}")
     except (ConnectionError, ValueError, OSError) as e:
         sys.exit(f"ERROR: {e}")
+    if not out.get("snapshot"):
+        out["weekly"] = weekly_view(bars)
     print(json.dumps(out, indent=1, default=str))
