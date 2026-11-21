@@ -229,13 +229,13 @@ button.small { padding: 6px 10px; font-size: 12px; }
   .ma-form > span { flex-basis: 100%; }  /* label on its own line, the three boxes and Apply together below it */
   .ma-form input { width: 56px; }
   nav { position: fixed; inset: auto 0 0 0; z-index: 20; flex-direction: row; gap: 0; justify-content: space-around;
-    padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: var(--panel); border-top: 1px solid var(--line);
+    padding: 4px 4px; background: var(--panel); border-top: 1px solid var(--line);
     box-shadow: 0 -6px 20px rgba(0, 0, 0, .18); }
   .nav-item { flex: 1 1 0; min-width: 0; flex-direction: column; gap: 3px; padding: 6px 2px; border-radius: 12px;
     font-size: 10.5px; text-align: center; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .nav-item svg { width: 22px; height: 22px; }
   .nav-item.active { background: none; color: var(--accent-2); } .nav-item.active svg { color: var(--accent-2); }
-  main { padding: 14px 14px 96px; }
+  main { padding: 14px 14px 80px; }  /* the Android window already ends above the system bar: no safe-area padding */
   .card { border-radius: 20px; padding: 16px; }
   .grid { grid-template-columns: minmax(0, 1fr); gap: 12px; } .span2, .span3 { grid-column: auto; }
   .stats { grid-template-columns: 1fr 1fr; } .hero-top { flex-wrap: wrap; gap: 8px; }
@@ -248,7 +248,7 @@ button.small { padding: 6px 10px; font-size: 12px; }
   .checklist li > .badge { grid-row: 1; grid-column: 3; }
   .card-head { flex-wrap: wrap; gap: 8px; }
   .segmented { margin-left: 0; }
-  .toast { bottom: calc(84px + env(safe-area-inset-bottom)); }
+  .toast { bottom: 76px; }
 }
 
 /* ---------- 1.5 ---------- */

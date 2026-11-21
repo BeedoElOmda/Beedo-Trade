@@ -26,7 +26,7 @@ async function api(name, ...args) {
 }
 
 /* ---------- state ---------- */
-let settings = { watchlist: [], cash: 50000, risk_pct: 2, theme: "dark", lang: "en", alerts: [], portfolio: [] };
+let settings = { watchlist: [], cash: 50000, risk_pct: 2, theme: "system", lang: "en", alerts: [], portfolio: [] };
 let current = null, charts = null;
 const save = (patch) => { Object.assign(settings, patch); api("save_settings", patch); };
 const toast = (msg) => { const t = $("#toast"); t.textContent = msg; t.classList.remove("hidden"); clearTimeout(toast.t); toast.t = setTimeout(() => t.classList.add("hidden"), 2600); };
@@ -44,9 +44,9 @@ $$(".nav-item").forEach((b) => b.addEventListener("click", () => go(b.dataset.pa
 
 /* ---------- theme ---------- */
 const sysDark = window.matchMedia("(prefers-color-scheme: dark)");
-let themeMode = "dark";  // dark | light | system
+let themeMode = "system";  // dark | light | system
 function applyTheme(theme) {
-  themeMode = ["dark", "light", "system"].includes(theme) ? theme : "dark";
+  themeMode = ["dark", "light", "system"].includes(theme) ? theme : "system";
   document.documentElement.dataset.theme = themeMode === "system" ? (sysDark.matches ? "dark" : "light") : themeMode;
   $("#themeBtn").textContent = `Theme: ${themeMode[0].toUpperCase()}${themeMode.slice(1)}`;
   if (charts) charts.restyle();
