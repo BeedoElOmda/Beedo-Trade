@@ -145,3 +145,13 @@ def test_weekly_signal():
     w = Api._weekly_signal(daily, "T")
     assert w and set(w) == {"label", "rung", "score"} and w["label"] == engine.RUNGS[w["rung"]]
     assert Api._weekly_signal(daily[:100], "T") is None  # 20 weeks: too few for the checklist
+
+def test_skill_weekly_view():
+    from test_engine import wave
+    import datetime as dt
+    daily = bars_from(wave(100, 0.4) * 6, vol_last=3000)
+    for k, b in enumerate(daily):
+        b["d"] = str(dt.date(2024, 1, 1) + dt.timedelta(days=k))
+    w = analyze.weekly_view(daily)
+    assert w["weeks"] == len(analyze.weekly_bars(daily)) and "alignment" in w["moving_averages"] and "now" in w["rsi14"]
+    assert "note" in analyze.weekly_view(daily[:100])
