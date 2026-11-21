@@ -42,7 +42,7 @@ jobs:
           briefcase create android --no-input
           # Title bar and status bar in the icon blue (the template's default is Material purple)
           C=build/beedotrade/android/gradle/app/src/main/res/values/colors.xml
-          sed -i -E 's|(name="colorPrimary">)[^<]*|\1#1D4ED8|; s|(name="colorPrimaryDark">)[^<]*|\1#0E3A9E|; s|(name="colorAccent">)[^<]*|\1#0FA3A3|' "$C"
+          sed -i -E 's|(name="colorPrimary">)[^<]*|\1#1D45A7|; s|(name="colorPrimaryDark">)[^<]*|\1#3F70E6|; s|(name="colorAccent">)[^<]*|\1#109EA5|' "$C"
           cat "$C"
           briefcase build android --no-input
           briefcase package android -p debug-apk --no-input
