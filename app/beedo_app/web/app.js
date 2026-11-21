@@ -96,8 +96,30 @@ async function analyse(symbol) {
   $("#error").classList.add("hidden");
   show("loading");
   const btn = $("#searchForm button"); btn.disabled = true;
-  try { render(await api("analyze", symbol)); } catch (e) { show(current ? "result" : "empty"); showError(String(e), symbol); }
+  try {
+    const d = await api("analyze", symbol);
+    if (d && !d.error && !d.cancelled) keepOffline(d);
+    if (!(d && d.error && fromOffline(symbol, d.error))) render(d);
+  } catch (e) { if (!fromOffline(symbol, String(e))) { show(current ? "result" : "empty"); showError(String(e), symbol); } }
   finally { btn.disabled = false; }
+}
+// The last results are kept on this device, so a stock still shows (marked as saved) when there is no internet
+function keepOffline(d) {
+  try {
+    const all = JSON.parse(localStorage.getItem("lastResults") || "{}");
+    all[d.symbol] = { at: new Date().toISOString().slice(0, 16).replace("T", " "), d };
+    Object.keys(all).sort((a, b) => (all[a].at < all[b].at ? 1 : -1)).slice(8).forEach((k) => delete all[k]);
+    localStorage.setItem("lastResults", JSON.stringify(all));
+  } catch { /* storage full or switched off: just don't keep it */ }
+}
+function fromOffline(symbol, err) {
+  if (!/reach|urlopen|connection|timed out|getaddrinfo|network|Failed to fetch/i.test(err)) return false;
+  try {
+    const hit = JSON.parse(localStorage.getItem("lastResults") || "{}")[symbol];
+    if (!hit) return false;
+    render(hit.d); toast(`No internet: showing ${symbol} as saved on ${hit.at}`);
+    return true;
+  } catch { return false; }
 }
 function render(d) {
   if (!d || d.cancelled) { show(current ? "result" : "empty"); return; }
@@ -112,6 +134,9 @@ function render(d) {
   $("#rBadge").outerHTML = `<div class="badge big ${rcls(s.rung)}" id="rBadge">${esc(s.label)}</div>`;
   $("#rWhy").textContent = s.why.charAt(0).toUpperCase() + s.why.slice(1) + ".";
   ladder($("#ladder"), s.rung);
+  const w = d.weekly, sc = (v) => (v > 0 ? `+${v}` : `${v}`);
+  $("#rWeekly").innerHTML = w ? `<span>Weekly candles:</span> <b>${esc(w.label)}</b> <span>(score ${sc(w.score)})</span>${w.rung * s.rung < 0
+    ? ` <span class="disagree">· The daily and weekly signals disagree: be careful.</span>` : ""}` : "";
   const lv = d.levels, sup = lv.recent_90d.supports_nearest_first[0], res = lv.recent_90d.resistances_nearest_first[0];
   const stat = (k, v, sub) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${sub}</div></div>`;
   $("#stats").innerHTML =
@@ -383,19 +408,19 @@ $("#scanBtn").addEventListener("click", async () => {
   const btn = $("#scanBtn"), body = $("#wTable tbody");
   if (!settings.watchlist.length) return toast("Add a stock first");
   btn.disabled = true; btn.textContent = "Scanning…";
-  body.innerHTML = `<tr><td colspan="14" class="muted center">Checking ${settings.watchlist.length} stocks…</td></tr>`;
+  body.innerHTML = `<tr><td colspan="15" class="muted center">Checking ${settings.watchlist.length} stocks…</td></tr>`;
   try {
     const rows = await api("scan", settings.watchlist);
-    rows.sort((a, b) => (b.rung ?? -9) - (a.rung ?? -9) || (b.quality_score ?? -1) - (a.quality_score ?? -1));
+    rows.sort((a, b) => (b.score ?? -99) - (a.score ?? -99) || (b.quality_score ?? -1) - (a.quality_score ?? -1));
     fillTable("#wTable", rows);
   } finally { btn.disabled = false; btn.textContent = "Scan all"; }
 });
 const ratio = (v) => (v == null ? "–" : fmt(v, 2));
 function resultRow(r) {
-  if (r.error) return `<tr><td><b>${esc(r.symbol)}</b></td><td colspan="13" class="why">${esc(r.error)}</td></tr>`;
+  if (r.error) return `<tr><td><b>${esc(r.symbol)}</b></td><td colspan="14" class="why">${esc(r.error)}</td></tr>`;
   return `<tr class="click" data-go="${esc(r.symbol)}" tabindex="0" title="${esc(r.verdict ? r.verdict.text : "")}">
     <td><b>${esc(r.symbol)}</b><div class="muted tiny ellipsis">${esc(r.name)}</div></td>
-    <td class="num">${fmt(r.close)}<div class="muted tiny">${esc(r.date)}</div></td><td>${badge(r.rung)}</td>
+    <td class="num">${fmt(r.close)}<div class="muted tiny">${esc(r.date)}</div></td><td>${badge(r.rung)}</td><td class="num">${r.score == null ? "–" : (r.score > 0 ? "+" : "") + r.score}</td>
     <td>${qbadge(r.quality, r.quality_level, r.quality_score)}</td>
     <td class="num">${ratio(r.pe)}</td><td class="num">${ratio(r.pb)}</td><td class="num">${pct(r.roe)}</td><td class="num">${pct(r.net_margin)}</td>
     <td class="num">${ratio(r.debt_to_equity)}</td><td class="num">${signed(r.eps_growth)}</td><td class="num">${pct(r.dividend_yield)}</td>
@@ -584,7 +609,7 @@ $("#tmBtn").addEventListener("click", async () => {
 /* ---------- 1.5: alerts ---------- */
 const code = (el) => { const s = el.value.trim().toUpperCase(); return /^[A-Z0-9]{2,6}$/.test(s) ? s : (toast("Enter an EGX code such as COMI"), null); };
 function drawAlerts() {
-  $("#alertList").innerHTML = (settings.alerts || []).map((a, i) => `<span class="chip">${esc(a.symbol)}${a.above ? ` ≥ ${fmt(a.above)}` : ""}${a.below ? ` ≤ ${fmt(a.below)}` : ""}<button class="x" data-alert-del="${i}" aria-label="Remove alert">✕</button></span>`).join("");
+  $("#alertList").innerHTML = (settings.alerts || []).map((a, i) => `<span class="chip">${esc(a.symbol)}${a.above ? ` ≥ ${fmt(a.above)}` : ""}${a.below ? ` ≤ ${fmt(a.below)}` : ""}${a.score ? ` score ${a.score > 0 ? "≥ +" : "≤ "}${a.score}` : ""}<button class="x" data-alert-del="${i}" aria-label="Remove alert">✕</button></span>`).join("");
 }
 async function checkAlerts(manual) {
   const btn = $("#alertCheck"); btn.disabled = true;
@@ -599,10 +624,11 @@ async function checkAlerts(manual) {
 $("#alertCheck").addEventListener("click", () => checkAlerts(true));
 $("#alertForm").addEventListener("submit", (e) => {
   e.preventDefault();
-  const symbol = code($("#alSym")), above = Number($("#alAbove").value) || null, below = Number($("#alBelow").value) || null;
+  const symbol = code($("#alSym")), above = Number($("#alAbove").value) || null, below = Number($("#alBelow").value) || null,
+    score = Math.max(-30, Math.min(30, Math.round(Number($("#alScore").value)))) || null;
   if (!symbol) return;
-  if (!above && !below) return toast("Enter a price to be alerted at");
-  save({ alerts: [...(settings.alerts || []), { symbol, above, below }] });
+  if (!above && !below && !score) return toast("Enter a price or a score to be alerted at");
+  save({ alerts: [...(settings.alerts || []), { symbol, above, below, score }] });
   e.target.reset(); drawAlerts();
 });
 document.addEventListener("click", (e) => {
@@ -645,3 +671,24 @@ $("#pForm").addEventListener("submit", (e) => {
   e.target.reset(); loadPortfolio();
 });
 $("#pTable").addEventListener("keydown", (e) => { const tr = e.target.closest("tr[data-go]"); if (tr && e.key === "Enter") analyse(tr.dataset.go); });
+
+/* ---------- 2.1: the same settings on every device ---------- */
+const SHARED = { watchlist: Array.isArray, alerts: Array.isArray, portfolio: Array.isArray, ma: Array.isArray, steps_off: Array.isArray,
+  cash: (v) => typeof v === "number", risk_pct: (v) => typeof v === "number" };
+$("#setCopy").addEventListener("click", async () => {
+  const s = await api("get_settings"), t = $("#setCode");
+  t.value = btoa(unescape(encodeURIComponent(JSON.stringify(Object.fromEntries(Object.keys(SHARED).map((k) => [k, s[k]]))))));
+  t.select();
+  try { await navigator.clipboard.writeText(t.value); toast("Code copied"); } catch { toast("Code ready: copy it from the box"); }
+});
+$("#setApply").addEventListener("click", async () => {
+  let p;
+  try { p = JSON.parse(decodeURIComponent(escape(atob($("#setCode").value.trim())))); } catch { return toast("That code isn't valid"); }
+  p = Object.fromEntries(Object.entries(p || {}).filter(([k, v]) => SHARED[k] && SHARED[k](v)));
+  if (!Object.keys(p).length) return toast("That code isn't valid");
+  try {
+    const r = await api("save_settings", p);
+    if (r && r.error) return toast(r.error);
+  } catch (e) { return toast(String(e)); }
+  toast("Settings applied"); setTimeout(() => location.reload(), 800);
+});

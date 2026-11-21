@@ -282,3 +282,8 @@ button.x { color: var(--muted); border: 0; background: none; cursor: pointer; } 
   * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
 }
 [dir="rtl"] .pos, [dir="rtl"] .neg { direction: ltr; unicode-bidi: isolate; display: inline-block; }
+
+/* ---------- 2.1 ---------- */
+.set-code { width: 100%; box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
+  padding: 8px 10px; color: var(--text); font: 12px ui-monospace, Consolas, monospace; resize: vertical; }
+.disagree { color: var(--rm1); }

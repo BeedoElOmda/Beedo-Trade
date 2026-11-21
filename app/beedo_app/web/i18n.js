@@ -7,6 +7,12 @@ const AR = {
   // menu and common buttons
   "Analyze": "تحليل", "Watchlist": "قائمة المتابعة", "Portfolio": "المحفظة", "Gold & Silver": "الذهب والفضة", "Screener": "فرز الأسهم", "About": "عن البرنامج",
   "EGX course method": "منهج الدورة للبورصة المصرية", "User guide": "دليل المستخدم", "Open the user guide": "فتح دليل المستخدم",
+  "Score": "النقاط", "Alert at score (5 or -5)": "تنبيه عند النقاط (5 أو -5)", "Weekly candles:": "الشموع الأسبوعية:",
+  "· The daily and weekly signals disagree: be careful.": "· الإشارة اليومية والأسبوعية مختلفتان: توخَّ الحذر.",
+  "Enter a price or a score to be alerted at": "أدخل سعرًا أو نقاطًا للتنبيه عندها",
+  "Copy your settings to another device": "انقل إعداداتك إلى جهاز آخر", "Show my code": "اعرض الرمز", "Apply pasted code": "طبّق الرمز الملصق",
+  "Your watchlist, alerts, portfolio, moving averages and ticked steps as one code. Press \"Show my code\", copy it, paste it into this box on your other PC or phone, and press \"Apply pasted code\".": "قائمة المتابعة والتنبيهات والمحفظة والمتوسطات المتحركة والخطوات المحددة في رمز واحد. اضغط «اعرض الرمز» وانسخه، ثم الصقه في هذا المربع على جهازك الآخر واضغط «طبّق الرمز الملصق».",
+  "Code copied": "تم نسخ الرمز", "Code ready: copy it from the box": "الرمز جاهز: انسخه من المربع", "That code isn't valid": "هذا الرمز غير صالح", "Settings applied": "تم تطبيق الإعدادات",
   "Theme: Dark": "المظهر: داكن", "Theme: Light": "المظهر: فاتح", "Theme: System": "المظهر: حسب النظام",
   "USD / EGP": "الدولار / الجنيه", "Import CSV": "استيراد CSV", "Save as PDF": "حفظ PDF", "Export to Excel": "تصدير إلى Excel",
   "Refresh": "تحديث", "Add": "إضافة", "Scan all": "فحص الكل", "Scanning…": "جارٍ الفحص…", "Check now": "افحص الآن",
@@ -182,6 +188,10 @@ const AR_RULES = [
   [/^(above|below) its 50-day average, (above|below) its 200-day$/, (m) => `${m[1] === "above" ? "أعلى" : "أدنى"} من متوسط 50 يومًا، و${m[2] === "above" ? "أعلى" : "أدنى"} من متوسط 200 يوم`],
   [/^(\d+)% of (\d+) stocks above their 50-day average \((\d+)% above 200-day\)$/, (m) => `${m[1]}% من ${m[2]} سهمًا أعلى من متوسط 50 يومًا (${m[3]}% أعلى من متوسط 200 يوم)`],
   [/^(\d+) up · (\d+) down today$/, (m) => `${m[1]} صاعد · ${m[2]} هابط اليوم`],
+  // 2.1
+  [/^\(score ([+-]?\d+)\)$/, (m) => `(النقاط ${m[1]})`],
+  [/^(\S+): score ([+-]?\d+) \((.+)\) reached your alert score ([+-]?\d+)$/, (m) => `${m[1]}: النقاط ${m[2]} (${AR[m[3]] || m[3]}) بلغت نقاط التنبيه ${m[4]}`],
+  [/^No internet: showing (\S+) as saved on (.+)$/, (m) => `لا يوجد اتصال: عرض ${m[1]} كما حُفظ في ${m[2]}`],
   // time machine
   [/^within (\d+) trading days$/, (m) => `خلال ${m[1]} يوم تداول`], [/^(\S+)R plan$/, (m) => `خطة ${m[1]}R`],
   [/^(Close to a coin flip|Close to break-even|Leans toward the target|Leans toward the stop|Strongly toward the target|Strongly toward the stop): the target came first in (\d+)% of the replays that reached one side; a (\S+)R plan needs (\d+)% to break even\.?$/,
