@@ -111,3 +111,19 @@ def test_snapshot_fallback_caps_at_alarm(monkeypatch):
     assert ev["signal"]["label"] == "Alarm Buy" and "snapshot" in ev["signal"]["why"]
     assert all(s["reading"].startswith("Not checked") for s in ev["steps"] if s["n"] in (4, 7, 9, 10, 11))
     assert ev["steps"][11]["label"] == "First Buy" and "10-day" in ev["steps"][5]["reading"]
+
+
+def test_signal_is_the_score_of_ticked_steps():
+    from test_engine import wave
+    rep = analyze.report(bars_from(wave(100, 0.4), vol_last=3000), "T", "T")
+    ev = engine.evaluate(rep)
+    rungs = {s["n"]: s["rung"] for s in ev["steps"]}
+    assert ev["score"] == sum(rungs[n] for n in engine.SCORED)
+    for n in engine.SCORED:  # every step that isn't at Hold moves the score when unticked
+        engine.OFF.clear(); engine.OFF.add(n)
+        assert engine.evaluate(rep)["score"] == ev["score"] - rungs[n]
+    engine.OFF.clear()
+    assert [engine._score([{"rung": r}])["signal"]["label"] for r in (3, 2, 1, 0, -1, -2, -3)] == \
+        ["Alarm Buy", "Alarm Buy", "Hold", "Hold", "Hold", "Alarm Sell", "Alarm Sell"]
+    assert engine._score([{"rung": 3}, {"rung": 3}, {"rung": 3}])["signal"]["label"] == "Confirm Buy"
+    assert engine._score([{"rung": 3}, {"rung": 2}])["signal"]["label"] == "First Buy"
