@@ -17,7 +17,7 @@ permissions:
 jobs:
   android:
     runs-on: ubuntu-latest
-    steps:
+    steps:  # build only; the test job below attaches the APK once it starts cleanly
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
@@ -48,6 +48,39 @@ jobs:
           name: Beedo-Trade-android
           path: out/*.apk
           if-no-files-found: error
+
+  # Opens the APK in an Android emulator, prints the app's log and what is on screen, and fails if the app crashes
+  # or its engine never starts. The APK is attached to the release only when this passes.
+  test:
+    needs: android
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Beedo-Trade-android
+          path: out
+      - name: Enable KVM for the emulator
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules && sudo udevadm trigger --name-match=kvm
+      - name: Open the app in an emulator
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 34
+          arch: x86_64
+          target: google_apis
+          emulator-options: -no-window -gpu swiftshader_indirect -noaudio -no-boot-anim
+          script: |
+            adb install -r out/*.apk
+            adb logcat -c
+            adb shell monkey -p io.github.beedoelomda.beedotrade -c android.intent.category.LAUNCHER 1
+            sleep 45
+            adb logcat -d > logcat.txt || true
+            adb shell uiautomator dump /sdcard/ui.xml && adb pull /sdcard/ui.xml ui.xml || true
+            echo "===== app log =====" && grep -E "python|beedo|Beedo|AndroidRuntime|FATAL|chaquopy|MainActivity|ActivityManager: (ANR|Process)" logcat.txt | tail -150 || true
+            echo "===== on screen =====" && (grep -o 'text="[^"]\+"' ui.xml | head -60 || true)
+            ! grep -q "FATAL EXCEPTION" logcat.txt
+            grep -q "Beedo-Trade developer mode" logcat.txt
       - name: Attach to the release
         if: github.event_name == 'release' || inputs.tag != ''
         env:
