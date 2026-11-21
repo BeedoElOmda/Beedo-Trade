@@ -1,5 +1,5 @@
 """Beedo-Trade desktop app: a native window (Edge WebView2 on Windows, WebKit on macOS) around the course engine."""
-import csv, json, os, re, subprocess, sys, threading, urllib.request, webbrowser
+import csv, json, os, re, subprocess, sys, threading, time, urllib.request, webbrowser
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
 
@@ -37,6 +37,7 @@ TABLE_FIGURES = ("market_cap", "pe", "pb", "roe", "net_margin", "debt_to_equity"
 DEFAULTS = {"watchlist": ["COMI", "TMGH", "SWDY", "ETEL", "EAST", "EGAL"], "cash": 50000, "risk_pct": 2,
             "theme": "system", "lang": "en", "alerts": [], "portfolio": [], "signals": {}, "ma": [5, 9, 18], "steps_off": []}
 REPO = "BeedoElOmda/Beedo-Trade"
+NOTIFY = None  # the phone app sets this to show each alert as a phone notification
 
 
 def _valid_ma(ma):
@@ -335,7 +336,20 @@ class Api:
                                             [h["symbol"] for h in s["portfolio"]]).items() if not r.get("error")}
         hits = engine.alerts(rows, s["alerts"], s["signals"])
         self.save_settings({"signals": {k: r["rung"] for k, r in rows.items()}})
+        if NOTIFY:
+            self._notify_new(hits)
         return {"hits": hits, "checked": len(rows)}
+
+    def _notify_new(self, hits):
+        """Each alert becomes a notification once a day: the check repeats every 15 minutes, and a price alert stays reached."""
+        today = time.strftime("%Y-%m-%d")
+        seen = self.get_settings().get("notified") or {}
+        sent = seen.get("texts", []) if seen.get("day") == today else []
+        new = [h for h in hits if h["text"] not in sent]
+        for h in new:
+            NOTIFY(h)
+        if new:
+            self.save_settings({"notified": {"day": today, "texts": sent + [h["text"] for h in new]}})
 
     def portfolio(self):
         hold = self.get_settings()["portfolio"]
