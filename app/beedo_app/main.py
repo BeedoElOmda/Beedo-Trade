@@ -17,8 +17,9 @@ if getattr(sys, "frozen", False):  # PyInstaller bundle
     BASE = Path(sys._MEIPASS)
 else:
     BASE = Path(__file__).resolve().parent
-    sys.path.insert(0, str(BASE.parents[1] / "skills" / "beedo-trade" / "scripts"))
-    sys.path.insert(0, str(BASE.parent))
+    for p in (BASE.parents[1] / "skills" / "beedo-trade" / "scripts", BASE.parent):
+        if p.is_dir():  # source checkout only; on Android a missing folder on sys.path crashes Python's importer
+            sys.path.insert(0, str(p))
 
 import analyze  # noqa: E402  (shared with the Claude skill, so numbers always match)
 import fundamentals, metals, timemachine  # noqa: E402  (also shared with the skill)
