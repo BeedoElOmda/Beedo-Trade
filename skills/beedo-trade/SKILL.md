@@ -70,28 +70,18 @@ Go through the 12 steps in this order (the 11 course steps plus MACD), and give 
 11. **Continuation patterns**: triangles from the same swing points (flat highs with rising lows, and so on). Same rule: only claim it with evidence.
 12. **MACD 12 / 26 / 9** (`macd`): line above its signal = buy reading, below = sell reading. On the same side of zero it is **First** (above signal and above zero = First Buy; below signal and below zero = First Sell); on the other side of zero only **Alarm**. Mention whether the histogram is growing or shrinking and the last cross (`crosses_30d`). In step 4 below, MACD counts as supporting evidence only when it reads First.
 
-**Steps the user leaves out.** The user can switch steps off (the desktop app has a tick box per step). If they ask to leave out steps, or say which ones they don't use, still show those steps with their reading, mark the rung "off", and decide the signal as if they read Hold: they add no evidence and set no ceiling. With trend (4) off there is no sideways rule; with moving averages (5) off, no Confirm and no price-versus-slow-MA cap; with volume (6) or RSI (8) off, Confirm doesn't wait for them. Steps 10 and 11 are always judged by eye.
+**Steps the user leaves out.** The user can switch steps off (the desktop app has a tick box per step). If they ask to leave out steps, or say which ones they don't use, still show those steps with their reading, mark the rung "off", and leave them out of the score in step 4. Steps 10 and 11 are always judged by eye and never scored.
 
 The script automates the arithmetic. The judgment calls (pattern shapes, gap type, which zone) are yours, and the course rules are the standard to use.
 
 ### 4. Decide the overall signal
-Combine the steps the way the course does: no single indicator decides alone.
-
-**Trend and moving averages set the ceiling.** They are the backbone of the method; candles, RSI, volume and gaps are early evidence that can only move the signal *within* that ceiling:
-- Confirmed downtrend (3 lower-low steps) *and* MA crosses still down → the strongest buy-side signal is **Alarm Buy**, however good the candles, RSI and MACD look. It upgrades to First Buy only once the fast MA crosses above the slow MA (or the trend count breaks).
-- Mirror rule: confirmed uptrend with MA crosses up → at most **Alarm Sell** until the fast MA crosses below the slow MA.
-
-Within that ceiling:
-- **Confirm Buy/Sell** needs the mid×slow MA cross (or fast > mid > slow order) in that direction, RSI on the same side of 50, and supporting volume. Also, price must not be pressing against the level in the way (no Confirm Buy right under resistance).
-- **First Buy/Sell**: the fast×slow MA cross, or RSI moving from the extreme toward 50, *plus* at least one supporting step (candle, S/R bounce/break, gap, divergence, MACD reading First).
-  - "From the extreme toward 50" means RSI touched ≤30 in the last 30 days and is now rising but below 50 (buy side), or the mirror for ≥70 (sell side). This is the course's "Up from 30% → 50%" row.
-- **Alarm**: early signs only (fast×mid cross, a single reversal candle, divergence, RSI at an extreme).
-- Price above the slow MA = no sell recommendation stronger than Alarm; below it = no buy stronger than Alarm.
-- **Hold**: the steps conflict, or the trend is sideways.
+The signal is a score, the same as the Beedo-Trade app (2.0 and later). Give each scored step (1-9 and 12, minus any the user left out) its rung: Confirm Buy +3, First Buy +2, Alarm Buy +1, Hold 0, Alarm Sell -1, First Sell -2, Confirm Sell -3. Add them up:
+- **+9 or more** = Confirm Buy, **+5 to +8** = First Buy, **+2 to +4** = Alarm Buy, **-1 to +1** = Hold, and the mirror below zero for sells.
+- With a TradingView snapshot (no price history) the steps it can't read score 0 and the signal stops at Alarm.
 
 Then apply the course overrides: don't buy near resistance; in a sideways trend the shareholder reduces and the cash holder waits; in a "danger uptrend" (a sharp rise with no correction), warn against chasing.
 
-State the deciding reason in the signal line, e.g. "Alarm Buy: bullish evidence, but trend and MAs still down".
+Treat these overrides as warnings next to the signal, not changes to it. State the score in the signal line, e.g. "Alarm Buy: score +3 from 10 steps".
 
 ### 5. Report
 Use this structure, in English (Arabic course terms in brackets are fine). Keep it tight: the user wants a decision, not an essay.
