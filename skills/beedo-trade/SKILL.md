@@ -83,6 +83,8 @@ Then apply the course overrides: don't buy near resistance; in a sideways trend 
 
 Treat these overrides as warnings next to the signal, not changes to it. State the score in the signal line, e.g. "Alarm Buy: score +3 from 10 steps".
 
+**Weekly check.** The script's `weekly` section has the same readings on weekly candles (about two years). Score it the same way where the readings allow: trend steps (step 4), the moving-average order and crosses (step 5), RSI (step 8) and MACD (step 12), and name the weekly signal. If it points the other way from the daily signal (daily buy, weekly sell, or the reverse), say so plainly: the short-term move is going against the longer trend, so be careful. It doesn't change the daily signal. If `weekly` only has a `note` (too few weeks), skip the check.
+
 ### 5. Report
 Use this structure, in English (Arabic course terms in brackets are fine). Keep it tight: the user wants a decision, not an essay.
 
@@ -90,6 +92,8 @@ Use this structure, in English (Arabic course terms in brackets are fine). Keep 
 # Beedo-Trade: <SYMBOL> (<company>), close <price> EGP on <date>
 
 **Signal: <rung>**: <one sentence why>
+
+**Weekly candles: <rung>** (score <n>)<, and if it disagrees: ": the daily and weekly signals disagree, be careful">
 
 | | Action |
 |---|---|
