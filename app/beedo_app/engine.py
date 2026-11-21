@@ -348,19 +348,7 @@ def trade_plan(r, cash=None, risk_pct=2.0):
     return plan
 
 
-def weekly(bars):
-    """Daily bars -> weekly bars (Monday to Sunday), dated by the first trading day of each week."""
-    import datetime as dt
-    out, key = [], None
-    for b in bars:
-        k = dt.date.fromisoformat(b["d"][:10]).isocalendar()[:2]
-        if k != key:
-            key = k
-            out.append(dict(b))
-        else:
-            w = out[-1]
-            w["h"], w["l"], w["c"], w["v"] = max(w["h"], b["h"]), min(w["l"], b["l"]), b["c"], w["v"] + b["v"]
-    return out
+weekly = analyze.weekly_bars  # daily -> weekly candles (shared with the Claude skill)
 
 
 def rungs(bars, report, start=None):
