@@ -94,4 +94,5 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           TAG: ${{ github.event.release.tag_name || inputs.tag }}
-        run: gh release upload "$TAG" out/*.apk || echo "The APK is already attached to $TAG; kept it."
+        # --clobber: a rebuilt (fixed) test APK replaces the one already attached under the same name
+        run: gh release upload "$TAG" out/*.apk --clobber
