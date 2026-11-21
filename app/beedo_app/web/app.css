@@ -217,14 +217,17 @@ button.small { padding: 6px 10px; font-size: 12px; }
 /* Phones (the Android app, a narrow window): slim header, tab bar at the bottom, one column of cards */
 @media (max-width: 760px) {
   .shell { grid-template-columns: minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); height: 100dvh; }
-  .sidebar { flex-direction: row; align-items: center; justify-content: flex-end; padding: 8px 12px; gap: 8px;
-    border-right: 0; border-bottom: 1px solid var(--line); }
-  [dir="rtl"] .sidebar { border-left: 0; }
-  .brand { margin-inline-end: auto; padding: 0; } .brand .logo { width: 30px; height: 30px; border-radius: 9px; }
-  .brand .logo svg { width: 18px; height: 18px; } .brand-sub, .ver { display: none; } .brand-name { font-size: 15px; }
+  /* top bar in the icon's gradient (the Android app hides its own title bar) */
+  .sidebar { flex-direction: row; align-items: center; justify-content: flex-end; padding: 10px 14px; gap: 8px; border: 0;
+    background: linear-gradient(100deg, #3F70E6 0%, #1D45A7 55%, #109EA5 100%); color: #fff; }
+  .brand { margin-inline-end: auto; padding: 0; } .brand .logo { width: 32px; height: 32px; border-radius: 9px; box-shadow: none; }
+  .brand-sub, .ver { display: none; } .brand-name { font-size: 16px; color: #fff; }
   .sidebar-foot { flex-direction: row; align-items: center; margin: 0; padding: 0; gap: 6px; }
   #fxBox, #guideBtn, #version { display: none !important; }  /* the dollar rate is on Gold & Silver; no PDF viewer here */
-  .sidebar-foot button { border-radius: 999px; padding: 6px 12px; }
+  .sidebar-foot button { border-radius: 999px; padding: 6px 12px; color: #fff; background: rgba(255, 255, 255, .16);
+    border-color: rgba(255, 255, 255, .28); }
+  .ma-form > span { flex-basis: 100%; }  /* label on its own line, the three boxes and Apply together below it */
+  .ma-form input { width: 56px; }
   nav { position: fixed; inset: auto 0 0 0; z-index: 20; flex-direction: row; gap: 0; justify-content: space-around;
     padding: 6px 4px calc(6px + env(safe-area-inset-bottom)); background: var(--panel); border-top: 1px solid var(--line);
     box-shadow: 0 -6px 20px rgba(0, 0, 0, .18); }
