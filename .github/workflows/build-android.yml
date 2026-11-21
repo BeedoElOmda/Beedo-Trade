@@ -85,6 +85,8 @@ jobs:
             echo "===== python =====" && (grep -E "python\.std(out|err)" logcat.txt | head -80 || true)
             echo "===== app log =====" && (grep -E "beedo|Beedo|ANR in|has died" logcat.txt | head -40 || true)
             echo "===== on screen =====" && (grep -o 'text="[^"]\+"' ui.xml | head -60 || true)
+            grep -A12 "FATAL EXCEPTION" logcat.txt | sed 's/^.*AndroidRuntime: //' | head -12 | while IFS= read -r l; do echo "::error title=crash::$l"; done
+            grep "python.stderr" logcat.txt | sed 's/^.*python.stderr: //' | tail -10 | while IFS= read -r l; do echo "::warning title=python::$l"; done
             ! grep -q "FATAL EXCEPTION" logcat.txt
             grep -q "Beedo-Trade developer mode" logcat.txt
       - name: Attach to the release
