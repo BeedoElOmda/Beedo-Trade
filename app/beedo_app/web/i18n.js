@@ -148,12 +148,15 @@ const AR = {
   // about
   "About Beedo-Trade": "عن Beedo-Trade", "The signal ladder": "سلّم الإشارات", "Where the numbers come from": "مصدر الأرقام", "Important": "تنبيه مهم",
   "Beedo-Trade applies the Beedo technical-analysis course to Egyptian Exchange stocks, the same way every time: 12 steps (the 11 course steps plus MACD), one signal, and separate advice for a cash holder and a shareholder.": "يطبّق Beedo-Trade دورة Beedo للتحليل الفني على أسهم البورصة المصرية بالطريقة نفسها في كل مرة: 12 خطوة (خطوات الدورة الإحدى عشرة ومؤشر MACD)، إشارة واحدة، ونصيحة منفصلة لصاحب السيولة ولحامل السهم.",
-  "Alarm = early warning, get ready. First = start a position (or start reducing). Confirm = several signals agree, act fully. Trend and moving averages set the ceiling: candles and RSI alone can't confirm a move against them, and in a sideways market the cash holder waits for a breakout.": "التنبيه = إنذار مبكر، استعد. الأولي = ابدأ الشراء (أو ابدأ التخفيف). التأكيد = عدة إشارات متفقة، نفّذ بالكامل. الاتجاه والمتوسطات المتحركة يحددان السقف: الشموع ومؤشر RSI وحدهما لا يؤكدان حركة عكسهما، وفي السوق العرضي ينتظر صاحب السيولة الاختراق.",
+  "Alarm = early warning, get ready. First = start a position (or start reducing). Confirm = several signals agree, act fully. The signal is the score of the ticked steps: each adds its rung (Confirm +3, First +2, Alarm +1, Hold 0, minus for sells); 9 or more = Confirm, 5 = First, 2 = Alarm.": "التنبيه = إنذار مبكر، استعد. الأولي = ابدأ الشراء (أو ابدأ التخفيف). التأكيد = عدة إشارات متفقة، نفّذ بالكامل. الإشارة هي مجموع نقاط الخطوات المحددة: كل خطوة تضيف درجتها (تأكيد +3، أولي +2، تنبيه +1، احتفاظ 0، وبالسالب للبيع)؛ 9 فأكثر = تأكيد، 5 = أولي، 2 = تنبيه.",
   "This is a learning and decision-support tool. It is": "هذه أداة للتعلّم ودعم القرار. وهي", "not investment advice": "ليست نصيحة استثمارية",
   ", it does not know your full financial situation, and it never places orders. Free data can be delayed: always check the live price and the day's disclosures before trading.": "، ولا تعرف وضعك المالي الكامل، ولا تنفّذ أي أوامر. البيانات المجانية قد تكون متأخرة: راجع دائمًا السعر اللحظي وإفصاحات اليوم قبل التداول.",
 };
 // Sentences assembled from parts
 const AR_RULES = [
+  // 2.0: the signal is the score of the ticked steps
+  [/^(.+); capped at Alarm because only a snapshot is available, without daily history\.?$/i, (m) => `${tr(m[1]) || m[1]}؛ الإشارة محدودة عند التنبيه لأنها لقطة فقط بدون أسعار يومية`],
+  [/^score ([+-]?\d+) from (\d+) ticked steps \(.+\)\.?$/i, (m) => `النقاط ${m[1]} من ${m[2]} خطوة محددة (تأكيد عند 9 فأكثر، أولي عند 5، تنبيه عند 2؛ وبالمثل تحت الصفر للبيع)`],
   [/^(.+); capped because (.+)$/i, (m) => `${tr(m[1]) || m[1]}؛ الإشارة محدودة لأن ${m[2].split(" and ").map((x) => tr(x) || x).join(" و")}`],
   [/^Update available: (.+)$/, (m) => `يوجد تحديث: ${m[1]}`],
   [/^Version (\S+) is available$/, (m) => `الإصدار ${m[1]} متاح`],
