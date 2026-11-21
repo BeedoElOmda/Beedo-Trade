@@ -25,7 +25,11 @@ build_gradle_dependencies = [
     "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0",
     "androidx.webkit:webkit:1.15.0",
 ]
-# Toga's Android web view uses a Python class that Java must see (Toga WebView notes)
-build_gradle_extra_content = 'chaquopy.defaultConfig.staticProxy("toga_android.widgets.internal.webview")'
+# Toga's Android web view uses a Python class that Java must see (Toga WebView notes); the engine's server reads
+# its web pages from disk, so both packages are unpacked onto the phone instead of staying inside the APK
+build_gradle_extra_content = """
+chaquopy.defaultConfig.staticProxy("toga_android.widgets.internal.webview")
+chaquopy.defaultConfig.extractPackages("beedo_app", "beedotrade")
+"""
 # The app talks to its own engine at http://127.0.0.1 (plain HTTP inside the phone)
 android_manifest_application_attrs_extra_content = 'android:usesCleartextTraffic="true"'
