@@ -155,3 +155,14 @@ def test_skill_weekly_view():
     w = analyze.weekly_view(daily)
     assert w["weeks"] == len(analyze.weekly_bars(daily)) and "alignment" in w["moving_averages"] and "now" in w["rsi14"]
     assert "note" in analyze.weekly_view(daily[:100])
+
+def test_each_alert_is_notified_once_a_day(tmp_path, monkeypatch):
+    from beedo_app import main
+    monkeypatch.setattr(main, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(main, "SETTINGS", tmp_path / "settings.json")
+    sent = []
+    monkeypatch.setattr(main, "NOTIFY", lambda h: sent.append(h["text"]))
+    api = main.Api()
+    a, b = {"symbol": "AAA", "text": "AAA: score +6"}, {"symbol": "BBB", "text": "BBB closed at 9"}
+    api._notify_new([a]); api._notify_new([a, b]); api._notify_new([a, b])
+    assert sent == ["AAA: score +6", "BBB closed at 9"]  # the 15-minute re-checks don't repeat them
