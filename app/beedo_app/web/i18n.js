@@ -7,7 +7,7 @@ const AR = {
   // menu and common buttons
   "Analyze": "تحليل", "Watchlist": "قائمة المتابعة", "Portfolio": "المحفظة", "Gold & Silver": "الذهب والفضة", "Screener": "فرز الأسهم", "About": "عن البرنامج",
   "EGX course method": "منهج الدورة للبورصة المصرية", "User guide": "دليل المستخدم", "Open the user guide": "فتح دليل المستخدم",
-  "Special thanks to": "شكر خاص إلى", "Score": "النقاط", "Alert at score (5 or -5)": "تنبيه عند النقاط (5 أو -5)", "Weekly candles:": "الشموع الأسبوعية:",
+  "Special thanks to": "شكر خاص إلى", "Dr. Ahmed El Otefy": "د. احمد العطيفي", "Score": "النقاط", "Alert at score (5 or -5)": "تنبيه عند النقاط (5 أو -5)", "Weekly candles:": "الشموع الأسبوعية:",
   "· The daily and weekly signals disagree: be careful.": "· الإشارة اليومية والأسبوعية مختلفتان: توخَّ الحذر.",
   "Enter a price or a score to be alerted at": "أدخل سعرًا أو نقاطًا للتنبيه عندها",
   "Copy your settings to another device": "انقل إعداداتك إلى جهاز آخر", "Show my code": "اعرض الرمز", "Apply pasted code": "طبّق الرمز الملصق",
