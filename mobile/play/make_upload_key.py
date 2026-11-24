@@ -1,11 +1,12 @@
-"""Creates your Google Play upload key: a password-protected key file (PKCS#12, alias "upload") that the GitHub build
-uses to sign the Play bundle. Run it once, on your own computer:
+"""Creates (or checks) your Google Play upload key: a password-protected key file (PKCS#12, alias "upload") that the
+GitHub build uses to sign the Play bundle. Run it on your own computer:
 
-    uv run --with cryptography python mobile/play/make_upload_key.py
+    uv run --no-project --with cryptography python mobile/play/make_upload_key.py
 
-It asks for a password (typed twice, not shown) and saves the key in Documents\\Beedo-Trade-keys. Keep a copy of that
-file and the password somewhere safe: Google needs this same key for every update. It also copies the key, as text, to
-the clipboard, ready to paste into the GitHub secret PLAY_UPLOAD_KEYSTORE.
+If a key already exists it asks for its password; a correct password keeps the key, otherwise the old key is renamed
+(never deleted) and a new one is made. Then it walks you through the two GitHub secrets, putting the key and then the
+password on the clipboard so nothing has to be typed into GitHub. Keep a copy of the key file and the password
+somewhere safe: Google needs this same key for every update.
 """
 import base64, datetime, getpass, subprocess, sys
 from pathlib import Path
@@ -27,25 +28,49 @@ def make_key(password: bytes, years=30):
     return pkcs12.serialize_key_and_certificates(b"upload", key, cert, None, serialization.BestAvailableEncryption(password))
 
 
+def password_ok(data: bytes, pw: str) -> bool:
+    try:
+        pkcs12.load_key_and_certificates(data, pw.encode())
+        return True
+    except Exception:
+        return False
+
+
+def clip(text: str):
+    subprocess.run("clip", input=text.encode("utf-16-le"), check=True, shell=True)  # Windows clipboard
+
+
 def main():
     out = Path(sys.argv[1]) if len(sys.argv) > 1 else Path.home() / "Documents" / "Beedo-Trade-keys" / "beedo-trade-upload-key.p12"
+    pw = None
     if out.exists():
-        sys.exit(f"{out} already exists. Keep using it: Google Play needs the same upload key for every update.")
-    pw = getpass.getpass("Choose a password for the upload key (8+ characters): ")
-    if len(pw) < 8 or pw != getpass.getpass("Type it again: "):
-        sys.exit("The passwords were too short or didn't match. Nothing was saved.")
-    data = make_key(pw.encode())
-    out.parent.mkdir(parents=True, exist_ok=True)
-    out.write_bytes(data)
-    print(f"Saved: {out}")
-    b64 = base64.b64encode(data).decode()
-    try:
-        subprocess.run("clip", input=b64.encode("utf-16-le"), check=True, shell=True)  # Windows clipboard
-        print("The key is on the clipboard: paste it into the GitHub secret PLAY_UPLOAD_KEYSTORE.")
-    except Exception:
-        (out.parent / "PLAY_UPLOAD_KEYSTORE.txt").write_text(b64)
-        print(f"Paste the text in {out.parent / 'PLAY_UPLOAD_KEYSTORE.txt'} into the GitHub secret PLAY_UPLOAD_KEYSTORE, then delete that file.")
-    print("Put the same password into the GitHub secret PLAY_UPLOAD_PASSWORD.")
+        print(f"You already have a key: {out}")
+        pw = getpass.getpass("Type its password (nothing shows while you type), or just press Enter to make a new key: ")
+        if pw and password_ok(out.read_bytes(), pw):
+            print("Password CORRECT. Keeping this key.")
+        else:
+            old = out.with_name(f"old-{datetime.datetime.now():%Y%m%d-%H%M%S}-{out.name}")
+            out.rename(old)  # never delete a key
+            print(f"Making a new key. The old one was renamed to {old.name}.")
+            pw = None
+    if pw is None:
+        pw = getpass.getpass("Choose a NEW password - English letters and numbers only, 8+ characters: ")
+        if len(pw) < 8 or not pw.isascii() or pw != pw.strip() or pw != getpass.getpass("Type it again: "):
+            sys.exit("Too short, not English letters/numbers, or the two didn't match. Nothing was saved; run me again.")
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_bytes(make_key(pw.encode()))
+        assert password_ok(out.read_bytes(), pw)
+        print(f"Saved: {out}")
+    clip(base64.b64encode(out.read_bytes()).decode())
+    print("\nSTEP 1 of 2: the KEY is on the clipboard.")
+    print("   On GitHub: Edit PLAY_UPLOAD_KEYSTORE > click the big box > Ctrl+A > Ctrl+V > Update secret.")
+    input("   Then come back here and press Enter... ")
+    clip(pw)
+    print("STEP 2 of 2: the PASSWORD is on the clipboard.")
+    print("   On GitHub: Edit PLAY_UPLOAD_PASSWORD > click the box > Ctrl+A > Ctrl+V > Update secret.")
+    input("   Then come back here and press Enter... ")
+    clip(" ")
+    print("Done, clipboard cleared. Tell Claude: both updated.")
 
 
 if __name__ == "__main__":
