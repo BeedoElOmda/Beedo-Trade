@@ -114,7 +114,7 @@ class Api:
             b, name = metals.bars(sym)
             return b, name, metals.SOURCE, "metal"
         b, name = analyze.fetch(sym, "2y")  # 2 years: room for a 200-day MA and the 2Y chart
-        return b, name, "Yahoo Finance (daily)", "stock"
+        return b, name, "Yahoo Finance + TradingView (15 min delayed)", "stock"
 
     def _build(self, bars, symbol, name, source, kind="stock", rep=None):
         """rep given = TradingView snapshot (no daily bars): no chart, back-test or time machine."""
