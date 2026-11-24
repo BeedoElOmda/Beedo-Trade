@@ -14,7 +14,7 @@ Beedo-Trade is a desktop program for Windows and Mac (source in `app/`): type an
 
 **Gold & Silver (1.3):** a page with international gold prices per gram for 24k, 21k and 18k, silver per gram, the official dollar rate and the gold/silver ratio, all in EGP. Type `GOLD` or `SILVER` anywhere a stock code works to run the course checklist, chart and trade plan (in grams) on the metal, or add them to the watchlist. These are international prices; Egyptian shop prices add a local premium.
 
-**Google Play:** the steps, store texts and pictures are in [mobile/play/GOOGLE-PLAY.md](mobile/play/GOOGLE-PLAY.md); the privacy policy is [PRIVACY.md](PRIVACY.md). 2.2.1 also puts the weekly signal on its own line under the signal.
+**Google Play:** the steps, store texts and pictures are in [mobile/play/GOOGLE-PLAY.md](mobile/play/GOOGLE-PLAY.md); the privacy policy is [PRIVACY.md](PRIVACY.md). 2.2.1 also makes every price at most 15 minutes old: Yahoo Finance runs about a day late for the EGX, so the last two trading days now come from TradingView (15 minutes delayed; during trading hours the latest candle is today so far), and puts the weekly signal on its own line under the signal.
 
 **New in 2.2: phone notifications.** On Android, your price, score and signal alerts arrive as notifications, each once a day. The phone checks by itself every trading day at about 3 p.m. Cairo time, after the EGX closes, even when the app is closed. Allow notifications when asked; on Samsung phones, set the app's battery use to Unrestricted so the check isn't delayed.
 
@@ -159,7 +159,7 @@ This program will not transfer any information to other networked systems unless
 What the desktop app connects to, and why:
 
 - **Yahoo Finance** (`query1/query2.finance.yahoo.com`): daily price history for the stock code, gold or silver you ask about.
-- **TradingView** (`scanner.tradingview.com`): company fundamentals and the screener, when you open them.
+- **TradingView** (`scanner.tradingview.com`): the last two trading days of each analysed stock (15 minutes delayed), company fundamentals and the screener.
 - **GitHub** (`api.github.com`): the update notice checks whether a newer release exists.
 
 These requests contain only the stock code or the request itself. No personal data, portfolio, watchlist or settings leave your computer; they are stored locally (or in the portable `data` folder). The services' own privacy policies apply to their sites. The Claude skill and its installers also download the EGX MCP server from GitHub and Python packages through uv.

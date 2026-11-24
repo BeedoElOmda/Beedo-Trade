@@ -17,7 +17,7 @@ To show prices and analyses, the app requests public market data from these serv
 | Service | What for |
 |---|---|
 | Yahoo Finance | Daily prices of EGX stocks, gold, silver and the dollar rate |
-| TradingView | Company figures, market health and the latest values for stocks without price history |
+| TradingView | The latest prices (15 minutes delayed), company figures and market health |
 | GitHub | Checking whether a newer version of Beedo-Trade exists (desktop apps) |
 
 Their own privacy policies apply to those requests. Beedo-Trade does not send them your watchlist, portfolio or any personal information.
