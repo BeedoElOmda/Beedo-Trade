@@ -139,6 +139,14 @@ jobs:
             grep -q "Beedo-Trade developer mode" logcat.txt
             grep -q "Beedo-Trade alert check" logcat.txt
             grep -q "pkg=io.github.beedoelomda.beedotrade" notif.txt
+            # System theme (the default): with the phone in dark mode the app must open dark
+            adb shell cmd uimode night yes
+            adb shell am force-stop io.github.beedoelomda.beedotrade
+            adb shell monkey -p io.github.beedoelomda.beedotrade -c android.intent.category.LAUNCHER 1
+            sleep 30
+            adb exec-out screencap -p > night.png
+            pip install -q pillow
+            python3 -c "from PIL import Image, ImageStat; im = Image.open('night.png').convert('L'); w, h = im.size; v = ImageStat.Stat(im.crop((w // 4, h * 3 // 10, w * 3 // 4, h * 7 // 10))).mean[0]; print(f'::notice title=dark mode::middle of the screen brightness {v:.0f} of 255 (dark below 110)'); raise SystemExit(0 if v < 110 else 'The app did not follow the phone dark mode')"
       - name: Attach to the release
         if: github.event_name == 'release' || inputs.tag != ''
         env:
