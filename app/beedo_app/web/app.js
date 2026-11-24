@@ -130,7 +130,7 @@ function render(d) {
   $("#rSym").textContent = d.symbol;
   $("#rName").textContent = d.name;
   $("#rClose").textContent = `${fmt(d.last_bar.c)} EGP`;
-  $("#rDate").textContent = d.snapshot ? d.source : `Close of ${d.last_bar.d} · ${d.source}`;
+  $("#rDate").textContent = d.snapshot ? d.source : `${d.last_bar.partial ? "Today so far" : `Close of ${d.last_bar.d}`} · ${d.source}`;
   $("#rBadge").outerHTML = `<div class="badge big ${rcls(s.rung)}" id="rBadge">${esc(s.label)}</div>`;
   $("#rWhy").textContent = s.why.charAt(0).toUpperCase() + s.why.slice(1) + ".";
   ladder($("#ladder"), s.rung);

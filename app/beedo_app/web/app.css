@@ -287,3 +287,5 @@ button.x { color: var(--muted); border: 0; background: none; cursor: pointer; } 
 .set-code { width: 100%; box-sizing: border-box; background: var(--panel-2); border: 1px solid var(--line); border-radius: 8px;
   padding: 8px 10px; color: var(--text); font: 12px ui-monospace, Consolas, monospace; resize: vertical; }
 .disagree { color: var(--rm1); }
+.weekly-line { margin: -6px 0 12px; }
+.weekly-line:empty { display: none; }

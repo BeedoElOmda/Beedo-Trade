@@ -188,6 +188,9 @@ const AR_RULES = [
   [/^(above|below) its 50-day average, (above|below) its 200-day$/, (m) => `${m[1] === "above" ? "أعلى" : "أدنى"} من متوسط 50 يومًا، و${m[2] === "above" ? "أعلى" : "أدنى"} من متوسط 200 يوم`],
   [/^(\d+)% of (\d+) stocks above their 50-day average \((\d+)% above 200-day\)$/, (m) => `${m[1]}% من ${m[2]} سهمًا أعلى من متوسط 50 يومًا (${m[3]}% أعلى من متوسط 200 يوم)`],
   [/^(\d+) up · (\d+) down today$/, (m) => `${m[1]} صاعد · ${m[2]} هابط اليوم`],
+  // 2.2.1: prices at most 15 minutes old
+  [/^Close of (\S+) · Yahoo Finance \+ TradingView \(15 min delayed\)$/, (m) => `إغلاق ${m[1]} · Yahoo Finance + TradingView (متأخر 15 دقيقة)`],
+  [/^Today so far · Yahoo Finance \+ TradingView \(15 min delayed\)$/, () => "اليوم حتى الآن · Yahoo Finance + TradingView (متأخر 15 دقيقة)"],
   // 2.1
   [/^\(score ([+-]?\d+)\)$/, (m) => `(النقاط ${m[1]})`],
   [/^(\S+): score ([+-]?\d+) \((.+)\) reached your alert score ([+-]?\d+)$/, (m) => `${m[1]}: النقاط ${m[2]} (${AR[m[3]] || m[3]}) بلغت نقاط التنبيه ${m[4]}`],

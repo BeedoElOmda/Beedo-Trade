@@ -79,8 +79,8 @@
             <div class="signal-row">
               <div class="badge big" id="rBadge"></div>
               <p id="rWhy"></p>
-              <p id="rWeekly" class="muted tiny"></p>
             </div>
+            <p id="rWeekly" class="muted tiny weekly-line"></p>
             <div class="ladder" id="ladder" aria-label="Signal ladder"></div>
             <div class="stats" id="stats"></div>
             <div class="verdict" id="verdict"></div>
@@ -284,7 +284,7 @@
           <div class="card span3">
             <h3>Where the numbers come from</h3>
             <ul class="plain">
-              <li>Daily prices: Yahoo Finance (e.g. COMI → COMI.CA). The larger, widely traded EGX stocks are covered; for others, use <b>Import CSV</b> with date, open, high, low, close and volume columns.</li>
+              <li>Prices: daily history from Yahoo Finance (e.g. COMI → COMI.CA), and the last two trading days from TradingView, 15 minutes delayed (during trading hours, today so far). The larger, widely traded EGX stocks are covered; for others, use <b>Import CSV</b> with date, open, high, low, close and volume columns.</li>
               <li>Indicators: moving averages you choose (default 5 / 9 / 18, the course's own), MACD 12 / 26 / 9, RSI 14 (Wilder), swing highs and lows, support and resistance, 20-day volume average, reversal candles and gaps.</li>
               <li>Chart and pattern steps 10 and 11 are judged on the chart: the swing points are marked for you.</li>
               <li>Company fundamentals: TradingView's market data (last 12 months of reported results), rated with standard rules and compared with similar companies. Smaller companies often have too few reported figures to rate.</li>
