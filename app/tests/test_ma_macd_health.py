@@ -166,3 +166,20 @@ def test_each_alert_is_notified_once_a_day(tmp_path, monkeypatch):
     a, b = {"symbol": "AAA", "text": "AAA: score +6"}, {"symbol": "BBB", "text": "BBB closed at 9"}
     api._notify_new([a]); api._notify_new([a, b]); api._notify_new([a, b])
     assert sent == ["AAA: score +6", "BBB closed at 9"]  # the 15-minute re-checks don't repeat them
+
+def test_latest_sessions_come_from_tradingview(monkeypatch):
+    import datetime as dt
+    b = lambda d, c, v=1000: dict(d=d, o=c, h=c, l=c, c=c, v=v)
+    yahoo = [b("2026-11-18", 126.0), b("2026-11-19", 127.5), b("2026-11-22", 125.01)]  # Wed, Thu, Sun; Monday missing
+    tv = [125.01, 127.5, 125.01, 126.5, 4142327, 127.5, 127.5, 124.55, 125.01, 2128757, 127.5]  # Monday, Sunday, Thursday's close
+    monkeypatch.setattr(fundamentals, "_scan", lambda body: [tv])
+    tue_morning = dt.datetime(2026, 11, 24, 7, 52)
+    assert analyze.session_days(tue_morning) == (dt.date(2026, 11, 23), dt.date(2026, 11, 22))
+    assert analyze.session_days(dt.datetime(2026, 11, 27, 12, 0))[0] == dt.date(2026, 11, 26)  # Friday: Thursday's session
+    out = analyze.with_latest(yahoo, "COMI", tue_morning)
+    assert [x["d"] for x in out] == ["2026-11-18", "2026-11-19", "2026-11-22", "2026-11-23"]
+    assert out[-1]["c"] == 126.5 and out[-1]["v"] == 4142327 and "partial" not in out[-1] and out[-2]["l"] == 124.55
+    during = analyze.with_latest(yahoo[:2], "COMI", dt.datetime(2026, 11, 23, 11, 30))  # Monday 11:30, Yahoo up to Thursday
+    assert during[-1]["d"] == "2026-11-23" and during[-1]["partial"]
+    tv[-1] = 71.05  # the sources don't line up (a holiday, a frozen Yahoo feed): Yahoo's history is kept
+    assert analyze.with_latest(yahoo, "COMI", tue_morning) == yahoo
