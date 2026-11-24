@@ -49,7 +49,7 @@
 
       <div id="empty" class="empty">
         <h1>Analyse an EGX stock with your course method</h1>
-        <p class="muted">Type a 4-letter code, or pick one below. You get the signal, the actions for your position, the chart and the 12-step checklist.</p>
+        <p class="muted">Type a 4-letter code, or pick one below. You get the signal, the actions for your position, the chart and the 12-indicator checklist.</p>
         <div id="quick" class="chips"></div>
       </div>
 
@@ -134,7 +134,7 @@
           </div>
 
           <div class="card span2">
-            <div class="card-head"><h3>12-step checklist</h3><span class="muted tiny">Each step lands on one rung of the ladder. Untick a step to leave it out of the signal; "Untick →" shows what that would do today.</span></div>
+            <div class="card-head"><h3>12-indicator checklist</h3><span class="muted tiny">Each indicator lands on one rung of the ladder. Untick an indicator to leave it out of the signal; "Untick →" shows what that would do today.</span></div>
             <ol class="checklist" id="checklist"></ol>
           </div>
 
@@ -182,7 +182,7 @@
       <div id="wChips" class="chips editable"></div>
       <div class="card table-wrap">
         <table class="table" id="wTable">
-          <thead><tr><th data-sort="symbol">Stock</th><th data-sort="close" class="num">Close</th><th data-sort="rung">Signal</th><th data-sort="score" class="num" title="Total of the ticked steps: 9 = Confirm, 5 = First, 2 = Alarm">Score</th><th data-sort="quality_score">Company</th><th data-sort="pe" class="num">P/E</th><th data-sort="pb" class="num">P/B</th><th data-sort="roe" class="num">ROE</th><th data-sort="net_margin" class="num">Net margin</th><th data-sort="debt_to_equity" class="num">Debt/Eq.</th><th data-sort="eps_growth" class="num">EPS growth</th><th data-sort="dividend_yield" class="num">Div. yield</th><th data-sort="market_cap" class="num">Mkt cap</th><th data-sort="perf_ytd" class="num">YTD</th><th data-sort="verdict">View</th></tr></thead>
+          <thead><tr><th data-sort="symbol">Stock</th><th data-sort="close" class="num">Close</th><th data-sort="rung">Signal</th><th data-sort="score" class="num" title="Total of the ticked indicators: 9 = Confirm, 5 = First, 2 = Alarm">Score</th><th data-sort="quality_score">Company</th><th data-sort="pe" class="num">P/E</th><th data-sort="pb" class="num">P/B</th><th data-sort="roe" class="num">ROE</th><th data-sort="net_margin" class="num">Net margin</th><th data-sort="debt_to_equity" class="num">Debt/Eq.</th><th data-sort="eps_growth" class="num">EPS growth</th><th data-sort="dividend_yield" class="num">Div. yield</th><th data-sort="market_cap" class="num">Mkt cap</th><th data-sort="perf_ytd" class="num">YTD</th><th data-sort="verdict">View</th></tr></thead>
           <tbody><tr><td colspan="15" class="muted center">Press "Scan all" to check every stock on your list.</td></tr></tbody>
         </table>
       </div>
@@ -256,7 +256,7 @@
       <p class="muted tiny" id="sSummary"></p>
       <div class="card table-wrap">
         <table class="table" id="sTable">
-          <thead><tr><th data-sort="symbol">Stock</th><th data-sort="close" class="num">Close</th><th data-sort="rung">Signal</th><th data-sort="score" class="num" title="Total of the ticked steps: 9 = Confirm, 5 = First, 2 = Alarm">Score</th><th data-sort="quality_score">Company</th><th data-sort="pe" class="num">P/E</th><th data-sort="pb" class="num">P/B</th><th data-sort="roe" class="num">ROE</th><th data-sort="net_margin" class="num">Net margin</th><th data-sort="debt_to_equity" class="num">Debt/Eq.</th><th data-sort="eps_growth" class="num">EPS growth</th><th data-sort="dividend_yield" class="num">Div. yield</th><th data-sort="market_cap" class="num">Mkt cap</th><th data-sort="perf_ytd" class="num">YTD</th><th data-sort="verdict">View</th></tr></thead>
+          <thead><tr><th data-sort="symbol">Stock</th><th data-sort="close" class="num">Close</th><th data-sort="rung">Signal</th><th data-sort="score" class="num" title="Total of the ticked indicators: 9 = Confirm, 5 = First, 2 = Alarm">Score</th><th data-sort="quality_score">Company</th><th data-sort="pe" class="num">P/E</th><th data-sort="pb" class="num">P/B</th><th data-sort="roe" class="num">ROE</th><th data-sort="net_margin" class="num">Net margin</th><th data-sort="debt_to_equity" class="num">Debt/Eq.</th><th data-sort="eps_growth" class="num">EPS growth</th><th data-sort="dividend_yield" class="num">Div. yield</th><th data-sort="market_cap" class="num">Mkt cap</th><th data-sort="perf_ytd" class="num">YTD</th><th data-sort="verdict">View</th></tr></thead>
           <tbody><tr><td colspan="15" class="muted center">Choose your filters and press "Run screener". It takes about 20 to 40 seconds.</td></tr></tbody>
         </table>
       </div>
@@ -274,19 +274,19 @@
     <section class="page" id="page-about">
       <div class="about">
         <h1>About Beedo-Trade</h1>
-        <p>Beedo-Trade applies the Beedo technical-analysis course to Egyptian Exchange stocks, the same way every time: 12 steps (the 11 course steps plus MACD), one signal, and separate advice for a cash holder and a shareholder.</p>
+        <p>Beedo-Trade applies the Beedo technical-analysis course to Egyptian Exchange stocks, the same way every time: 12 indicators (the 11 course indicators plus MACD), one signal, and separate advice for a cash holder and a shareholder.</p>
         <div class="grid">
           <div class="card span3">
             <h3>The signal ladder</h3>
             <div class="ladder legend" id="ladderLegend"></div>
-            <p class="muted">Alarm = early warning, get ready. First = start a position (or start reducing). Confirm = several signals agree, act fully. The signal is the score of the ticked steps: each adds its rung (Confirm +3, First +2, Alarm +1, Hold 0, minus for sells); 9 or more = Confirm, 5 = First, 2 = Alarm.</p>
+            <p class="muted">Alarm = early warning, get ready. First = start a position (or start reducing). Confirm = several signals agree, act fully. The signal is the score of the ticked indicators: each adds its rung (Confirm +3, First +2, Alarm +1, Hold 0, minus for sells); 9 or more = Confirm, 5 = First, 2 = Alarm.</p>
           </div>
           <div class="card span3">
             <h3>Where the numbers come from</h3>
             <ul class="plain">
               <li>Prices: daily history from Yahoo Finance (e.g. COMI → COMI.CA), and the last two trading days from TradingView, 15 minutes delayed (during trading hours, today so far). The larger, widely traded EGX stocks are covered; for others, use <b>Import CSV</b> with date, open, high, low, close and volume columns.</li>
               <li>Indicators: moving averages you choose (default 5 / 9 / 18, the course's own), MACD 12 / 26 / 9, RSI 14 (Wilder), swing highs and lows, support and resistance, 20-day volume average, reversal candles and gaps.</li>
-              <li>Chart and pattern steps 10 and 11 are judged on the chart: the swing points are marked for you.</li>
+              <li>Chart and pattern indicators 10 and 11 are judged on the chart: the swing points are marked for you.</li>
               <li>Company fundamentals: TradingView's market data (last 12 months of reported results), rated with standard rules and compared with similar companies. Smaller companies often have too few reported figures to rate.</li>
             </ul>
           </div>
@@ -298,9 +298,10 @@
               <button class="ghost small" id="updateCheck">Check for updates</button>
               <button class="ghost small" data-url="https://github.com/BeedoElOmda/Beedo-Trade/issues">Report a problem</button>
             </div>
+            <p class="thanks">Special thanks to <b>Dr. Ahmed El Otefy</b>.</p>
             <p class="muted tiny" id="aboutInfo"></p>
             <h3>Copy your settings to another device</h3>
-            <p class="muted tiny">Your watchlist, alerts, portfolio, moving averages and ticked steps as one code. Press "Show my code", copy it, paste it into this box on your other PC or phone, and press "Apply pasted code".</p>
+            <p class="muted tiny">Your watchlist, alerts, portfolio, moving averages and ticked indicators as one code. Press "Show my code", copy it, paste it into this box on your other PC or phone, and press "Apply pasted code".</p>
             <textarea id="setCode" rows="3" spellcheck="false" class="set-code" aria-label="Settings code"></textarea>
             <div class="links"><button class="ghost small" id="setCopy">Show my code</button><button class="ghost small" id="setApply">Apply pasted code</button></div>
             <p class="muted tiny">Charts by <a href="#" data-url="https://www.tradingview.com/">TradingView</a> Lightweight Charts™ (Apache 2.0). Source: <a href="#" data-url="https://github.com/BeedoElOmda/Beedo-Trade">github.com/BeedoElOmda/Beedo-Trade</a></p>

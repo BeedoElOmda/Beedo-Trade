@@ -56,7 +56,11 @@ function applyTheme(theme) {
   toast(r && r.online ? "Opening the online guide…" : "Opening the user guide…");
 }));
 $("#themeBtn").addEventListener("click", () => { const t = { dark: "light", light: "system", system: "dark" }[themeMode]; save({ theme: t }); applyTheme(t); });
-sysDark.addEventListener("change", () => { if (themeMode === "system") applyTheme("system"); });
+// System: follow the computer or phone. The "change" event isn't always delivered (some web views, a switch made while
+// the app was in the background), so check again whenever the window comes back into view or gets focus.
+const followSystem = () => { if (themeMode === "system" && document.documentElement.dataset.theme !== (sysDark.matches ? "dark" : "light")) applyTheme("system"); };
+sysDark.addEventListener("change", followSystem);
+["focus", "visibilitychange", "pageshow"].forEach((ev) => window.addEventListener(ev, followSystem));
 
 /* ---------- number formats ---------- */
 const pct = (v, d = 1) => (v == null ? "–" : `${fmt(v, d)}%`);
@@ -148,7 +152,7 @@ function render(d) {
   $("#aShare").textContent = d.actions.shareholder;
   // tick box: count this step in the signal (steps 10-11 are judged by eye, so they have none)
   $("#checklist").innerHTML = d.steps.map((st) => `<li class="${st.off ? "off" : ""}">
-      <span class="num">${[10, 11].includes(st.n) ? "" : `<input type="checkbox" class="step-on" data-n="${st.n}" ${st.off ? "" : "checked"} title="Count this step in the signal" aria-label="Count step ${st.n} in the signal">`}${st.n}</span><span class="name">${esc(st.name)}</span>
+      <span class="num">${[10, 11].includes(st.n) ? "" : `<input type="checkbox" class="step-on" data-n="${st.n}" ${st.off ? "" : "checked"} title="Count this indicator in the signal" aria-label="Count indicator ${st.n} in the signal">`}${st.n}</span><span class="name">${esc(st.name)}</span>
       <span class="reading">${esc(st.reading)}${st.note ? `<span class="note">${esc(st.note)}</span>` : ""}</span>
       ${badge(st.rung)}${(d.impact || {})[st.n] ? `<span class="impact" title="What the signal would become">${st.off ? "Tick" : "Untick"} → ${esc(d.impact[st.n])}</span>` : ""}</li>`).join("");
   $("#nUp").innerHTML = d.next.up.map((x) => `<li>${esc(x)}</li>`).join("") || "<li class='muted'>Already fully bullish</li>";
@@ -163,7 +167,7 @@ function render(d) {
   // TradingView snapshot (no daily history): no chart, back-test or time machine
   const snap = !!d.snapshot;
   $("#snapNote").classList.toggle("hidden", !snap);
-  if (snap) $("#snapNote").innerHTML = `<b>Snapshot only: the signal stops at Alarm</b>${esc((d.reason || "").split(". ")[0].replace(/\.?$/, "."))} Steps that need daily history are marked "Not checked". Import a CSV of daily prices for the full checklist.`;
+  if (snap) $("#snapNote").innerHTML = `<b>Snapshot only: the signal stops at Alarm</b>${esc((d.reason || "").split(". ")[0].replace(/\.?$/, "."))} Indicators that need daily history are marked "Not checked". Import a CSV of daily prices for the full checklist.`;
   [$("#priceChart").closest(".card"), $("#btBtn").closest(".card"), $("#tmBtn").closest(".card")].forEach((c) => c.classList.toggle("hidden", snap));
   if (snap) { if (charts) { charts.destroy(); charts = null; } } else drawCharts(d);
   updatePlan();
@@ -498,7 +502,7 @@ async function loadMetals() {
   const m = await api("metals");
   if (!m || m.error) { err.innerHTML = `<b>Couldn't load prices</b>${esc(m ? m.error : "")}`; err.classList.remove("hidden"); metalsLoaded = false; return; }
   const g = m.gold, s = m.silver;
-  const buttons = (code) => `<div class="btn-row"><button class="primary small" data-go="${code}">Analyze with my course method</button>
+  const buttons = (code) => `<div class="btn-row"><button class="primary small" data-go="${code}">Analyze</button>
     <button class="ghost small" data-watch="${code}">Add to watchlist</button></div>`;
   const card = (cls, title, x, body) => `<div class="card metal">
       <div class="metal-top"><div class="metal-name"><i class="metal-dot ${cls}"></i>${title}</div><span class="muted tiny">${esc(x.date)}</span></div>${body}

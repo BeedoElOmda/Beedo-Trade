@@ -7,11 +7,11 @@ const AR = {
   // menu and common buttons
   "Analyze": "تحليل", "Watchlist": "قائمة المتابعة", "Portfolio": "المحفظة", "Gold & Silver": "الذهب والفضة", "Screener": "فرز الأسهم", "About": "عن البرنامج",
   "EGX course method": "منهج الدورة للبورصة المصرية", "User guide": "دليل المستخدم", "Open the user guide": "فتح دليل المستخدم",
-  "Score": "النقاط", "Alert at score (5 or -5)": "تنبيه عند النقاط (5 أو -5)", "Weekly candles:": "الشموع الأسبوعية:",
+  "Special thanks to": "شكر خاص إلى", "Score": "النقاط", "Alert at score (5 or -5)": "تنبيه عند النقاط (5 أو -5)", "Weekly candles:": "الشموع الأسبوعية:",
   "· The daily and weekly signals disagree: be careful.": "· الإشارة اليومية والأسبوعية مختلفتان: توخَّ الحذر.",
   "Enter a price or a score to be alerted at": "أدخل سعرًا أو نقاطًا للتنبيه عندها",
   "Copy your settings to another device": "انقل إعداداتك إلى جهاز آخر", "Show my code": "اعرض الرمز", "Apply pasted code": "طبّق الرمز الملصق",
-  "Your watchlist, alerts, portfolio, moving averages and ticked steps as one code. Press \"Show my code\", copy it, paste it into this box on your other PC or phone, and press \"Apply pasted code\".": "قائمة المتابعة والتنبيهات والمحفظة والمتوسطات المتحركة والخطوات المحددة في رمز واحد. اضغط «اعرض الرمز» وانسخه، ثم الصقه في هذا المربع على جهازك الآخر واضغط «طبّق الرمز الملصق».",
+  "Your watchlist, alerts, portfolio, moving averages and ticked indicators as one code. Press \"Show my code\", copy it, paste it into this box on your other PC or phone, and press \"Apply pasted code\".": "قائمة المتابعة والتنبيهات والمحفظة والمتوسطات المتحركة والمؤشرات المحددة في رمز واحد. اضغط «اعرض الرمز» وانسخه، ثم الصقه في هذا المربع على جهازك الآخر واضغط «طبّق الرمز الملصق».",
   "Code copied": "تم نسخ الرمز", "Code ready: copy it from the box": "الرمز جاهز: انسخه من المربع", "That code isn't valid": "هذا الرمز غير صالح", "Settings applied": "تم تطبيق الإعدادات",
   "Theme: Dark": "المظهر: داكن", "Theme: Light": "المظهر: فاتح", "Theme: System": "المظهر: حسب النظام",
   "USD / EGP": "الدولار / الجنيه", "Import CSV": "استيراد CSV", "Save as PDF": "حفظ PDF", "Export to Excel": "تصدير إلى Excel",
@@ -37,9 +37,9 @@ const AR = {
   "the market is moving sideways: wait for a breakout": "السوق يتحرك عرضيًا: انتظر الاختراق",
   "Industry health": "صحة القطاعات", "Industry": "النشاط", "Stocks": "الأسهم", "Above 50-day": "أعلى من متوسط 50", "Above 200-day": "أعلى من متوسط 200",
   "Up / down today": "صاعد / هابط اليوم", "Avg change": "متوسط التغير", "Health": "الحالة", "Too few stocks": "أسهم قليلة", "No industry data.": "لا توجد بيانات للقطاعات.",
-  "Healthy": "قوي", "Mixed": "متذبذب", "All steps counted": "كل الخطوات محسوبة",
-  "Each step lands on one rung of the ladder. Untick a step to leave it out of the signal; \"Untick →\" shows what that would do today.": "كل خطوة تقع على درجة من سلّم الإشارات. ألغِ تحديد أي خطوة لاستبعادها من الإشارة؛ ويوضح «إلغاء ←» ما سيحدث للإشارة اليوم.",
-  "Count this step in the signal": "احسب هذه الخطوة في الإشارة", "Switched off: not counted in the signal.": "مستبعدة: لا تُحسب في الإشارة.",
+  "Healthy": "قوي", "Mixed": "متذبذب", "All indicators counted": "كل المؤشرات محسوبة",
+  "Each indicator lands on one rung of the ladder. Untick an indicator to leave it out of the signal; \"Untick →\" shows what that would do today.": "كل مؤشر يقع على درجة من سلّم الإشارات. ألغِ تحديد أي مؤشر لاستبعاده من الإشارة؛ ويوضح «إلغاء ←» ما سيحدث للإشارة اليوم.",
+  "Count this indicator in the signal": "احسب هذا المؤشر في الإشارة", "Switched off: not counted in the signal.": "مستبعدة: لا تُحسب في الإشارة.",
   "Healthy: at least 60% of the industry's stocks are above both their 50-day and 200-day averages. Weak: 40% or fewer above both. Industries with fewer than 3 stocks get no label. TradingView, end of day.": "قوي: 60% على الأقل من أسهم النشاط أعلى من متوسطي 50 و200 يوم. ضعيف: 40% أو أقل. الأنشطة التي بها أقل من 3 أسهم بلا تصنيف. المصدر TradingView، نهاية اليوم.",
   "MACD 12 / 26 / 9": "ماكد MACD 12 / 26 / 9", "line, signal and histogram": "الخط والإشارة والأعمدة",
   "Moving averages (fast / mid / slow)": "المتوسطات المتحركة (سريع / متوسط / بطيء)", "Apply": "تطبيق", "Default 5 / 9 / 18": "الافتراضي 5 / 9 / 18", "What the signal would become": "ما ستصبح عليه الإشارة",
@@ -61,13 +61,13 @@ const AR = {
 
   // analyze page
   "Analyse an EGX stock with your course method": "حلّل سهمًا في البورصة المصرية بمنهج دورتك",
-  "Type a 4-letter code, or pick one below. You get the signal, the actions for your position, the chart and the 12-step checklist.": "اكتب رمز السهم أو اختر من الأسماء أدناه. ستحصل على الإشارة، وما يجب فعله، والرسم البياني، وقائمة الخطوات الاثنتي عشرة.",
+  "Type a 4-letter code, or pick one below. You get the signal, the actions for your position, the chart and the 12-indicator checklist.": "اكتب رمز السهم أو اختر من الأسماء أدناه. ستحصل على الإشارة، وما يجب فعله، والرسم البياني، وقائمة المؤشرات الاثني عشر.",
   "Volume": "حجم التداول", "Support": "الدعم", "Resistance": "المقاومة", "vs 20-day average": "مقارنة بمتوسط 20 يومًا",
   "none below": "لا يوجد دعم أدنى", "none above": "لا توجد مقاومة أعلى",
   "Combined view: company + chart": "الرؤية المجمّعة: الشركة + الرسم البياني",
   "Key figures": "أهم الأرقام", "Chart": "الرسم البياني", "Daily": "يومي", "Weekly": "أسبوعي",
   "Support / resistance": "الدعم / المقاومة", "Swing points": "القمم والقيعان",
-  "Company rating": "تقييم الشركة", "12-step checklist": "قائمة الخطوات الاثنتي عشرة", "MACD (12 / 26 / 9)": "مؤشر MACD (12 / 26 / 9)", "Each step lands on one rung of the ladder": "كل خطوة تقع على درجة من سلّم الإشارات",
+  "Company rating": "تقييم الشركة", "12-indicator checklist": "قائمة المؤشرات الاثني عشر", "MACD (12 / 26 / 9)": "مؤشر MACD (12 / 26 / 9)", "Each indicator lands on one rung of the ladder": "كل مؤشر يقع على درجة من سلّم الإشارات",
   "What would change the signal": "ما الذي يغيّر الإشارة", "Upward": "صعودًا", "Downward": "هبوطًا",
   "Already fully bullish": "الإشارة صاعدة بالكامل", "Already fully bearish": "الإشارة هابطة بالكامل",
   "Trade plan": "خطة الصفقة", "Cash (EGP)": "السيولة (جنيه)", "Max risk per trade (%)": "أقصى مخاطرة للصفقة (%)",
@@ -131,7 +131,7 @@ const AR = {
   "How often would the trade plan above reach its target before its stop? It replays the next 20 trading days 10,000 times from this stock's own daily moves of the past two years, and checks the same plan on past days that had the same signal. A simulation, not a prediction.": "كم مرة تصل خطة التداول أعلاه إلى الهدف قبل وقف الخسارة؟ تعيد آلة الزمن تشغيل أيام التداول العشرين القادمة 10,000 مرة من حركات السهم اليومية خلال العامين الماضيين، وتختبر نفس الخطة في الأيام السابقة التي ظهرت فيها نفس الإشارة. هذه محاكاة وليست توقعًا.",
   // back-test
   "Back-test": "اختبار على الماضي", "Run back-test": "تشغيل الاختبار", "Running…": "جارٍ التشغيل…",
-  "Replays the checklist day by day over the past two years. It buys at the close on a First or Confirm Buy and sells at the close on a First or Confirm Sell. Fees and taxes are not counted. Past results do not predict future results.": "يعيد تطبيق قائمة الخطوات يومًا بيوم على العامين الماضيين: يشتري عند الإغلاق مع إشارة شراء أولي أو تأكيد شراء، ويبيع عند الإغلاق مع إشارة بيع أولي أو تأكيد بيع. لا تُحسب العمولات والضرائب. نتائج الماضي لا تتنبأ بالمستقبل.",
+  "Replays the checklist day by day over the past two years. It buys at the close on a First or Confirm Buy and sells at the close on a First or Confirm Sell. Fees and taxes are not counted. Past results do not predict future results.": "يعيد تطبيق قائمة المؤشرات يومًا بيوم على العامين الماضيين: يشتري عند الإغلاق مع إشارة شراء أولي أو تأكيد شراء، ويبيع عند الإغلاق مع إشارة بيع أولي أو تأكيد بيع. لا تُحسب العمولات والضرائب. نتائج الماضي لا تتنبأ بالمستقبل.",
   "Course method": "منهج الدورة", "following the signals": "باتباع الإشارات", "Buy and hold": "الشراء والاحتفاظ", "bought on the first day": "شراء من أول يوم",
   "Trades": "الصفقات", "Winners": "الرابحة", "trades in profit": "صفقات رابحة", "Bought": "تاريخ الشراء", "Sold": "تاريخ البيع", "Price": "السعر", "Result": "النتيجة", "Still open": "ما زالت مفتوحة",
   "The method gave no First or Confirm Buy in this period, so it stayed in cash.": "لم يعطِ المنهج إشارة شراء أولي أو تأكيد شراء في هذه الفترة، فبقي في السيولة.",
@@ -141,7 +141,7 @@ const AR = {
   "Gold": "الذهب", "Silver": "الفضة", "Market": "السوق", "24k, per gram": "عيار 24، للجرام", "999, per gram": "999، للجرام", "Per ounce": "للأوقية",
   "Change today (USD)": "تغيّر اليوم (دولار)", "1 year (USD)": "سنة (دولار)", "52-week range (USD/oz)": "نطاق 52 أسبوعًا (دولار/أوقية)",
   "US dollar, official rate": "الدولار الأمريكي، السعر الرسمي", "Gold / silver ratio": "نسبة الذهب إلى الفضة",
-  "Analyze with my course method": "حلّل بمنهج دورتي", "Add to watchlist": "أضف إلى قائمة المتابعة",
+  "Add to watchlist": "أضف إلى قائمة المتابعة",
   "How many ounces of silver one ounce of gold buys. Above about 80, silver is cheap compared with gold; below about 50, gold is.": "عدد أوقيات الفضة التي تشتريها أوقية ذهب واحدة. فوق 80 تقريبًا تكون الفضة رخيصة مقارنة بالذهب، وتحت 50 تقريبًا يكون الذهب هو الأرخص.",
 
   // screener
@@ -153,16 +153,16 @@ const AR = {
 
   // about
   "About Beedo-Trade": "عن Beedo-Trade", "The signal ladder": "سلّم الإشارات", "Where the numbers come from": "مصدر الأرقام", "Important": "تنبيه مهم",
-  "Beedo-Trade applies the Beedo technical-analysis course to Egyptian Exchange stocks, the same way every time: 12 steps (the 11 course steps plus MACD), one signal, and separate advice for a cash holder and a shareholder.": "يطبّق Beedo-Trade دورة Beedo للتحليل الفني على أسهم البورصة المصرية بالطريقة نفسها في كل مرة: 12 خطوة (خطوات الدورة الإحدى عشرة ومؤشر MACD)، إشارة واحدة، ونصيحة منفصلة لصاحب السيولة ولحامل السهم.",
-  "Alarm = early warning, get ready. First = start a position (or start reducing). Confirm = several signals agree, act fully. The signal is the score of the ticked steps: each adds its rung (Confirm +3, First +2, Alarm +1, Hold 0, minus for sells); 9 or more = Confirm, 5 = First, 2 = Alarm.": "التنبيه = إنذار مبكر، استعد. الأولي = ابدأ الشراء (أو ابدأ التخفيف). التأكيد = عدة إشارات متفقة، نفّذ بالكامل. الإشارة هي مجموع نقاط الخطوات المحددة: كل خطوة تضيف درجتها (تأكيد +3، أولي +2، تنبيه +1، احتفاظ 0، وبالسالب للبيع)؛ 9 فأكثر = تأكيد، 5 = أولي، 2 = تنبيه.",
+  "Beedo-Trade applies the Beedo technical-analysis course to Egyptian Exchange stocks, the same way every time: 12 indicators (the 11 course indicators plus MACD), one signal, and separate advice for a cash holder and a shareholder.": "يطبّق Beedo-Trade دورة Beedo للتحليل الفني على أسهم البورصة المصرية بالطريقة نفسها في كل مرة: 12 مؤشرًا (مؤشرات الدورة الأحد عشر ومؤشر MACD)، إشارة واحدة، ونصيحة منفصلة لصاحب السيولة ولحامل السهم.",
+  "Alarm = early warning, get ready. First = start a position (or start reducing). Confirm = several signals agree, act fully. The signal is the score of the ticked indicators: each adds its rung (Confirm +3, First +2, Alarm +1, Hold 0, minus for sells); 9 or more = Confirm, 5 = First, 2 = Alarm.": "التنبيه = إنذار مبكر، استعد. الأولي = ابدأ الشراء (أو ابدأ التخفيف). التأكيد = عدة إشارات متفقة، نفّذ بالكامل. الإشارة هي مجموع نقاط المؤشرات المحددة: كل مؤشر يضيف درجته (تأكيد +3، أولي +2، تنبيه +1، احتفاظ 0، وبالسالب للبيع)؛ 9 فأكثر = تأكيد، 5 = أولي، 2 = تنبيه.",
   "This is a learning and decision-support tool. It is": "هذه أداة للتعلّم ودعم القرار. وهي", "not investment advice": "ليست نصيحة استثمارية",
   ", it does not know your full financial situation, and it never places orders. Free data can be delayed: always check the live price and the day's disclosures before trading.": "، ولا تعرف وضعك المالي الكامل، ولا تنفّذ أي أوامر. البيانات المجانية قد تكون متأخرة: راجع دائمًا السعر اللحظي وإفصاحات اليوم قبل التداول.",
 };
 // Sentences assembled from parts
 const AR_RULES = [
-  // 2.0: the signal is the score of the ticked steps
+  // 2.0: the signal is the score of the ticked indicators
   [/^(.+); capped at Alarm because only a snapshot is available, without daily history\.?$/i, (m) => `${tr(m[1]) || m[1]}؛ الإشارة محدودة عند التنبيه لأنها لقطة فقط بدون أسعار يومية`],
-  [/^score ([+-]?\d+) from (\d+) ticked steps \(.+\)\.?$/i, (m) => `النقاط ${m[1]} من ${m[2]} خطوة محددة (تأكيد عند 9 فأكثر، أولي عند 5، تنبيه عند 2؛ وبالمثل تحت الصفر للبيع)`],
+  [/^score ([+-]?\d+) from (\d+) ticked indicators \(.+\)\.?$/i, (m) => `النقاط ${m[1]} من ${m[2]} مؤشرات محددة (تأكيد عند 9 فأكثر، أولي عند 5، تنبيه عند 2؛ وبالمثل تحت الصفر للبيع)`],
   [/^(.+); capped because (.+)$/i, (m) => `${tr(m[1]) || m[1]}؛ الإشارة محدودة لأن ${m[2].split(" and ").map((x) => tr(x) || x).join(" و")}`],
   [/^Update available: (.+)$/, (m) => `يوجد تحديث: ${m[1]}`],
   [/^Version (\S+) is available$/, (m) => `الإصدار ${m[1]} متاح`],
@@ -178,11 +178,11 @@ const AR_RULES = [
   [/^Not checked: needs daily price history$/, () => "لم تُفحص: تحتاج أسعارًا يومية تاريخية"],
   [/^Not checked: no support or resistance levels available$/, () => "لم تُفحص: لا توجد مستويات دعم أو مقاومة"],
   [/^TradingView snapshot \(latest session\)$/, () => "لقطة من TradingView (آخر جلسة)"],
-  [/^Steps not counted: (.+)$/, (m) => `خطوات غير محسوبة: ${m[1]}`],
+  [/^Indicators not counted: (.+)$/, (m) => `مؤشرات غير محسوبة: ${m[1]}`],
   [/^Signal unchanged: (.+)$/, (m) => `الإشارة لم تتغير: ${AR[m[1]] || m[1]}`],
   [/^Signal: (.+) → (.+)$/, (m) => `الإشارة: ${AR[m[1]] || m[1]} ← ${AR[m[2]] || m[2]}`],
   [/^(Untick|Tick) → (.+)$/, (m) => `${m[1] === "Untick" ? "إلغاء" : "تحديد"} ← ${AR[m[2]] || m[2]}`],
-  [/^Count step (\d+) in the signal$/, (m) => `احسب الخطوة ${m[1]} في الإشارة`],
+  [/^Count indicator (\d+) in the signal$/, (m) => `احسب المؤشر ${m[1]} في الإشارة`],
   [/^Moving averages (.+) saved$/, (m) => `تم حفظ المتوسطات المتحركة ${m[1]}`],
   [/^Market: (Healthy|Mixed|Weak)$/, (m) => `السوق: ${{ Healthy: "قوي", Mixed: "متذبذب", Weak: "ضعيف" }[m[1]]}`],
   [/^(above|below) its 50-day average, (above|below) its 200-day$/, (m) => `${m[1] === "above" ? "أعلى" : "أدنى"} من متوسط 50 يومًا، و${m[2] === "above" ? "أعلى" : "أدنى"} من متوسط 200 يوم`],
