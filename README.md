@@ -14,6 +14,8 @@ Beedo-Trade is a desktop program for Windows and Mac (source in `app/`): type an
 
 **Gold & Silver (1.3):** a page with international gold prices per gram for 24k, 21k and 18k, silver per gram, the official dollar rate and the gold/silver ratio, all in EGP. Type `GOLD` or `SILVER` anywhere a stock code works to run the course checklist, chart and trade plan (in grams) on the metal, or add them to the watchlist. These are international prices; Egyptian shop prices add a local premium.
 
+**Google Play:** the steps, store texts and pictures are in [mobile/play/GOOGLE-PLAY.md](mobile/play/GOOGLE-PLAY.md); the privacy policy is [PRIVACY.md](PRIVACY.md). 2.2.1 also puts the weekly signal on its own line under the signal.
+
 **New in 2.2: phone notifications.** On Android, your price, score and signal alerts arrive as notifications, each once a day. The phone checks by itself every trading day at about 3 p.m. Cairo time, after the EGX closes, even when the app is closed. Allow notifications when asked; on Samsung phones, set the app's battery use to Unrestricted so the check isn't delayed.
 
 **New in 2.1: score everywhere, weekly signal, offline results.** The Watchlist and Screener show each stock's score and sort by it. Alerts can fire at a score (for example +5 = First Buy). Each analysis adds the signal on weekly candles and warns when it disagrees with the daily one. The last eight results stay on the device for when there is no internet, and a settings code on the About page copies your watchlist, alerts, portfolio, moving averages and ticked steps to another PC or phone. New installations start with the System theme.
