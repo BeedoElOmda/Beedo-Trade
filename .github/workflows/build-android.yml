@@ -17,6 +17,8 @@ permissions:
 jobs:
   android:
     runs-on: ubuntu-latest
+    env:
+      HAS_PLAY_KEY: ${{ secrets.PLAY_UPLOAD_KEYSTORE != '' }}  # your Google Play upload key (mobile/play/make_upload_key.py)
     steps:  # build only; the test job below attaches the APK once it starts cleanly
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -53,6 +55,39 @@ jobs:
           briefcase build android --no-input
           briefcase package android -p debug-apk --no-input
           mkdir -p ../out && cp dist/*.apk "../out/Beedo-Trade-${VERSION}-android.apk"
+      # Google Play takes an .aab bundle signed with your upload key. Without the key (GitHub secrets PLAY_UPLOAD_KEYSTORE
+      # and PLAY_UPLOAD_PASSWORD) the bundle is signed with a throwaway key, only to check that it builds and signs.
+      - name: Build the Google Play bundle
+        working-directory: mobile
+        env:
+          PLAY_UPLOAD_KEYSTORE: ${{ secrets.PLAY_UPLOAD_KEYSTORE }}
+          PLAY_UPLOAD_PASSWORD: ${{ secrets.PLAY_UPLOAD_PASSWORD }}
+        run: |
+          briefcase package android -p aab --no-input
+          AAB=$(ls dist/*.aab | head -1)
+          if [ "$HAS_PLAY_KEY" = "true" ]; then
+            echo "$PLAY_UPLOAD_KEYSTORE" | base64 -d > upload.p12
+          else
+            pip install cryptography
+            export PLAY_UPLOAD_PASSWORD=throwaway-ci-key
+            python -c "import sys; sys.path.insert(0, 'play'); import make_upload_key as m; open('upload.p12', 'wb').write(m.make_key(b'throwaway-ci-key'))"
+          fi
+          jarsigner -sigalg SHA256withRSA -digestalg SHA-256 -storetype pkcs12 -keystore upload.p12 -storepass:env PLAY_UPLOAD_PASSWORD "$AAB" upload
+          jarsigner -verify "$AAB"
+          rm upload.p12
+          mkdir -p ../out-play
+          if [ "$HAS_PLAY_KEY" = "true" ]; then cp "$AAB" "../out-play/Beedo-Trade-${VERSION}-play.aab"; fi
+      - name: Attach the Play bundle to the release
+        if: env.HAS_PLAY_KEY == 'true' && (github.event_name == 'release' || inputs.tag != '')
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name || inputs.tag }}
+        run: gh release upload "$TAG" out-play/*.aab --clobber
+      - uses: actions/upload-artifact@v4
+        if: env.HAS_PLAY_KEY == 'true'
+        with:
+          name: Beedo-Trade-play-bundle
+          path: out-play/*.aab
       - uses: actions/upload-artifact@v4
         with:
           name: Beedo-Trade-android
