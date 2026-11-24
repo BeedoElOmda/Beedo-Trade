@@ -195,7 +195,7 @@ def _score(counted):
     box moves it; 10 scored steps make -30 .. +30."""
     total = sum(s["rung"] for s in counted)
     rung = next((r * (1 if total > 0 else -1) for cut, r in SCORE_CUTS if abs(total) >= cut), 0)
-    why = (f"score {total:+d} from {len(counted)} ticked steps "
+    why = (f"score {total:+d} from {len(counted)} ticked indicators "
            f"(Confirm at 9 or more, First at 5, Alarm at 2; the same below zero for sells)")
     cash, share = ACTIONS[rung]
     return {"score": total, "signal": {"rung": rung, "label": RUNGS[rung], "why": why},
