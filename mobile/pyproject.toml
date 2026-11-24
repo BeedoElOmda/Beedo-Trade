@@ -19,7 +19,7 @@ splash_background_color = "#1D45A7"  # splash screen and adaptive-icon backgroun
 
 [tool.briefcase.app.beedotrade.android]
 requires = ["toga-android~=0.5.0"]
-base_theme = "Theme.MaterialComponents.Light.DarkActionBar"
+base_theme = "Theme.MaterialComponents.DayNight.DarkActionBar"  # follows the phone's dark mode, so the page's System theme can too
 build_gradle_dependencies = [
     "com.google.android.material:material:1.12.0",
     "androidx.swiperefreshlayout:swiperefreshlayout:1.1.0",
