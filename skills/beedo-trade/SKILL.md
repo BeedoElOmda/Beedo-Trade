@@ -5,7 +5,7 @@ description: Beedo-Trade analyses Egyptian Exchange (EGX) stocks with the user's
 
 # Beedo-Trade
 
-Version 2.2.0, the same method as the Beedo-Trade app 2.2.0 (score signal, 12 steps, weekly check).
+Version 2.2.1, the same method as the Beedo-Trade app 2.2.1 (score signal, 12 steps, weekly check).
 
 Analyse an EGX stock the way the user's own course teaches, then turn the result into a clear signal and, if wanted, a trade plan. The user built this method in their MBA technical-analysis course; the value of this skill is applying *their* rules consistently, not general TA opinions.
 
@@ -31,7 +31,7 @@ The `trader-*` skills are optional: if they are not available, do the sizing and
 If the egx-mcp tools are not loaded in this session, the price history alone is enough for the analysis.
 
 ### Getting the price history (try in this order)
-The indicators use two years of daily prices from Yahoo Finance (`COMI` → `COMI.CA`): the default 5 / 9 / 18 needs 60 trading days; a 200-day slow average needs at least 206.
+The indicators use two years of daily prices from Yahoo Finance (`COMI` → `COMI.CA`). Yahoo runs about a day late for the EGX, so the tools replace the last two sessions with TradingView's (15 minutes delayed; during trading hours the last bar is today so far, marked `"partial": true` in `last_bar`: call it "today so far", not the close). the default 5 / 9 / 18 needs 60 trading days; a 200-day slow average needs at least 206.
 1. **`beedo-trade` MCP server**, if its tools are loaded: `beedo_analyze` gives the same output as the script, and `beedo_history` gives the raw daily bars. Prefer it: it runs on the user's own computer, so it reaches Yahoo even when your sandbox can't.
 2. **The script**: `python -I <skill-dir>/scripts/analyze.py SYMBOL`, or `uv run --no-project python <skill-dir>/scripts/analyze.py SYMBOL` if `python` is not on PATH. It uses only Python's standard library.
 3. **A CSV of daily prices from the user**: `analyze.py --csv <file> SYMBOL`. It accepts the usual exports (Date, Open, High, Low, Close or Price, Volume; ISO or d/m/Y or m/d/Y dates; volumes like 1.2M). Ask for at least 60 trading days, ideally a year (206 or more if the user uses a 200-day slow average).
