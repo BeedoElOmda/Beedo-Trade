@@ -74,6 +74,8 @@ class Api:
         self._daily = {}  # symbol -> daily bars of the last analysis (weekly view, back-test)
         self._window = None  # private: pywebview exposes public attributes to the page and would crawl the whole window object
         s = self.get_settings()
+        if not s.get("theme_is_system_default"):  # once: older versions saved "dark" as their default, so start everyone on System
+            s = self.save_settings({"theme": "system", "theme_is_system_default": True})
         analyze.MA = tuple(_valid_ma(s["ma"]) or DEFAULTS["ma"])
         engine.OFF.update(n for n in s["steps_off"] if n in engine.SCORED)
 
