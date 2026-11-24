@@ -64,7 +64,63 @@ def fetch(symbol, rng="2y"):  # 2 years: a 200-day MA needs 206 trading days
         h, l = max(o, h, l, c), min(o, h, l, c)  # Yahoo sometimes reports a low above the open
         bars.append(dict(d=dt.datetime.fromtimestamp(t, dt.timezone.utc).date().isoformat(),
                          o=round(o, 2), h=round(h, 2), l=round(l, 2), c=round(c, 2), v=v or 0))
-    return bars, res["meta"].get("longName") or ysym
+    name = res["meta"].get("longName") or ysym
+    if ysym.endswith(".CA"):  # EGX: the latest sessions from TradingView, 15 minutes delayed
+        bars = with_latest(bars, ysym[:-3])
+    return bars, name
+
+# ---------- the latest sessions: TradingView, 15 minutes delayed ----------
+EGX_DAYS = (6, 0, 1, 2, 3)  # Sunday to Thursday (Python: Monday = 0)
+
+
+def cairo_now():
+    try:
+        from zoneinfo import ZoneInfo
+        return dt.datetime.now(ZoneInfo("Africa/Cairo")).replace(tzinfo=None)
+    except Exception:  # shortcut: no time-zone database (Windows without tzdata): summer time taken as May-October
+        utc = dt.datetime.now(dt.timezone.utc).replace(tzinfo=None)
+        return utc + dt.timedelta(hours=3 if 5 <= utc.month <= 10 else 2)
+
+
+def _trading_day_before(d):
+    d -= dt.timedelta(days=1)
+    while d.weekday() not in EGX_DAYS:
+        d -= dt.timedelta(days=1)
+    return d
+
+
+def session_days(now):
+    """(latest session, the one before) that TradingView's values belong to: today from the 10:00 open on a trading day."""
+    d = now.date() if now.weekday() in EGX_DAYS and now.hour >= 10 else _trading_day_before(now.date())
+    return d, _trading_day_before(d)
+
+
+def with_latest(bars, symbol, now=None):
+    """Yahoo's EGX history runs about a day late. Replace its last two sessions with TradingView's (15 minutes delayed,
+    so today's candle during trading hours). Only when the two sources line up: TradingView's close two sessions back
+    must match Yahoo's; otherwise (a holiday, a frozen Yahoo feed) Yahoo's history is kept as it is."""
+    try:
+        import fundamentals
+        row = fundamentals._scan({"symbols": {"tickers": [f"EGX:{symbol.upper()}"]},
+                                  "columns": ["open", "high", "low", "close", "volume",
+                                              "open[1]", "high[1]", "low[1]", "close[1]", "volume[1]", "close[2]"]})
+        o, h, l, c, v, o1, h1, l1, c1, v1, c2 = row[0]
+    except Exception:
+        return bars  # TradingView unreachable or no such stock: Yahoo's history as it is
+    if None in (o, h, l, c, o1, h1, l1, c1, c2) or not bars:
+        return bars
+    now = now or cairo_now()
+    day0, day1 = session_days(now)
+    keep = [b for b in bars if b["d"][:10] < day1.isoformat()]
+    if not keep or abs(keep[-1]["c"] - c2) > 0.005 * c2:
+        return bars
+    bar = lambda d, o, h, l, c, v: dict(d=d.isoformat(), o=round(o, 2), h=round(max(o, h, l, c), 2), l=round(min(o, h, l, c), 2),
+                                        c=round(c, 2), v=int(v or 0))
+    latest = bar(day0, o, h, l, c, v)
+    if day0 == now.date() and (now.hour, now.minute) < (14, 45):
+        latest["partial"] = True  # today's session isn't over: "so far", not the close
+    return keep + [bar(day1, o1, h1, l1, c1, v1), latest]
+
 
 def load_csv(path):
     """Daily bars from a CSV with columns date, open, high, low, close, volume (any order, any case).
