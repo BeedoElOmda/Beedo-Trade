@@ -183,3 +183,13 @@ def test_latest_sessions_come_from_tradingview(monkeypatch):
     assert during[-1]["d"] == "2026-11-23" and during[-1]["partial"]
     tv[-1] = 71.05  # the sources don't line up (a holiday, a frozen Yahoo feed): Yahoo's history is kept
     assert analyze.with_latest(yahoo, "COMI", tue_morning) == yahoo
+
+def test_existing_installs_start_on_system_theme_once(tmp_path, monkeypatch):
+    import json
+    from beedo_app import main
+    monkeypatch.setattr(main, "DATA_DIR", tmp_path)
+    monkeypatch.setattr(main, "SETTINGS", tmp_path / "settings.json")
+    (tmp_path / "settings.json").write_text(json.dumps({"theme": "dark", "watchlist": ["COMI"]}))  # an older version's save
+    assert main.Api().get_settings()["theme"] == "system"
+    main.Api().save_settings({"theme": "light"})  # the user then picks Light: kept from now on
+    assert main.Api().get_settings()["theme"] == "light" and main.Api().get_settings()["watchlist"] == ["COMI"]
