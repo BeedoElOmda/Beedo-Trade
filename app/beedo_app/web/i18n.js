@@ -1,7 +1,6 @@
 /* Arabic interface. Every piece of text shown on screen is looked up here by its exact English wording;
-   text with no entry stays in English.
-   shortcut: detailed readings built from live numbers (checklist readings, rating reasons) are not translated;
-   add entries or patterns to AR_RULES when they are wanted. */
+   text with no entry stays in English. Sentences built from live numbers are matched by AR_RULES.
+   Company names, stock codes and source names (TradingView, Yahoo Finance) stay in English on purpose. */
 "use strict";
 const AR = {
   // menu and common buttons
@@ -39,9 +38,9 @@ const AR = {
   "Up / down today": "صاعد / هابط اليوم", "Avg change": "متوسط التغير", "Health": "الحالة", "Too few stocks": "أسهم قليلة", "No industry data.": "لا توجد بيانات للقطاعات.",
   "Healthy": "قوي", "Mixed": "متذبذب", "All indicators counted": "كل المؤشرات محسوبة",
   "Each indicator lands on one rung of the ladder. Untick an indicator to leave it out of the signal; \"Untick →\" shows what that would do today.": "كل مؤشر يقع على درجة من سلّم الإشارات. ألغِ تحديد أي مؤشر لاستبعاده من الإشارة؛ ويوضح «إلغاء ←» ما سيحدث للإشارة اليوم.",
-  "Count this indicator in the signal": "احسب هذا المؤشر في الإشارة", "Switched off: not counted in the signal.": "مستبعدة: لا تُحسب في الإشارة.",
+  "Count this indicator in the signal": "احسب هذا المؤشر في الإشارة", "Switched off: not counted in the signal.": "مستبعَد: لا يُحسب في الإشارة.",
   "Healthy: at least 60% of the industry's stocks are above both their 50-day and 200-day averages. Weak: 40% or fewer above both. Industries with fewer than 3 stocks get no label. TradingView, end of day.": "قوي: 60% على الأقل من أسهم النشاط أعلى من متوسطي 50 و200 يوم. ضعيف: 40% أو أقل. الأنشطة التي بها أقل من 3 أسهم بلا تصنيف. المصدر TradingView، نهاية اليوم.",
-  "MACD 12 / 26 / 9": "ماكد MACD 12 / 26 / 9", "line, signal and histogram": "الخط والإشارة والأعمدة",
+  "MACD 12 / 26 / 9": "MACD 12 / 26 / 9", "line, signal and histogram": "الخط والإشارة والأعمدة",
   "Moving averages (fast / mid / slow)": "المتوسطات المتحركة (سريع / متوسط / بطيء)", "Apply": "تطبيق", "Default 5 / 9 / 18": "الافتراضي 5 / 9 / 18", "What the signal would become": "ما ستصبح عليه الإشارة",
   "Fast moving average": "المتوسط السريع", "Mid moving average": "المتوسط الأوسط", "Slow moving average": "المتوسط البطيء", "Chart range": "مدة الرسم",
   "Fast, mid and slow moving averages. They draw the chart lines and give the signals: fast x mid = Alarm, fast x slow = First, mid x slow = Confirm.": "المتوسطات المتحركة السريع والأوسط والبطيء. تُرسم على الشارت وتعطي الإشارات: السريع × الأوسط = تنبيه، السريع × البطيء = أولي، الأوسط × البطيء = تأكيد.",
@@ -126,11 +125,11 @@ const AR = {
   "Enter the quantity and the price you paid": "أدخل الكمية وسعر الشراء",
 
   // time machine
-  "Time machine": "آلة الزمن", "Run time machine": "تشغيل آلة الزمن", "Target first": "الهدف أولًا", "Stop first": "الإيقاف أولًا", "Neither": "لا هذا ولا ذاك", "Average R": "متوسط R",
+  "Time machine": "آلة الزمن", "Run time machine": "تشغيل آلة الزمن", "Target first": "الهدف أولًا", "Stop first": "وقف الخسارة أولًا", "Neither": "لا هذا ولا ذاك", "Average R": "متوسط R",
   "Time machine failed": "تعذّر تشغيل آلة الزمن",
   "How often would the trade plan above reach its target before its stop? It replays the next 20 trading days 10,000 times from this stock's own daily moves of the past two years, and checks the same plan on past days that had the same signal. A simulation, not a prediction.": "كم مرة تصل خطة التداول أعلاه إلى الهدف قبل وقف الخسارة؟ تعيد آلة الزمن تشغيل أيام التداول العشرين القادمة 10,000 مرة من حركات السهم اليومية خلال العامين الماضيين، وتختبر نفس الخطة في الأيام السابقة التي ظهرت فيها نفس الإشارة. هذه محاكاة وليست توقعًا.",
   // back-test
-  "Back-test": "اختبار على الماضي", "Run back-test": "تشغيل الاختبار", "Running…": "جارٍ التشغيل…",
+  "Back-test": "الاختبار التاريخي", "Run back-test": "تشغيل الاختبار التاريخي", "Running…": "جارٍ التشغيل…",
   "Replays the checklist day by day over the past two years. It buys at the close on a First or Confirm Buy and sells at the close on a First or Confirm Sell. Fees and taxes are not counted. Past results do not predict future results.": "يعيد تطبيق قائمة المؤشرات يومًا بيوم على العامين الماضيين: يشتري عند الإغلاق مع إشارة شراء أولي أو تأكيد شراء، ويبيع عند الإغلاق مع إشارة بيع أولي أو تأكيد بيع. لا تُحسب العمولات والضرائب. نتائج الماضي لا تتنبأ بالمستقبل.",
   "Course method": "منهج الدورة", "following the signals": "باتباع الإشارات", "Buy and hold": "الشراء والاحتفاظ", "bought on the first day": "شراء من أول يوم",
   "Trades": "الصفقات", "Winners": "الرابحة", "trades in profit": "صفقات رابحة", "Bought": "تاريخ الشراء", "Sold": "تاريخ البيع", "Price": "السعر", "Result": "النتيجة", "Still open": "ما زالت مفتوحة",
@@ -154,12 +153,160 @@ const AR = {
   // about
   "About Beedo-Trade": "عن Beedo-Trade", "The signal ladder": "سلّم الإشارات", "Where the numbers come from": "مصدر الأرقام", "Important": "تنبيه مهم",
   "Beedo-Trade applies the Beedo technical-analysis course to Egyptian Exchange stocks, the same way every time: 12 indicators (the 11 course indicators plus MACD), one signal, and separate advice for a cash holder and a shareholder.": "يطبّق Beedo-Trade دورة Beedo للتحليل الفني على أسهم البورصة المصرية بالطريقة نفسها في كل مرة: 12 مؤشرًا (مؤشرات الدورة الأحد عشر ومؤشر MACD)، إشارة واحدة، ونصيحة منفصلة لصاحب السيولة ولحامل السهم.",
-  "Alarm = early warning, get ready. First = start a position (or start reducing). Confirm = several signals agree, act fully. The signal is the score of the ticked indicators: each adds its rung (Confirm +3, First +2, Alarm +1, Hold 0, minus for sells); 9 or more = Confirm, 5 = First, 2 = Alarm.": "التنبيه = إنذار مبكر، استعد. الأولي = ابدأ الشراء (أو ابدأ التخفيف). التأكيد = عدة إشارات متفقة، نفّذ بالكامل. الإشارة هي مجموع نقاط المؤشرات المحددة: كل مؤشر يضيف درجته (تأكيد +3، أولي +2، تنبيه +1، احتفاظ 0، وبالسالب للبيع)؛ 9 فأكثر = تأكيد، 5 = أولي، 2 = تنبيه.",
+  "Alarm = early warning, get ready. First = start a position (or start reducing). Confirm = several signals agree, act fully. The signal is the score of the ticked indicators: each adds its rung (Confirm +3, First +2, Alarm +1, Hold 0, minus for sells); 9 or more = Confirm, 5 = First, 2 = Alarm.": "التنبيه = إنذار مبكر، استعد. الأولي = ابدأ الشراء (أو ابدأ التخفيف). التأكيد = عدة إشارات متفقة، نفّذ بالكامل. الإشارة هي مجموع نقاط المؤشرات المحددة: كل مؤشر يضيف درجته (تأكيد +3، أولي +2، تنبيه +1، انتظار 0، وبالسالب للبيع)؛ 9 فأكثر = تأكيد، 5 = أولي، 2 = تنبيه.",
   "This is a learning and decision-support tool. It is": "هذه أداة للتعلّم ودعم القرار. وهي", "not investment advice": "ليست نصيحة استثمارية",
   ", it does not know your full financial situation, and it never places orders. Free data can be delayed: always check the live price and the day's disclosures before trading.": "، ولا تعرف وضعك المالي الكامل، ولا تنفّذ أي أوامر. البيانات المجانية قد تكون متأخرة: راجع دائمًا السعر اللحظي وإفصاحات اليوم قبل التداول.",
+  "Prices: daily history from Yahoo Finance (e.g. COMI → COMI.CA), and the last two trading days from TradingView, 15 minutes delayed (during trading hours, today so far). The larger, widely traded EGX stocks are covered; for others, use": "الأسعار: التاريخ اليومي من Yahoo Finance (مثال COMI ← COMI.CA)، وآخر يومي تداول من TradingView متأخرة 15 دقيقة (وأثناء التداول: اليوم حتى الآن). الأسهم الكبيرة الأكثر تداولًا مغطاة؛ ولغيرها استخدم",
+  "with date, open, high, low, close and volume columns.": "بأعمدة التاريخ والافتتاح والأعلى والأدنى والإغلاق وحجم التداول.",
+  "Indicators: moving averages you choose (default 5 / 9 / 18, the course's own), MACD 12 / 26 / 9, RSI 14 (Wilder), swing highs and lows, support and resistance, 20-day volume average, reversal candles and gaps.": "المؤشرات: متوسطات متحركة تختارها (الافتراضي 5 / 9 / 18 كما في الدورة)، وMACD 12 / 26 / 9، وRSI 14 (طريقة وايلدر)، والقمم والقيعان، والدعم والمقاومة، ومتوسط حجم التداول لعشرين يومًا، والشموع الانعكاسية والفجوات.",
+  "Chart and pattern indicators 10 and 11 are judged on the chart: the swing points are marked for you.": "المؤشران 10 و11 (النماذج) يُقيَّمان على الرسم البياني: القمم والقيعان محددة لك عليه.",
+  "Company fundamentals: TradingView's market data (last 12 months of reported results), rated with standard rules and compared with similar companies. Smaller companies often have too few reported figures to rate.": "بيانات الشركات: من بيانات TradingView (نتائج آخر 12 شهرًا)، تُقيَّم بقواعد قياسية وتُقارن بالشركات المشابهة. كثير من الشركات الصغيرة أرقامها المنشورة لا تكفي لتقييمها.",
+  "Charts by": "الرسوم البيانية من", "Lightweight Charts™ (Apache 2.0). Source:": "Lightweight Charts™ (Apache 2.0). الكود المصدري:",
+
+  // 2.2.2: tooltips and labels
+  "Switch theme: dark, light or follow Windows / macOS": "تبديل المظهر: داكن أو فاتح أو حسب ويندوز / ماك", "EGX stock code": "رمز السهم في البورصة المصرية",
+  "Official US dollar rate (Yahoo Finance)": "سعر الدولار الرسمي (Yahoo Finance)", "Open the Beedo-Trade user guide": "فتح دليل مستخدم Beedo-Trade",
+  "Open the download page": "فتح صفحة التحميل", "New alerts": "تنبيهات جديدة", "Analyse daily prices from a CSV file": "حلّل الأسعار اليومية من ملف CSV",
+  "Print this analysis, or save it as a PDF file": "اطبع هذا التحليل أو احفظه ملف PDF", "Signal ladder": "سلّم الإشارات", "Chart period": "فترة الرسم البياني",
+  "Charting by TradingView": "الرسوم البيانية من TradingView", "Add stock": "إضافة سهم", "Remove alert": "حذف التنبيه", "Settings code": "رمز الإعدادات",
+  "Total of the ticked indicators: 9 = Confirm, 5 = First, 2 = Alarm": "مجموع نقاط المؤشرات المحددة: 9 = تأكيد، 5 = أولي، 2 = تنبيه",
+  "Price / earnings per share (last 12 months)": "السعر ÷ ربحية السهم (آخر 12 شهرًا)", "Price / book value per share": "السعر ÷ القيمة الدفترية للسهم",
+  "Price / sales per share": "السعر ÷ مبيعات السهم", "Above 1 = moves more than the market": "أكثر من 1 = يتحرك أكثر من السوق",
+  "Current assets / current liabilities: above 1 means short-term bills are covered": "الأصول المتداولة ÷ الخصوم المتداولة: أكثر من 1 يعني أن الالتزامات قصيرة الأجل مغطاة",
+  "P/E": "مضاعف الربحية", "P/B": "السعر / القيمة الدفترية", "P/S": "السعر / المبيعات", "EV / EBITDA": "قيمة المنشأة / EBITDA", "RSI 14": "مؤشر RSI 14",
+  "Couldn't load company figures": "تعذّر تحميل أرقام الشركة", "Couldn't save": "تعذّر الحفظ", "Couldn't update the signal": "تعذّر تحديث الإشارة",
+  "Couldn't load weekly prices": "تعذّر تحميل الأسعار الأسبوعية", "Couldn't load the portfolio": "تعذّر تحميل المحفظة", "Couldn't load prices": "تعذّر تحميل الأسعار",
+  "Back-test failed": "تعذّر تشغيل الاختبار التاريخي", "Couldn't check for updates. Check your internet connection.": "تعذّر البحث عن تحديثات. تحقّق من اتصال الإنترنت.",
+  "Rating every EGX company, then checking the best ones with your course method…": "جارٍ تقييم كل شركات البورصة المصرية ثم فحص أفضلها بمنهج دورتك…",
+  "No company matches right now. Try \"Strong or Fair\" or \"Any buy, including Alarm Buy\".": "لا توجد شركة مطابقة الآن. جرّب «القوية أو المتوسطة» أو «أي شراء، ومنه تنبيه الشراء».",
+  "Certificate problem: the app can't verify the secure connection. Update to the latest Beedo-Trade version, or reinstall it.": "مشكلة في الشهادة: البرنامج لا يستطيع التحقق من الاتصال الآمن. حدّث إلى أحدث إصدار من Beedo-Trade أو أعد تثبيته.",
+  "Yahoo Finance may not carry this stock. Try": "قد لا يغطي Yahoo Finance هذا السهم. جرّب", "with daily prices (date, open, high, low, close, volume).": "بأسعار يومية (التاريخ، الافتتاح، الأعلى، الأدنى، الإغلاق، الحجم).",
+  "Check your internet connection, firewall or VPN, then try again.": "تحقّق من اتصال الإنترنت أو الجدار الناري أو الـVPN ثم حاول مرة أخرى.", "Check the code and try again.": "تحقّق من الرمز وحاول مرة أخرى.",
+  "40 · gold cheap": "40 · الذهب رخيص", "120 · silver cheap": "120 · الفضة رخيصة",
+  "Gold (24k, EGP per gram)": "الذهب (عيار 24، جنيه للجرام)", "Silver (999, EGP per gram)": "الفضة (999، جنيه للجرام)",
+  "Yahoo Finance (international price, converted at the official USD/EGP rate). These are international prices: Egyptian shop prices for jewellery and bars add a local premium and workmanship fees. Not investment advice.": "Yahoo Finance (السعر العالمي محوّلًا بسعر الدولار الرسمي). هذه أسعار عالمية: أسعار المحلات في مصر للمشغولات والسبائك تضيف علاوة محلية ومصنعية. ليست نصيحة استثمارية.",
+
+  // checklist readings and notes
+  "At resistance: don't buy; wait for breakout and retest": "عند المقاومة: لا تشترِ؛ انتظر الاختراق ثم إعادة الاختبار",
+  "At support: best buy zone if a reversal confirms": "عند الدعم: أفضل منطقة شراء إذا تأكد الانعكاس",
+  "Below all recent supports (breakdown)": "أسفل كل مستويات الدعم الحديثة (كسر)", "Above all recent resistances (breakout)": "أعلى كل مستويات المقاومة الحديثة (اختراق)",
+  "No open gaps in the last 30 days": "لا توجد فجوات مفتوحة في آخر 30 يومًا",
+  "Look for head & shoulders, double/triple tops or bottoms on the marked swing points": "ابحث عن الرأس والكتفين والقمم أو القيعان المزدوجة/الثلاثية عند القمم والقيعان المحددة",
+  "Look for ascending, descending or symmetrical triangles on the marked swing points": "ابحث عن المثلثات الصاعدة أو الهابطة أو المتماثلة عند القمم والقيعان المحددة",
+  "Check the chart: breakaway, continuation or exhaustion depends on where it sits in the trend.": "راجع الرسم البياني: نوع الفجوة (اختراق أو استمرار أو إنهاك) يتوقف على موقعها من الاتجاه.",
+  "From the 52-week low and high (TradingView).": "من أدنى وأعلى سعر خلال 52 أسبوعًا (TradingView).", "From TradingView's monthly pivots.": "من نقاط الارتكاز الشهرية في TradingView.",
+  "TradingView has no usable pivots for this stock.": "لا توجد في TradingView نقاط ارتكاز صالحة لهذا السهم.",
+  "No recent support below the price to place a stop.": "لا يوجد دعم حديث أسفل السعر لوضع وقف الخسارة عنده.",
+  "The first resistance is less than 1R away: poor risk-reward. The course says don't buy near resistance.": "أول مقاومة على مسافة أقل من 1R: العائد ضعيف مقارنة بالمخاطرة. تنصح الدورة بعدم الشراء قرب المقاومة.",
+  "Not enough price history to back-test.": "لا توجد أسعار تاريخية كافية للاختبار التاريخي.",
+  "overbought >=70": "تشبّع شرائي ≥ 70", "oversold <=30": "تشبّع بيعي ≤ 30", "bullish 50-70": "إيجابية 50-70", "bearish 30-50": "سلبية 30-50", "centerline 50": "عند خط المنتصف 50",
+  "Doji (indecision)": "دوجي (تردد)", "Hammer (bullish reversal)": "مطرقة (انعكاس صاعد)", "Hanging Man (bearish reversal)": "الرجل المشنوق (انعكاس هابط)",
+  "Hammer-shape (no trend context)": "شكل مطرقة (بلا اتجاه سابق)", "Inverted Hammer (bullish reversal)": "مطرقة مقلوبة (انعكاس صاعد)",
+  "Shooting Star (bearish reversal)": "الشهاب (انعكاس هابط)", "Inverted-hammer shape (no trend context)": "شكل مطرقة مقلوبة (بلا اتجاه سابق)",
+  "Bullish Engulfing": "ابتلاع شرائي", "Bearish Engulfing": "ابتلاع بيعي", "White/bullish body": "جسم أبيض صاعد", "Black/bearish body": "جسم أسود هابط",
+  "mixed (intermingling)": "متداخلة (بلا ترتيب)",
+
+  // company rating reasons
+  "No earnings data": "لا توجد بيانات أرباح", "Loss-making over the last 12 months": "خاسرة خلال آخر 12 شهرًا",
+  "Cheap for its earnings": "رخيصة مقارنة بأرباحها", "Fairly valued": "مقيّمة بسعر عادل", "Expensive for its earnings": "غالية مقارنة بأرباحها",
+  "No book-value data": "لا توجد بيانات للقيمة الدفترية", "Low price for its assets": "سعر منخفض مقارنة بأصولها",
+  "Normal price for its assets": "سعر عادي مقارنة بأصولها", "High price for its assets": "سعر مرتفع مقارنة بأصولها",
+  "No profitability data": "لا توجد بيانات ربحية", "Earns well on shareholders' money (15%+)": "عائد جيد على أموال المساهمين (15% فأكثر)",
+  "Moderate returns (8-15%)": "عائد متوسط (8-15%)", "Weak returns (under 8%)": "عائد ضعيف (أقل من 8%)",
+  "No margin data": "لا توجد بيانات هوامش", "Keeps a healthy share of sales as profit": "تحقق ربحًا جيدًا من مبيعاتها",
+  "Thin but positive margins": "هوامش ضئيلة لكنها موجبة", "Little or no profit on sales": "ربح ضئيل أو منعدم من المبيعات",
+  "No debt data": "لا توجد بيانات ديون", "Low debt (0.5 or less)": "ديون منخفضة (0.5 أو أقل)", "Moderate debt (up to 1.5)": "ديون متوسطة (حتى 1.5)", "High debt (over 1.5)": "ديون مرتفعة (أكثر من 1.5)",
+  "No growth data": "لا توجد بيانات نمو", "Strong growth (20%+, above inflation)": "نمو قوي (20% فأكثر، أعلى من التضخم)",
+  "Growing, but slower than inflation": "تنمو لكن أبطأ من التضخم", "Earnings are falling": "الأرباح تتراجع",
+  "Sales growing strongly (20%+)": "المبيعات تنمو بقوة (20% فأكثر)", "Sales growing slowly": "المبيعات تنمو ببطء", "Sales are shrinking": "المبيعات تتراجع",
+  "Pays a solid dividend (4%+)": "توزيعات جيدة (4% فأكثر)", "Pays a small dividend": "توزيعات صغيرة",
+  "TradingView has too few reported figures for this company to rate it.": "أرقام هذه الشركة في TradingView قليلة لا تكفي لتقييمها.",
+  "TradingView has no company data for this code.": "لا توجد في TradingView بيانات شركة لهذا الرمز.",
+
+  // TradingView sectors and industries
+  "Commercial Services": "الخدمات التجارية", "Communications": "الاتصالات", "Consumer Durables": "السلع المعمّرة", "Consumer Non-Durables": "السلع الاستهلاكية",
+  "Consumer Services": "الخدمات الاستهلاكية", "Distribution Services": "خدمات التوزيع", "Electronic Technology": "التكنولوجيا الإلكترونية", "Energy Minerals": "الطاقة والوقود",
+  "Finance": "الخدمات المالية", "Health Services": "الخدمات الصحية", "Health Technology": "التكنولوجيا الصحية", "Industrial Services": "الخدمات الصناعية",
+  "Miscellaneous": "متنوعة", "Non-Energy Minerals": "المعادن ومواد البناء", "Process Industries": "الصناعات التحويلية", "Producer Manufacturing": "الصناعات الإنتاجية",
+  "Retail Trade": "تجارة التجزئة", "Technology Services": "خدمات التكنولوجيا", "Transportation": "النقل", "Utilities": "المرافق",
+  "Medical Distributors": "توزيع المستلزمات الطبية", "Other Transportation": "نقل آخر", "Major Banks": "البنوك الكبرى", "Regional Banks": "البنوك",
+  "Food: Specialty/Candy": "أغذية متخصصة وحلويات", "Chemicals: Specialty": "كيماويات متخصصة", "Construction Materials": "مواد البناء",
+  "Other Consumer Services": "خدمات استهلاكية أخرى", "Pharmaceuticals: Major": "الأدوية (شركات كبرى)", "Pharmaceuticals: Other": "الأدوية (أخرى)", "Other": "أخرى",
+  "Hotels/Resorts/Cruise lines": "الفنادق والمنتجعات والرحلات البحرية", "Investment Managers": "إدارة الاستثمار", "Containers/Packaging": "العبوات والتغليف",
+  "Financial Conglomerates": "مجموعات مالية", "Food Retail": "تجزئة الأغذية", "Metal Fabrication": "تشكيل المعادن", "Home Furnishings": "الأثاث المنزلي",
+  "Building Products": "منتجات البناء", "Agricultural Commodities/Milling": "السلع الزراعية والمطاحن", "Steel": "الصلب", "Wholesale Distributors": "تجارة الجملة",
+  "Investment Banks/Brokers": "بنوك الاستثمار والسمسرة", "Food: Meat/Fish/Dairy": "أغذية: لحوم وأسماك وألبان", "Packaged Software": "البرمجيات",
+  "Real Estate Development": "التطوير العقاري", "Chemicals: Agricultural": "الأسمدة والكيماويات الزراعية", "Engineering & Construction": "الهندسة والمقاولات",
+  "Hospital/Nursing Management": "إدارة المستشفيات", "Textiles": "المنسوجات", "Finance/Rental/Leasing": "التمويل والتأجير", "Medical/Nursing Services": "الخدمات الطبية والتمريض",
+  "Electric Utilities": "الكهرباء", "Homebuilding": "الإسكان", "Miscellaneous Commercial Services": "خدمات تجارية متنوعة", "Broadcasting": "البث الإذاعي والتلفزيوني",
+  "Industrial Specialties": "منتجات صناعية متخصصة", "Major Telecommunications": "شركات الاتصالات الكبرى", "Contract Drilling": "الحفر", "Tobacco": "التبغ",
+  "Electrical Products": "المنتجات الكهربائية", "Commercial Printing/Forms": "الطباعة التجارية", "Investment Trusts/Mutual Funds": "صناديق الاستثمار",
+  "Specialty Telecommunications": "اتصالات متخصصة", "Alternative Power Generation": "الطاقة البديلة", "Oilfield Services/Equipment": "خدمات ومعدات حقول البترول",
+  "Movies/Entertainment": "السينما والترفيه", "Life/Health Insurance": "تأمين الحياة والصحة", "Marine Shipping": "الشحن البحري", "Oil Refining/Marketing": "تكرير وتسويق البترول",
+  "Multi-Line Insurance": "التأمين", "Pulp & Paper": "الورق", "Apparel/Footwear": "الملابس والأحذية", "Services to the Health Industry": "خدمات للقطاع الصحي",
+  "Aluminum": "الألومنيوم", "Wireless Telecommunications": "الاتصالات اللاسلكية", "Household/Personal Care": "المنظفات والعناية الشخصية",
+  "Publishing: Books/Magazines": "نشر الكتب والمجلات", "Electronics Distributors": "توزيع الإلكترونيات", "Property/Casualty Insurance": "تأمين الممتلكات",
+  "Chemicals: Major Diversified": "الكيماويات", "Gas Distributors": "توزيع الغاز", "Food Distributors": "توزيع الأغذية", "Apparel/Footwear Retail": "تجزئة الملابس والأحذية",
+  "Information Technology Services": "خدمات تكنولوجيا المعلومات", "Industrial Machinery": "الآلات الصناعية", "Specialty Stores": "متاجر متخصصة",
+  "Electronic Components": "المكونات الإلكترونية", "Internet Software/Services": "برمجيات وخدمات الإنترنت",
 };
+// pieces reused by the rules below
+const UPDN = { above: "أعلى", below: "أدنى", up: "صعودًا", down: "هبوطًا", UP: "صعودًا", DOWN: "هبوطًا", rising: "صاعد", falling: "هابط" };
+const ALIGN = (a) => a.replace(/ \(uptrend order\)$/, " (ترتيب صاعد)").replace(/ \(downtrend order\)$/, " (ترتيب هابط)").replace(/^mixed \(intermingling\)$/, "متداخلة (بلا ترتيب)");
+const GROUP = { industry: "النشاط", sector: "القطاع", market: "السوق" };
+const tx = (s) => tr(s) || s;
 // Sentences assembled from parts
 const AR_RULES = [
+  // 2.2.2: checklist readings
+  [/^support (\S+) \| resistance (\S+)$/, (m) => `الدعم ${m[1]} | المقاومة ${m[2]}`],
+  [/^Mid-range: (\S+)% above support, (\S+)% below resistance$/, (m) => `منتصف النطاق: ${m[1]}% فوق الدعم، و${m[2]}% تحت المقاومة`],
+  [/^Uptrend: (\d+) higher highs and higher lows$/, (m) => `اتجاه صاعد: ${m[1]} قمم وقيعان أعلى`],
+  [/^Downtrend: (\d+) lower highs and lower lows$/, (m) => `اتجاه هابط: ${m[1]} قمم وقيعان أدنى`],
+  [/^No clear trend \(HH (\d+), HL (\d+), LH (\d+), LL (\d+)\)$/, (m) => `لا يوجد اتجاه واضح (قمم أعلى ${m[1]}، قيعان أعلى ${m[2]}، قمم أدنى ${m[3]}، قيعان أدنى ${m[4]})`],
+  [/^(MA\d+ \S+ \| MA\d+ \S+ \| MA\d+ \S+): (.+?)(?:; last cross (\d+x\d+) (UP|DOWN) on (\S+))?$/,
+    (m) => `${m[1]}: ${ALIGN(m[2])}${m[3] ? `؛ آخر تقاطع ${m[3]} ${UPDN[m[4]]} في ${m[5]}` : ""}`],
+  [/^(Rising|Falling) price on (above-average|light) volume \(.+\)\. Today (\S+)x the 20-day average\.?$/, (m) =>
+    `${{ "Rising above-average": "سعر صاعد بحجم تداول أعلى من المتوسط (المشترون مسيطرون)", "Falling above-average": "سعر هابط بحجم تداول أعلى من المتوسط (البائعون مسيطرون)",
+      "Falling light": "سعر هابط بحجم تداول ضعيف (البيع يضعف)", "Rising light": "سعر صاعد بحجم تداول ضعيف (الشراء يضعف)" }[`${m[1]} ${m[2]}`]}. اليوم ${m[3]}× متوسط 20 يومًا.`],
+  [/^Latest candle: (.+)$/, (m) => `آخر شمعة: ${tx(m[1])}`],
+  [/^(.+) on (\S+), confirmed by a (higher|lower) close$/, (m) => `${tx(m[1])} في ${m[2]}، تأكدت بإغلاق ${m[3] === "higher" ? "أعلى" : "أدنى"}`],
+  [/^(.+) today: needs the next candle to confirm$/, (m) => `${tx(m[1])} اليوم: تحتاج الشمعة التالية للتأكيد`],
+  [/^RSI (\S+) \((rising|falling) from (\S+)\), zone (.+?)(?:; (negative|positive) divergence)?$/,
+    (m) => `RSI ${m[1]} (${m[2] === "rising" ? "صاعد" : "هابط"} من ${m[3]})، المنطقة ${tx(m[4])}${m[5] ? `؛ دايفرجنس ${m[5] === "negative" ? "سلبي" : "إيجابي"}` : ""}`],
+  [/^Open gap (up|down) on (\S+) \((\S+) to (\S+)\), volume (\S+)x$/, (m) => `فجوة مفتوحة ${UPDN[m[1]]} في ${m[2]} (من ${m[3]} إلى ${m[4]})، الحجم ${m[5]}×`],
+  [/^MACD (\S+) (above|below) its signal (\S+), (above|below) zero; histogram (growing|shrinking)(?:; last cross (up|down) on (\S+))?$/,
+    (m) => `MACD ${m[1]} ${UPDN[m[2]]} من خط الإشارة ${m[3]}، و${UPDN[m[4]]} من الصفر؛ الأعمدة ${m[5] === "growing" ? "تكبر" : "تصغر"}${m[6] ? `؛ آخر تقاطع ${UPDN[m[6]]} في ${m[7]}` : ""}`],
+  // what would change the signal, trade plan
+  [/^MA(\d+) crossing (above|below) MA(\d+) = (.+)$/, (m) => `تقاطع MA${m[1]} ${m[2] === "above" ? "لأعلى" : "لأسفل"} مع MA${m[3]} = ${tx(m[4])}`],
+  [/^a close above (\S+) on above-average volume = breakout$/, (m) => `إغلاق أعلى من ${m[1]} بحجم تداول أعلى من المتوسط = اختراق`],
+  [/^a close below (\S+) = support broken$/, (m) => `إغلاق أدنى من ${m[1]} = كسر الدعم`],
+  [/^Resistance at (\S+) comes before the target: take partial profit there if bearish candles appear\.?$/, (m) => `المقاومة عند ${m[1]} تسبق الهدف: جنِ جزءًا من الربح عندها إذا ظهرت شموع هابطة.`],
+  [/^([\d.,]+)% (below|above)$/, (m) => `${m[1]}% ${m[2] === "below" ? "أسفل" : "أعلى"}`],
+  // company rating, key figures, amounts
+  [/^(Strong|Fair|Weak|Not enough data|Not rated) · (\d+)$/, (m) => `${AR[m[1]]} · ${m[2]}`],
+  [/^(Couldn't load fundamentals: )?(\d+) good, (\d+) fair and (\d+) poor out of (\d+) checks( Bank: margin and debt checks don't apply to banks and are skipped\.)?$/,
+    (m) => `${m[1] ? "تعذّر تحميل البيانات المالية: " : ""}${m[2]} جيد و${m[3]} متوسط و${m[4]} ضعيف من ${m[5]} معايير${m[6] ? " بنك: معايير الهوامش والديون لا تنطبق على البنوك فلم تُحسب." : ""}`],
+  [/^(industry|sector|market) median (\S+)$/, (m) => `الوسيط في ${GROUP[m[1]]} ${m[2]}`],
+  [/^(.*?)(?:^| · )market cap (\S+) bn EGP$/, (m) => `${m[1] ? m[1].split(" · ").map(tx).join(" · ") + " · " : ""}القيمة السوقية ${m[2]} مليار جنيه`],
+  [/^(.+) · (.+)$/, (m) => (AR[m[1]] && AR[m[2]] ? `${AR[m[1]]} · ${AR[m[2]]}` : null)],
+  [/^Now (\S+) · (\S+)% of range$/, (m) => `الآن ${m[1]} · ${m[2]}% من النطاق`],
+  [/^(-?[\d.,]+) bn EGP$/, (m) => `${m[1]} مليار جنيه`], [/^(-?[\d.,]+) mn EGP$/, (m) => `${m[1]} مليون جنيه`],
+  [/^(-?[\d.,]+) bn$/, (m) => `${m[1]} مليار`], [/^(-?[\d.,]+) mn$/, (m) => `${m[1]} مليون`],
+  [/^(-?[\d.,]+) EGP$/, (m) => `${m[1]} جنيه`], [/^(-?[\d.,]+) EGP \((\S+)\)$/, (m) => `${m[1]} جنيه (${m[2]})`],
+  [/^(\$[\d.,]+) · ([\d.,]+) EGP$/, (m) => `${m[1]} · ${m[2]} جنيه`],
+  [/^today · (\S+)$/, (m) => `اليوم · ${m[1]}`],
+  // back-test, time machine, screener, watchlist, about
+  [/^(\d{4}-\d\d-\d\d) to (\d{4}-\d\d-\d\d)$/, (m) => `من ${m[1]} إلى ${m[2]}`],
+  [/^([\d,]+) replays, seed (\d+), daily moves from (\S+) to (\S+)\. A day that touches both the stop and the target counts as the stop\.$/,
+    (m) => `${m[1]} محاكاة، البذرة ${m[2]}، من حركات يومية بين ${m[3]} و${m[4]}. اليوم الذي يلمس وقف الخسارة والهدف معًا يُحسب وقف خسارة.`],
+  [/^Rated (\d+) companies · (\d+) met the quality filter · checked the top (\d+) with the course checklist(?: · (\d+) skipped \(no price history\))? · (\d+) match\. Click a column header to sort\.$/,
+    (m) => `قُيّمت ${m[1]} شركة · ${m[2]} اجتازت شرط الجودة · فُحصت أفضل ${m[3]} بقائمة الدورة${m[4] ? ` · تُجووزت ${m[4]} (بلا أسعار تاريخية)` : ""} · ${m[5]} مطابقة. اضغط عنوان أي عمود للترتيب.`],
+  [/^Checking (\d+) stocks…$/, (m) => `جارٍ فحص ${m[1]} أسهم…`],
+  [/^Version (\S+)\. Your settings are saved in (.+)\.$/, (m) => `الإصدار ${m[1]}. إعداداتك محفوظة في ${m[2]}.`],
+  [/^Remove (\S+)$/, (m) => `حذف ${m[1]}`],
+  [/^Couldn't analyse (.+)$/, (m) => `تعذّر تحليل ${m[1] === "this stock" ? "هذا السهم" : m[1]}`],
+  [/^(.*) Indicators that need daily history are marked "Not checked"\. Import a CSV of daily prices for the full checklist\.$/,
+    (m) => `${tx(m[1])} المؤشرات التي تحتاج أسعارًا يومية مكتوب عليها «لم تُفحص». استورد ملف CSV بالأسعار اليومية للحصول على القائمة كاملة.`],
   // 2.0: the signal is the score of the ticked indicators
   [/^(.+); capped at Alarm because only a snapshot is available, without daily history\.?$/i, (m) => `${tr(m[1]) || m[1]}؛ الإشارة محدودة عند التنبيه لأنها لقطة فقط بدون أسعار يومية`],
   [/^score ([+-]?\d+) from (\d+) ticked indicators \(.+\)\.?$/i, (m) => `النقاط ${m[1]} من ${m[2]} مؤشرات محددة (تأكيد عند 9 فأكثر، أولي عند 5، تنبيه عند 2؛ وبالمثل تحت الصفر للبيع)`],
@@ -198,24 +345,25 @@ const AR_RULES = [
   // time machine
   [/^within (\d+) trading days$/, (m) => `خلال ${m[1]} يوم تداول`], [/^(\S+)R plan$/, (m) => `خطة ${m[1]}R`],
   [/^(Close to a coin flip|Close to break-even|Leans toward the target|Leans toward the stop|Strongly toward the target|Strongly toward the stop): the target came first in (\d+)% of the replays that reached one side; a (\S+)R plan needs (\d+)% to break even\.?$/,
-    (m) => `${{ "Close to a coin flip": "قريب من رمي العملة", "Close to break-even": "قريب من التعادل", "Leans toward the target": "يميل نحو الهدف", "Leans toward the stop": "يميل نحو الإيقاف", "Strongly toward the target": "يميل بقوة نحو الهدف", "Strongly toward the stop": "يميل بقوة نحو الإيقاف" }[m[1]]}: وصل السعر إلى الهدف أولًا في ${m[2]}% من عمليات المحاكاة التي بلغت أحد الجانبين، وخطة ${m[3]}R تحتاج ${m[4]}% لتتعادل.`],
-  [/^Same signal \((.+)\) on (\d+) past days: target first (\d+), stop first (\d+), neither (\d+)\.?$/, (m) => `نفس الإشارة (${AR[m[1]] || m[1]}) في ${m[2]} يومًا سابقًا: الهدف أولًا ${m[3]}، الإيقاف أولًا ${m[4]}، لا هذا ولا ذاك ${m[5]}.`],
+    (m) => `${{ "Close to a coin flip": "قريب من رمي العملة", "Close to break-even": "قريب من التعادل", "Leans toward the target": "يميل نحو الهدف", "Leans toward the stop": "يميل نحو وقف الخسارة", "Strongly toward the target": "يميل بقوة نحو الهدف", "Strongly toward the stop": "يميل بقوة نحو وقف الخسارة" }[m[1]]}: وصل السعر إلى الهدف أولًا في ${m[2]}% من عمليات المحاكاة التي بلغت أحد الجانبين، وخطة ${m[3]}R تحتاج ${m[4]}% لتتعادل.`],
+  [/^Same signal \((.+)\) on (\d+) past days: target first (\d+), stop first (\d+), neither (\d+)\.?$/, (m) => `نفس الإشارة (${AR[m[1]] || m[1]}) في ${m[2]} يومًا سابقًا: الهدف أولًا ${m[3]}، وقف الخسارة أولًا ${m[4]}، لا هذا ولا ذاك ${m[5]}.`],
   [/^The same signal \((.+)\) appeared on only (\d+) past days: too few to judge\.?$/, (m) => `ظهرت نفس الإشارة (${AR[m[1]] || m[1]}) في ${m[2]} يومًا سابقًا فقط: عدد قليل لا يكفي للحكم.`],
   [/^Price after (\d+) trading days: median (\S+) EGP, 90% of replays between (\S+) and (\S+?)\.?$/, (m) => `السعر بعد ${m[1]} يوم تداول: الوسيط ${m[2]} جنيه، و90% من عمليات المحاكاة بين ${m[3]} و${m[4]}.`],
 ];
 function tr(text) {
   const k = text.trim();
-  if (!k) return null;
+  if (!k || /[؀-ۿ]/.test(k)) return null;  // already Arabic: translating again could loop the observer forever
   const bare = k.replace(/\.$/, "");
+  if (!bare) return null;  // a lone "." (e.g. after a bold name) must not stop the whole translation
   const hit = AR[k] || AR[bare] || AR[bare[0].toLowerCase() + bare.slice(1)];
   if (hit) return hit;
-  for (const [re, fn] of AR_RULES) { const m = k.match(re); if (m) return fn(m); }
+  for (const [re, fn] of AR_RULES) { const m = k.match(re); const v = m && fn(m); if (v) return v; }
   return null;
 }
 function trNode(n) {
   if (n.nodeType === 3) {
     const v = tr(n.nodeValue);
-    if (v) n.nodeValue = n.nodeValue.replace(n.nodeValue.trim(), v);
+    if (v && v !== n.nodeValue.trim()) n.nodeValue = n.nodeValue.replace(n.nodeValue.trim(), v);
   } else if (n.nodeType === 1 && !["SCRIPT", "STYLE", "CANVAS"].includes(n.tagName)) {
     for (const a of ["placeholder", "title", "aria-label"]) { const v = n.hasAttribute(a) && tr(n.getAttribute(a)); if (v) n.setAttribute(a, v); }
     n.childNodes.forEach(trNode);
@@ -225,6 +373,9 @@ function startArabic() {
   document.documentElement.lang = "ar"; document.documentElement.dir = "rtl";
   trNode(document.body);
   // Translated text has no entry of its own, so the observer settles after one pass
-  new MutationObserver((ms) => ms.forEach((m) => (m.type === "characterData" ? trNode(m.target) : m.addedNodes.forEach(trNode))))
-    .observe(document.body, { childList: true, subtree: true, characterData: true });
+  new MutationObserver((ms) => ms.forEach((m) => {
+    if (m.type === "characterData") trNode(m.target);
+    else if (m.type === "attributes") { const v = tr(m.target.getAttribute(m.attributeName) || ""); if (v) m.target.setAttribute(m.attributeName, v); }
+    else m.addedNodes.forEach(trNode);
+  })).observe(document.body, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ["placeholder", "title", "aria-label"] });
 }
