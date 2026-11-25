@@ -5,7 +5,7 @@ description: Beedo-Trade analyses Egyptian Exchange (EGX) stocks with the user's
 
 # Beedo-Trade
 
-Version 2.2.2, the same method as the Beedo-Trade app 2.2.2 (score signal, 12 steps, weekly check).
+Version 2.3.0, the same method as the Beedo-Trade app 2.3.0 (score signal, 12 steps, weekly check).
 
 Analyse an EGX stock the way the user's own course teaches, then turn the result into a clear signal and, if wanted, a trade plan. The user built this method in their MBA technical-analysis course; the value of this skill is applying *their* rules consistently, not general TA opinions.
 
@@ -21,6 +21,7 @@ The full rulebook is in `references/course-rules.md`. Read it before your first 
 | Quick price only | `egx-mcp` tool `stock_price_egx` |
 | Company fundamentals: Strong / Fair / Weak rating, the rules behind it, key ratios | `beedo_fundamentals`, or `python -I <skill-dir>/scripts/fundamentals.py SYMBOL` |
 | Gold / silver in EGP per gram (24k, 21k, 18k), dollar rate, gold/silver ratio | `beedo_metals`, or `python -I <skill-dir>/scripts/metals.py`. If neither works: `egx-mcp` tools `gold_price`, `silver_price` |
+| Dividend history (cash and bonus shares, last 5 years) and the payout to expect next | `beedo_dividends`, or `python -I <skill-dir>/scripts/dividends.py SYMBOL`. The expected payout is a pattern from history, never an announcement: say so. |
 | Odds that a buy plan reaches its target or its stop first (time machine) | `beedo_timemachine`, or `python -I <skill-dir>/scripts/timemachine.py SYMBOL --entry E --stop S --target T` |
 | The course checklist on gold or silver | `beedo_analyze` or `analyze.py` with `GOLD` or `SILVER` as the symbol (EGP per gram) |
 | Position size, when the user has set limits (max loss per trade, cash buffer, per-stock cap) | `trader-budget` skill, if installed (amounts in EGP) |
