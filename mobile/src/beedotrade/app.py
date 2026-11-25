@@ -22,9 +22,25 @@ def _engine(ctx):
             main.NOTIFY = alerts.notifier(ctx)  # the app's 15-minute alert check also shows phone notifications
         except Exception:
             traceback.print_exc()
+        main.OPEN_URL = lambda url: _open_url(ctx, url)
         main.serve(port=PORT)
     except Exception:
         traceback.print_exc()
+
+
+def _open_url(ctx, url):
+    """Links open outside the app: Google Play links in the Play Store app, the rest in the phone's browser."""
+    from java import jclass
+    Intent, Uri = jclass("android.content.Intent"), jclass("android.net.Uri")
+    store = "market://details?" + url.split("?", 1)[1] if url.startswith("https://play.google.com/store/apps/details?") else None
+    for u in filter(None, (store, url)):  # no Play Store app (rare): fall back to the web page
+        try:
+            i = Intent(Intent.ACTION_VIEW, Uri.parse(u))
+            i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            ctx.startActivity(i)
+            return
+        except Exception:
+            traceback.print_exc()
 
 
 def _listening():
