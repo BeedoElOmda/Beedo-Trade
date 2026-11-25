@@ -33,7 +33,7 @@ jobs:
           cp LICENSE mobile/
           cp -r app/beedo_app mobile/src/beedo_app
           mkdir -p mobile/src/beedotrade/engine
-          cp skills/beedo-trade/scripts/{analyze,fundamentals,metals,timemachine}.py mobile/src/beedotrade/engine/
+          cp skills/beedo-trade/scripts/{analyze,dividends,fundamentals,metals,timemachine}.py mobile/src/beedotrade/engine/
           VERSION=$(grep -m1 '^version' app/pyproject.toml | cut -d'"' -f2)
           sed -i "s/^version = \"0.0.0\"/version = \"$VERSION\"/" mobile/pyproject.toml
           echo "VERSION=$VERSION" >> "$GITHUB_ENV"
