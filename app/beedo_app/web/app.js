@@ -432,7 +432,8 @@ function resultRow(r) {
 }
 // Tables keep their rows so a header click can re-sort them; missing values always sort last
 const tableRows = {};
-function fillTable(id, rows) { tableRows[id] = rows; $(`${id} tbody`).innerHTML = rows.map(resultRow).join(""); }
+const ROW_FN = {};  // tables with their own columns (2.3: dividends, plan)
+function fillTable(id, rows) { tableRows[id] = rows; $(`${id} tbody`).innerHTML = rows.map(ROW_FN[id] || resultRow).join(""); }
 $$("th[data-sort]").forEach((th) => th.addEventListener("click", () => {
   const table = th.closest("table"), id = `#${table.id}`, key = th.dataset.sort, rows = tableRows[id];
   if (!rows || !rows.length) return;
@@ -485,7 +486,7 @@ $("#wTable").addEventListener("keydown", (e) => { const tr = e.target.closest("t
   const h = new URLSearchParams(location.hash.slice(1));
   if ((h.get("lang") || settings.lang) === "ar") { settings.lang = "ar"; startArabic(); }
   $("#langBtn").textContent = settings.lang === "ar" ? "English" : "العربية";
-  applyTheme(h.get("theme") || settings.theme); drawChips(); drawAlerts();
+  applyTheme(h.get("theme") || settings.theme); drawChips(); drawAlerts(); fillRunSettings(); drawRules();
   checkUpdate(false);
   if (!h.has("noalerts")) { checkAlerts(false); setInterval(() => checkAlerts(false), 15 * 60 * 1000); }
   if (h.get("a")) analyse(h.get("a")).then(() => { if (h.has("weekly")) $('#tf [data-tf="w"]').click(); if (h.has("bt")) $("#btBtn").click(); if (h.has("tm")) $("#tmBtn").click(); });
@@ -574,28 +575,43 @@ $("#btBtn").addEventListener("click", async () => {
   if (!current) return;
   const btn = $("#btBtn"), out = $("#btOut"), sym = current.symbol;
   btn.disabled = true; btn.textContent = "Running…";
+  const bt = { years: +$("#btYears").value, buy_at: +$("#btBuy").value, sell_at: +$("#btSell").value, fee_pct: +$("#btFee").value || 0 };
+  save({ bt });
   try {
-    const r = await api("backtest", sym);
+    const r = await api("backtest", sym, bt.years, bt.buy_at, bt.sell_at, bt.fee_pct);
     if (sym !== current.symbol) return;
     if (!r || r.error) { out.innerHTML = `<div class="plan"><div class="warn">${esc(r ? r.error : "Back-test failed")}</div></div>`; return; }
     const stat = (k, v, s) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
     const done = r.trades.filter((t) => !t.open).length;
     out.innerHTML = `<div class="stats">${stat("Course method", signed(r.method_pct), "following the signals")}${stat("Buy and hold", signed(r.hold_pct), "bought on the first day")}
       ${stat("Trades", fmt(r.trades.length, 0), `${done} closed`)}${stat("Winners", `${r.wins} of ${r.trades.length}`, "trades in profit")}</div>
-      <p class="muted tiny">${esc(r.from)} to ${esc(r.to)}</p>` +
+      <p class="muted tiny">${esc(r.from)} to ${esc(r.to)}</p>${isCourse(bt, BT_COURSE) ? "" : `<p class="muted tiny">Your settings differ from the course defaults.</p>`}` +
       (r.trades.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>Bought</th><th class="num">Price</th><th>Sold</th><th class="num">Price</th><th class="num">Result</th></tr></thead><tbody>${
         r.trades.map((t) => `<tr><td>${esc(t.buy_date)}</td><td class="num">${fmt(t.buy)}</td><td>${t.open ? "Still open" : esc(t.sell_date)}</td><td class="num">${fmt(t.sell)}</td><td class="num">${signed(t.pct)}</td></tr>`).join("")}</tbody></table></div>`
-        : `<p class="muted">The method gave no First or Confirm Buy in this period, so it stayed in cash.</p>`);
+        : `<p class="muted">The method gave no buy signal at your buy level in this period, so it stayed in cash.</p>`);
   } finally { btn.disabled = false; btn.textContent = "Run back-test"; }
 });
+// 2.3: back-test and time machine settings, remembered between sessions
+const BT_COURSE = { years: 2, buy_at: 2, sell_at: -2, fee_pct: 0 }, TM_COURSE = { days: 20, rr: 2, entry: "", stop: "" };
+const isCourse = (v, c) => Object.keys(c).every((k) => String(v[k] ?? "") === String(c[k]));
+function fillRunSettings() {
+  const b = { ...BT_COURSE, ...(settings.bt || {}) }, t = { ...TM_COURSE, ...(settings.tm || {}), entry: "", stop: "" };  // prices are per stock: never kept
+  $("#btYears").value = b.years; $("#btBuy").value = b.buy_at; $("#btSell").value = b.sell_at; $("#btFee").value = b.fee_pct;
+  $("#tmDays").value = t.days; $("#tmRR").value = t.rr; $("#tmEntry").value = ""; $("#tmStop").value = "";
+  $("#buildAmount").value = settings.plan_amount || settings.cash || "";
+}
+$("#btReset").addEventListener("click", () => { save({ bt: { ...BT_COURSE } }); fillRunSettings(); });
+$("#tmReset").addEventListener("click", () => { save({ tm: { days: 20, rr: 2 } }); fillRunSettings(); });
 
 /* ---------- 1.6: time machine ---------- */
 $("#tmBtn").addEventListener("click", async () => {
   if (!current) return;
   const btn = $("#tmBtn"), out = $("#tmOut"), sym = current.symbol;
   btn.disabled = true; btn.textContent = "Running…";
+  const tm = { days: +$("#tmDays").value, rr: +$("#tmRR").value, entry: $("#tmEntry").value, stop: $("#tmStop").value };
+  save({ tm: { days: tm.days, rr: tm.rr } });
   try {
-    const r = await api("timemachine", sym);
+    const r = await api("timemachine", sym, tm.days, tm.rr, tm.entry || null, tm.stop || null);
     if (sym !== current.symbol) return;
     if (!r || r.error) { out.innerHTML = `<div class="plan"><div class="warn">${esc(r ? r.error : "Time machine failed")}</div></div>`; return; }
     const stat = (k, v, s) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
@@ -606,8 +622,113 @@ $("#tmBtn").addEventListener("click", async () => {
       ${stat("Neither", `${fmt(r.neither_pct, 1)}%`, `within ${r.days} trading days`)}${stat("Average R", `<span class="${r.avg_r >= 0 ? "pos" : "neg"}">${r.avg_r > 0 ? "+" : ""}${fmt(r.avg_r, 2)}</span>`, `${fmt(r.rr, 1)}R plan`)}</div>
       <div class="plan"><p><b>${esc(r.verdict)}</b></p>${r.notes.map((n) => `<p class="muted">${esc(n)}</p>`).join("")}
       <p>${hist}</p><p>Price after ${r.days} trading days: median ${fmt(r.close.median)} EGP, 90% of replays between ${fmt(r.close.p5)} and ${fmt(r.close.p95)}.</p>
-      <p class="muted tiny">${fmt(r.replays, 0)} replays, seed ${r.seed}, daily moves from ${esc(r.from)} to ${esc(r.to)}. A day that touches both the stop and the target counts as the stop.</p></div>`;
+      <p class="muted tiny">${fmt(r.replays, 0)} replays, seed ${r.seed}, daily moves from ${esc(r.from)} to ${esc(r.to)}. A day that touches both the stop and the target counts as the stop.</p>${isCourse(tm, TM_COURSE) ? "" : `<p class="muted tiny">Your settings differ from the course defaults.</p>`}</div>`;
   } finally { btn.disabled = false; btn.textContent = "Run time machine"; }
+});
+
+/* ---------- 2.3: dividends ---------- */
+const monthName = (ym) => (ym ? new Intl.DateTimeFormat(settings.lang === "ar" ? "ar-EG" : "en-GB", { month: "short", year: "numeric" })
+  .format(new Date(`${ym.slice(0, 7)}-15T00:00:00`)) : "–");
+const PAYS = { Cash: "Cash", Stock: "Bonus shares", Both: "Cash and bonus shares" };
+let divRows = [];
+ROW_FN["#dTable"] = (r) => `<tr class="click" data-go="${esc(r.symbol)}" tabindex="0">
+    <td><b>${esc(r.symbol)}</b><div class="muted tiny">${esc(r.name)}</div></td>
+    <td>${esc(PAYS[r.kind])}</td>
+    <td>${r.expected ? `${esc(monthName(r.expected.month))}<div class="muted tiny">${esc(PAYS[r.expected.kind])} · ${r.expected.regular ? "regular" : "often"}</div>` : `<span class="muted">No regular pattern</span>`}</td>
+    <td>${r.last_cash ? `${fmt(r.last_cash.amount, 2)}<div class="muted tiny">${esc(monthName(r.last_cash.date))}</div>` : "–"}</td>
+    <td class="num">${pct(r.yield_pct)}</td>
+    <td>${r.last_bonus ? `1 for every ${fmt(r.last_bonus.one_for, r.last_bonus.one_for % 1 ? 1 : 0)}<div class="muted tiny">${esc(monthName(r.last_bonus.date))}</div>` : "–"}</td>
+    <td class="num">${r.cash_years || r.bonus_years}</td></tr>`;
+const drawDividends = () => {
+  const k = $("#dKind").value, rows = divRows.filter((r) => !k || r.kind === k || (k !== "Both" && r.kind === "Both"));
+  fillTable("#dTable", rows.map((r) => ({ ...r, expected_m: (r.expected || {}).month || "9999", cash: (r.last_cash || {}).amount, bonus: (r.last_bonus || {}).one_for, years: r.cash_years || r.bonus_years })));
+  if (!rows.length) $("#dTable tbody").innerHTML = `<tr><td colspan="7" class="muted center">No dividend payers found.</td></tr>`;
+};
+async function loadDividends(scope) {
+  const body = $("#dTable tbody"), btns = [$("#dWatch"), $("#dAll")];
+  btns.forEach((b) => { b.disabled = true; });
+  body.innerHTML = `<tr><td colspan="7" class="muted center">Checking dividend histories…</td></tr>`;
+  try {
+    const r = await api("dividends", scope);
+    if (!r || r.error) { body.innerHTML = `<tr><td colspan="7" class="why">${esc(r ? r.error : "Couldn't load dividends")}</td></tr>`; return; }
+    divRows = r.results; drawDividends();
+    $("#dSummary").textContent = `Checked ${r.checked} companies · ${r.results.length} paid dividends in the last 5 years` + (r.failed ? ` · ${r.failed} have no data on Yahoo Finance` : "");
+  } finally { btns.forEach((b) => { b.disabled = false; }); }
+}
+$("#dWatch").addEventListener("click", () => loadDividends("watchlist"));
+$("#dAll").addEventListener("click", () => loadDividends("all"));
+$("#dKind").addEventListener("change", drawDividends);
+
+/* ---------- 2.3: my trading rules, example plan ---------- */
+const QUESTIONS = [
+  ["What is your main goal?", ["Protect my money", "Regular income from dividends", "Grow my money over years", "Fast gains"]],
+  ["When might you need this money?", ["Within a year", "1 to 3 years", "3 to 5 years", "More than 5 years"]],
+  ["Your stocks fall 20% in one month. What do you do?", ["Sell everything", "Sell part", "Hold and wait", "Buy more"]],
+  ["The largest yearly loss you can accept?", ["5%", "10%", "20%", "30% or more"]],
+  ["Your trading experience?", ["None", "Less than 2 years", "2 to 5 years", "5+ years, I always use a stop-loss"]],
+  ["How much of your savings is this?", ["Most of it (over 75%)", "50–75%", "25–50%", "Less than 25%"]],
+];
+const RULE_FIELDS = [
+  ["risk_pct", "Risk per trade (%)", 0.25, 5, 0.25], ["max_stock_pct", "Max in one stock (%)", 5, 50, 1], ["max_stocks", "Number of stocks", 1, 15, 1],
+  ["cash_pct", "Cash kept aside (%)", 0, 90, 5], ["max_sector_pct", "Max per sector (%)", 10, 100, 5],
+];
+const QUALITY_OPTS = [[2, "Strong only"], [1, "Strong or Fair"], [0, "Any rated company"]];
+const RUNG_OPTS = [[3, "Confirm Buy only"], [2, "First or Confirm Buy"], [1, "Any buy, including Alarm Buy"]];
+function drawRules(showQuiz = false) {
+  const p = settings.profile, r = settings.rules, quiz = $("#rulesQuiz"), out = $("#rulesOut");
+  const ans = (p && p.answers) || [];
+  quiz.innerHTML = QUESTIONS.map(([q, opts], i) => `<fieldset><legend>${i + 1}. ${esc(q)}</legend>${opts.map((o, j) =>
+    `<label class="opt"><input type="radio" name="q${i}" value="${j + 1}" ${ans[i] === j + 1 ? "checked" : ""}><span>${esc(o)}</span></label>`).join("")}</fieldset>`).join("") +
+    `<button class="primary" type="submit">Set my rules</button>`;
+  const quizOn = showQuiz || !p;
+  quiz.classList.toggle("hidden", !quizOn); $("#rulesRedo").classList.toggle("hidden", quizOn);
+  if (quizOn || !r) { out.innerHTML = ""; return; }
+  const sel = (id, opts, v) => `<select id="${id}">${opts.map(([k, t]) => `<option value="${k}" ${+v === k ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
+  out.innerHTML = `<p class="profile-line"><span class="k">Your profile:</span> <b>${esc(p.label)}</b> <span class="muted">(score ${p.score} of 24)</span></p>` +
+    (p.capped ? `<p class="muted">Because you may need this money soon (or it is most of your savings), your rules are set to Careful.</p>` : "") +
+    `<form id="rulesForm" class="filters">${RULE_FIELDS.map(([k, t, lo, hi, st]) => `<label>${esc(t)}<input id="r_${k}" type="number" min="${lo}" max="${hi}" step="${st}" value="${r[k]}"></label>`).join("")}
+      <label>Company quality${sel("r_min_quality", QUALITY_OPTS, r.min_quality)}</label>
+      <label>Buy signals used${sel("r_min_rung", RUNG_OPTS, r.min_rung)}</label>
+      <button class="ghost" type="submit">Save my rules</button></form>`;
+}
+$("#rulesQuiz").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const a = QUESTIONS.map((_, i) => +(($(`input[name=q${i}]:checked`) || {}).value || 0));
+  if (a.includes(0)) return toast("Answer all six questions.");
+  const r = await api("save_profile", a);
+  if (!r || r.error) return toast(r ? r.error : "Couldn't save");
+  settings.profile = { answers: a, score: r.score, label: r.label, capped: r.capped, income: r.income };
+  settings.rules = r.rules; settings.risk_pct = r.rules.risk_pct; $("#risk").value = r.rules.risk_pct;
+  drawRules(); toast(`Your profile: ${r.label}`);
+});
+$("#rulesRedo").addEventListener("click", () => drawRules(true));
+$("#rulesOut").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const rules = Object.fromEntries([...RULE_FIELDS.map(([k]) => k), "min_quality", "min_rung"].map((k) => [k, +$(`#r_${k}`).value]));
+  const r = await api("save_rules", rules);
+  if (!r || r.error) return toast(r ? r.error : "Couldn't save");
+  settings.rules = r.rules; settings.risk_pct = r.rules.risk_pct; $("#risk").value = r.rules.risk_pct;
+  toast("Your rules are saved");
+});
+ROW_FN["#bTable"] = (r) => `<tr class="click" data-go="${esc(r.symbol)}" tabindex="0">
+    <td><b>${esc(r.symbol)}</b><div class="muted tiny">${esc(r.name)}</div></td><td>${badge(r.rung)}</td>
+    <td>${qbadge(r.quality, r.quality_level, r.quality_score)}</td><td class="num">${fmt(r.shares, 0)}</td><td class="num">${fmt(r.entry)}</td>
+    <td class="num">${fmt(r.stop)}</td><td class="num">${fmt(r.cost, 0)}</td><td class="num">${pct(r.pct)}</td></tr>`;
+$("#buildForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const btn = $("#buildBtn"), out = $("#buildOut"), amount = +$("#buildAmount").value;
+  btn.disabled = true; btn.textContent = "Building…";
+  out.innerHTML = `<p class="muted">Rating every EGX company, then checking the best ones with your course method…</p>`;
+  try {
+    const r = await api("plan_builder", amount);
+    if (!r || r.error) { out.innerHTML = `<div class="plan"><div class="warn">${esc(r ? r.error : "Couldn't build the plan")}</div></div>`; return; }
+    save({ plan_amount: amount });
+    const stat = (k, v, s = "") => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
+    out.innerHTML = `<div class="stats">${stat("Amount", `${fmt(r.amount, 0)} EGP`, esc(r.profile || ""))}${stat("Invested", `${fmt(r.invested, 0)} EGP`, `${r.rows.length} stocks`)}${stat("Cash kept aside", `${fmt(r.cash, 0)} EGP`, pct(r.cash_pct))}</div>` +
+      (r.rows.length < r.rules.max_stocks ? `<p class="muted">Only ${r.rows.length} stocks meet your rules today, so the rest stays in cash. That is normal in a weak market.</p>` : "") +
+      `<div class="table-wrap"><table class="table" id="bTable"><thead><tr><th>Stock</th><th>Signal</th><th>Company</th><th class="num">Shares</th><th class="num">Entry</th><th class="num">Stop</th><th class="num">Cost</th><th class="num">Share of the total</th></tr></thead><tbody></tbody></table></div>`;
+    fillTable("#bTable", r.rows);
+  } finally { btn.disabled = false; btn.textContent = "Build example plan"; }
 });
 
 /* ---------- 1.5: alerts ---------- */

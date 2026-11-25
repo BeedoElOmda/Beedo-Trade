@@ -156,12 +156,26 @@
         </div>
         <div class="card" id="btCard" style="margin-top:16px">
           <div class="card-head"><h3>Back-test</h3><button id="btBtn" class="ghost small">Run back-test</button></div>
-          <p class="muted">Replays the checklist day by day over the past two years. It buys at the close on a First or Confirm Buy and sells at the close on a First or Confirm Sell. Fees and taxes are not counted. Past results do not predict future results.</p>
+          <p class="muted">Replays the checklist day by day over the period you choose. The course setting buys at the close on a First or Confirm Buy and sells on a First or Confirm Sell. Enter your broker's commission plus taxes as the fee: it is paid on each buy and each sell. Past results do not predict future results.</p>
+          <form id="btForm" class="filters settings-row">
+            <label>Period<select id="btYears"><option value="1">1 year</option><option value="2" selected>2 years</option><option value="5">5 years</option></select></label>
+            <label>Buy on<select id="btBuy"><option value="3">Confirm Buy only</option><option value="2" selected>First or Confirm Buy</option><option value="1">Any buy, including Alarm Buy</option></select></label>
+            <label>Sell on<select id="btSell"><option value="-3">Confirm Sell only</option><option value="-2" selected>First or Confirm Sell</option><option value="-1">Any sell, including Alarm Sell</option></select></label>
+            <label>Fee per buy and per sell (%)<input id="btFee" type="number" min="0" max="5" step="0.05" value="0"></label>
+            <button type="button" id="btReset" class="ghost small">Reset to course defaults</button>
+          </form>
           <div id="btOut"></div>
         </div>
         <div class="card" id="tmCard" style="margin-top:16px">
           <div class="card-head"><h3>Time machine</h3><button id="tmBtn" class="ghost small">Run time machine</button></div>
-          <p class="muted">How often would the trade plan above reach its target before its stop? It replays the next 20 trading days 10,000 times from this stock's own daily moves of the past two years, and checks the same plan on past days that had the same signal. A simulation, not a prediction.</p>
+          <p class="muted">How often would a buy plan reach its target before its stop? The course setting uses the trade plan above (entry at the last close, stop below support, target 2 times the risk) over the next 20 trading days. It replays those days 10,000 times from this stock's own daily moves of the past two years, and checks the same plan on past days that had the same signal. A simulation, not a prediction.</p>
+          <form id="tmForm" class="filters settings-row">
+            <label>Days ahead<select id="tmDays"><option value="10">10</option><option value="20" selected>20</option><option value="40">40</option><option value="60">60</option></select></label>
+            <label>Target (times the risk)<select id="tmRR"><option value="1.5">1.5</option><option value="2" selected>2</option><option value="3">3</option></select></label>
+            <label>Entry (EGP)<input id="tmEntry" type="number" min="0" step="any" placeholder="Last close"></label>
+            <label>Stop (EGP)<input id="tmStop" type="number" min="0" step="any" placeholder="Below support"></label>
+            <button type="button" id="tmReset" class="ghost small">Reset to course defaults</button>
+          </form>
           <div id="tmOut"></div>
         </div>
         <p class="muted tiny disclaimer">Learning and decision-support tool applying the Beedo technical-analysis course. Not investment advice. Free data can be delayed: check the live price and the day's EGX disclosures before trading.</p>
@@ -222,6 +236,21 @@
           <tbody><tr><td colspan="11" class="muted center">Add what you own above. Use GOLD or SILVER with a quantity in grams for metals.</td></tr></tbody>
         </table>
       </div>
+      <div class="card" id="rulesCard" style="margin-top:16px">
+        <div class="card-head"><h3>My trading rules</h3><button id="rulesRedo" class="ghost small hidden">Answer again</button></div>
+        <p class="muted">Answer 6 short questions. Your answers set the rules the app uses for position sizes and for the example plan. They stay on this device only.</p>
+        <form id="rulesQuiz" class="quiz"></form>
+        <div id="rulesOut"></div>
+      </div>
+      <div class="card" id="buildCard" style="margin-top:16px">
+        <div class="card-head"><h3>Example plan from your rules</h3></div>
+        <form id="buildForm" class="filters">
+          <label>Amount to plan (EGP)<input id="buildAmount" type="number" min="1000" step="1000"></label>
+          <button id="buildBtn" class="primary" type="submit">Build example plan</button>
+        </form>
+        <div class="notice"><b>This is an example, not a recommendation.</b> It applies the rules you chose and the course method to today's data. It does not know your full financial situation and is not investment advice. Check each stock yourself; you decide what to buy.</div>
+        <div id="buildOut"></div>
+      </div>
       <p class="muted tiny disclaimer">Your holdings are saved only on this computer. Values use the last daily close, which can be delayed. Not investment advice.</p>
     </section>
 
@@ -266,6 +295,20 @@
         <table class="table" id="iTable">
           <thead><tr><th>Industry</th><th class="num">Stocks</th><th class="num">Above 50-day</th><th class="num">Above 200-day</th><th class="num">Up / down today</th><th class="num">Avg change</th><th>Health</th></tr></thead>
           <tbody><tr><td colspan="7" class="muted center">Loading…</td></tr></tbody>
+        </table>
+      </div>
+      <div class="card table-wrap" style="margin-top:16px">
+        <div class="card-head"><h3>Dividends</h3><button class="ghost small" data-export="#dTable" data-name="Beedo-Trade-dividends">Export to Excel</button></div>
+        <p class="muted tiny">Cash dividends and bonus shares of the last 5 years, from Yahoo Finance, and the payout to expect next from that history. Expected payouts are a pattern from history, not an announcement: the company's general assembly decides. Past amounts are adjusted for later bonus shares.</p>
+        <div class="filters">
+          <label>Show<select id="dKind"><option value="">All payers</option><option value="Cash">Cash</option><option value="Stock">Bonus shares</option><option value="Both">Both</option></select></label>
+          <button id="dWatch" class="ghost">My watchlist and portfolio</button>
+          <button id="dAll" class="primary">Whole EGX</button>
+        </div>
+        <p class="muted tiny" id="dSummary"></p>
+        <table class="table" id="dTable">
+          <thead><tr><th data-sort="symbol">Stock</th><th data-sort="kind">Pays</th><th data-sort="expected_m">Expected next</th><th data-sort="cash">Last cash (EGP)</th><th data-sort="yield_pct" class="num">Cash yield (12 m)</th><th data-sort="bonus">Last bonus shares</th><th data-sort="years" class="num">Years paid (of 5)</th></tr></thead>
+          <tbody><tr><td colspan="7" class="muted center">Choose "My watchlist and portfolio", or "Whole EGX" (about 20 seconds).</td></tr></tbody>
         </table>
       </div>
     </section>

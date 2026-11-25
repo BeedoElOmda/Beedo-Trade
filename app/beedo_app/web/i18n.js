@@ -223,6 +223,59 @@ const AR = {
   "TradingView has too few reported figures for this company to rate it.": "أرقام هذه الشركة في TradingView قليلة لا تكفي لتقييمها.",
   "TradingView has no company data for this code.": "لا توجد في TradingView بيانات شركة لهذا الرمز.",
 
+  // 2.3: back-test and time machine settings
+  "Replays the checklist day by day over the period you choose. The course setting buys at the close on a First or Confirm Buy and sells on a First or Confirm Sell. Enter your broker's commission plus taxes as the fee: it is paid on each buy and each sell. Past results do not predict future results.":
+    "يعيد تطبيق قائمة المؤشرات يومًا بيوم على الفترة التي تختارها. إعداد الدورة يشتري عند الإغلاق مع إشارة شراء أولي أو تأكيد شراء، ويبيع مع إشارة بيع أولي أو تأكيد بيع. أدخل عمولة السمسار مع الضرائب كرسوم: تُدفع عند كل شراء وكل بيع. نتائج الماضي لا تتنبأ بالمستقبل.",
+  "Period": "الفترة", "1 year": "سنة", "2 years": "سنتان", "5 years": "5 سنوات", "Buy on": "الشراء عند", "Sell on": "البيع عند",
+  "Confirm Buy only": "تأكيد الشراء فقط", "Confirm Sell only": "تأكيد البيع فقط", "First or Confirm Sell": "بيع أولي أو تأكيد بيع",
+  "Any sell, including Alarm Sell": "أي بيع، ومنه تنبيه البيع", "Fee per buy and per sell (%)": "الرسوم لكل شراء ولكل بيع (%)",
+  "Reset to course defaults": "العودة لإعدادات الدورة", "Your settings differ from the course defaults.": "إعداداتك تختلف عن إعدادات الدورة.",
+  "The method gave no buy signal at your buy level in this period, so it stayed in cash.": "لم يعطِ المنهج إشارة شراء عند المستوى الذي اخترته في هذه الفترة، فبقي في السيولة.",
+  "How often would a buy plan reach its target before its stop? The course setting uses the trade plan above (entry at the last close, stop below support, target 2 times the risk) over the next 20 trading days. It replays those days 10,000 times from this stock's own daily moves of the past two years, and checks the same plan on past days that had the same signal. A simulation, not a prediction.":
+    "كم مرة تصل خطة الشراء إلى الهدف قبل وقف الخسارة؟ إعداد الدورة يستخدم خطة الصفقة أعلاه (الدخول عند آخر إغلاق، ووقف الخسارة تحت الدعم، والهدف ضعف المخاطرة) خلال أيام التداول العشرين القادمة. تعيد آلة الزمن تشغيل هذه الأيام 10,000 مرة من حركات السهم اليومية خلال العامين الماضيين، وتختبر نفس الخطة في الأيام السابقة التي ظهرت فيها نفس الإشارة. هذه محاكاة وليست توقعًا.",
+  "Days ahead": "عدد الأيام القادمة", "Target (times the risk)": "الهدف (مضاعف المخاطرة)", "Entry (EGP)": "الدخول (جنيه)", "Stop (EGP)": "وقف الخسارة (جنيه)",
+  "Last close": "آخر إغلاق", "Below support": "تحت الدعم", "The stop must be below the entry price.": "يجب أن يكون وقف الخسارة أقل من سعر الدخول.",
+  "The back-test settings must be numbers.": "إعدادات الاختبار التاريخي يجب أن تكون أرقامًا.", "The time machine settings must be numbers.": "إعدادات آلة الزمن يجب أن تكون أرقامًا.",
+  "Back-test settings: 1, 2 or 5 years, a buy and a sell level, and a fee between 0 and 5%.": "إعدادات الاختبار التاريخي: سنة أو سنتان أو 5 سنوات، ومستوى للشراء وآخر للبيع، ورسوم بين 0 و5%.",
+  "Time machine settings: 10, 20, 40 or 60 days, and a target of 0.5 to 5 times the risk.": "إعدادات آلة الزمن: 10 أو 20 أو 40 أو 60 يومًا، وهدف من 0.5 إلى 5 أضعاف المخاطرة.",
+  "The plan needs a stop below the entry and a target above it.": "الخطة تحتاج وقف خسارة أقل من الدخول وهدفًا أعلى منه.",
+
+  // 2.3: dividends
+  "Dividends": "التوزيعات",
+  "Cash dividends and bonus shares of the last 5 years, from Yahoo Finance, and the payout to expect next from that history. Expected payouts are a pattern from history, not an announcement: the company's general assembly decides. Past amounts are adjusted for later bonus shares.":
+    "التوزيعات النقدية وأسهم المنحة في آخر 5 سنوات من Yahoo Finance، والتوزيع المتوقع التالي بناءً على هذا التاريخ. التوزيع المتوقع نمط من الماضي وليس إعلانًا: الجمعية العامة للشركة هي التي تقرر. المبالغ القديمة معدّلة بأسهم المنحة اللاحقة.",
+  "Show": "عرض", "All payers": "كل الموزِّعين", "Cash": "نقدي", "Bonus shares": "أسهم منحة", "Both": "كلاهما", "Cash and bonus shares": "نقدي وأسهم منحة",
+  "My watchlist and portfolio": "قائمتي ومحفظتي", "Whole EGX": "كل البورصة", "Pays": "يوزّع", "Expected next": "التوزيع المتوقع",
+  "Last cash (EGP)": "آخر توزيع نقدي (جنيه)", "Cash yield (12 m)": "العائد النقدي (12 شهرًا)", "Last bonus shares": "آخر أسهم منحة", "Years paid (of 5)": "سنوات التوزيع (من 5)",
+  "Choose \"My watchlist and portfolio\", or \"Whole EGX\" (about 20 seconds).": "اختر «قائمتي ومحفظتي» أو «كل البورصة» (20 ثانية تقريبًا).",
+  "Checking dividend histories…": "جارٍ فحص تاريخ التوزيعات…", "No dividend payers found.": "لا توجد شركات موزِّعة.", "Couldn't load dividends": "تعذّر تحميل التوزيعات",
+  "No regular pattern": "لا يوجد نمط منتظم",
+
+  // 2.3: my trading rules and the example plan
+  "My trading rules": "قواعد التداول الخاصة بي", "Answer again": "أجب من جديد",
+  "Answer 6 short questions. Your answers set the rules the app uses for position sizes and for the example plan. They stay on this device only.":
+    "أجب عن 6 أسئلة قصيرة. إجاباتك تحدد القواعد التي يستخدمها البرنامج لأحجام المراكز وللخطة المثال. تبقى على هذا الجهاز فقط.",
+  "What is your main goal?": "ما هدفك الأساسي؟", "Protect my money": "الحفاظ على أموالي", "Regular income from dividends": "دخل منتظم من التوزيعات",
+  "Grow my money over years": "تنمية أموالي على سنوات", "Fast gains": "أرباح سريعة",
+  "When might you need this money?": "متى قد تحتاج هذه الأموال؟", "Within a year": "خلال سنة", "1 to 3 years": "من سنة إلى 3 سنوات", "3 to 5 years": "من 3 إلى 5 سنوات", "More than 5 years": "أكثر من 5 سنوات",
+  "Your stocks fall 20% in one month. What do you do?": "هبطت أسهمك 20% في شهر. ماذا تفعل؟", "Sell everything": "أبيع كل شيء", "Sell part": "أبيع جزءًا", "Hold and wait": "أحتفظ وأنتظر", "Buy more": "أشتري المزيد",
+  "The largest yearly loss you can accept?": "أقصى خسارة سنوية تقبلها؟", "30% or more": "30% فأكثر",
+  "Your trading experience?": "خبرتك في التداول؟", "None": "لا توجد", "Less than 2 years": "أقل من سنتين", "2 to 5 years": "من 2 إلى 5 سنوات", "5+ years, I always use a stop-loss": "أكثر من 5 سنوات وأستخدم وقف الخسارة دائمًا",
+  "How much of your savings is this?": "ما نسبة هذا المبلغ من مدخراتك؟", "Most of it (over 75%)": "معظمها (أكثر من 75%)", "Less than 25%": "أقل من 25%",
+  "Set my rules": "حدّد قواعدي", "Save my rules": "احفظ قواعدي", "Your rules are saved": "تم حفظ قواعدك", "Your profile:": "ملفك:",
+  "Careful": "حذِر", "Balanced": "متوازن", "Bold": "جريء", "Answer all six questions.": "أجب عن الأسئلة الستة كلها.",
+  "Because you may need this money soon (or it is most of your savings), your rules are set to Careful.": "لأنك قد تحتاج هذه الأموال قريبًا (أو لأنها معظم مدخراتك)، ضُبطت قواعدك على «حذِر».",
+  "Risk per trade (%)": "المخاطرة للصفقة (%)", "Max in one stock (%)": "أقصى نسبة لسهم واحد (%)", "Number of stocks": "عدد الأسهم", "Cash kept aside (%)": "السيولة الاحتياطية (%)",
+  "Max per sector (%)": "أقصى نسبة لقطاع (%)", "Buy signals used": "إشارات الشراء المستخدمة", "Any rated company": "أي شركة مقيَّمة",
+  "Fill in every rule with a number.": "اكتب رقمًا في كل قاعدة.", "Some rules are outside their allowed range.": "بعض القواعد خارج الحدود المسموحة.",
+  "Example plan from your rules": "خطة مثال من قواعدك", "Amount to plan (EGP)": "المبلغ المراد التخطيط له (جنيه)", "Build example plan": "ابنِ الخطة المثال", "Building…": "جارٍ البناء…",
+  "This is an example, not a recommendation.": "هذا مثال وليس توصية.",
+  "It applies the rules you chose and the course method to today's data. It does not know your full financial situation and is not investment advice. Check each stock yourself; you decide what to buy.":
+    "يطبّق القواعد التي اخترتها ومنهج الدورة على بيانات اليوم. لا يعرف وضعك المالي الكامل وليس نصيحة استثمارية. راجع كل سهم بنفسك، والقرار لك.",
+  "Amount": "المبلغ", "Invested": "المستثمر", "Cash kept aside": "السيولة الاحتياطية", "Entry": "الدخول", "Stop": "وقف الخسارة", "Share of the total": "النسبة من الإجمالي",
+  "Answer the questions in My trading rules first.": "أجب أولًا عن أسئلة «قواعد التداول الخاصة بي».", "Enter an amount of at least 1,000 EGP.": "أدخل مبلغًا لا يقل عن 1,000 جنيه.",
+  "Couldn't build the plan": "تعذّر بناء الخطة",
+
   // TradingView sectors and industries
   "Commercial Services": "الخدمات التجارية", "Communications": "الاتصالات", "Consumer Durables": "السلع المعمّرة", "Consumer Non-Durables": "السلع الاستهلاكية",
   "Consumer Services": "الخدمات الاستهلاكية", "Distribution Services": "خدمات التوزيع", "Electronic Technology": "التكنولوجيا الإلكترونية", "Energy Minerals": "الطاقة والوقود",
@@ -257,6 +310,17 @@ const GROUP = { industry: "النشاط", sector: "القطاع", market: "ال�
 const tx = (s) => tr(s) || s;
 // Sentences assembled from parts
 const AR_RULES = [
+  // 2.3
+  [/^(Cash|Bonus shares|Cash and bonus shares) · (regular|often)$/, (m) => `${AR[m[1]]} · ${m[2] === "regular" ? "منتظم" : "متكرر"}`],
+  [/^1 for every ([\d.,]+)$/, (m) => `سهم مجاني لكل ${m[1]}`],
+  [/^Checked (\d+) companies · (\d+) paid dividends in the last 5 years(?: · (\d+) have no data on Yahoo Finance)?$/,
+    (m) => `فُحصت ${m[1]} شركة · ${m[2]} وزّعت أرباحًا في آخر 5 سنوات${m[3] ? ` · ${m[3]} بلا بيانات في Yahoo Finance` : ""}`],
+  [/^\(score (\d+) of 24\)$/, (m) => `(النقاط ${m[1]} من 24)`],
+  [/^Your profile: (Careful|Balanced|Bold)$/, (m) => `ملفك: ${AR[m[1]]}`],
+  [/^(\d+) stocks$/, (m) => `${m[1]} أسهم`],
+  [/^Only (\d+) stocks meet your rules today, so the rest stays in cash\. That is normal in a weak market\.$/, (m) => `${m[1]} أسهم فقط تطابق قواعدك اليوم، فيبقى الباقي سيولة. هذا طبيعي في السوق الضعيف.`],
+  [/^(\d+)\. (.+)$/, (m) => (AR[m[2]] ? `${m[1]}. ${AR[m[2]]}` : null)],
+  [/^(\S+)% of the replays reached neither within (\d+) trading days; the price then decides those\.$/, (m) => `${m[1]}% من عمليات المحاكاة لم تصل إلى أيٍّ منهما خلال ${m[2]} يوم تداول؛ والسعر وقتها هو الذي يحسمها.`],
   // 2.2.2: checklist readings
   [/^support (\S+) \| resistance (\S+)$/, (m) => `الدعم ${m[1]} | المقاومة ${m[2]}`],
   [/^Mid-range: (\S+)% above support, (\S+)% below resistance$/, (m) => `منتصف النطاق: ${m[1]}% فوق الدعم، و${m[2]}% تحت المقاومة`],
