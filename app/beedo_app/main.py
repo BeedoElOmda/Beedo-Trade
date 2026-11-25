@@ -22,7 +22,7 @@ else:
             sys.path.insert(0, str(p))
 
 import analyze  # noqa: E402  (shared with the Claude skill, so numbers always match)
-import fundamentals, metals, timemachine  # noqa: E402  (also shared with the skill)
+import dividends, fundamentals, metals, timemachine  # noqa: E402  (also shared with the skill)
 from beedo_app import engine  # noqa: E402
 
 from beedo_app import __version__ as VERSION  # noqa: E402  (single source: beedo_app/__init__.py)
@@ -38,6 +38,11 @@ DEFAULTS = {"watchlist": ["COMI", "TMGH", "SWDY", "ETEL", "EAST", "EGAL"], "cash
             "theme": "system", "lang": "en", "alerts": [], "portfolio": [], "signals": {}, "ma": [5, 9, 18], "steps_off": []}
 REPO = "BeedoElOmda/Beedo-Trade"
 NOTIFY = None  # the phone app sets this to show each alert as a phone notification
+OPEN_URL = None  # the phone app sets this: Python's webbrowser can't open links on Android
+ANDROID = hasattr(sys, "getandroidapilevel") or "ANDROID_ROOT" in os.environ
+PLAY_URL = "https://play.google.com/store/apps/details?id=io.github.beedoelomda.beedotrade"
+RULE_RANGES = {"risk_pct": (0.25, 5), "max_stock_pct": (5, 50), "max_stocks": (1, 15), "cash_pct": (0, 90),
+               "max_sector_pct": (10, 100), "min_quality": (0, 2), "min_rung": (1, 3)}  # my trading rules: allowed values
 
 
 def _valid_ma(ma):
@@ -72,6 +77,7 @@ class Api:
         self._lock = threading.Lock()
         self._save_lock = threading.Lock()  # settings are read-changed-written from several threads
         self._daily = {}  # symbol -> daily bars of the last analysis (weekly view, back-test)
+        self._divs = {}  # symbol -> (time, dividend summary); dividends change a few times a year, so keep them 12 hours
         self._window = None  # private: pywebview exposes public attributes to the page and would crawl the whole window object
         s = self.get_settings()
         if not s.get("theme_is_system_default"):  # once: older versions saved "dark" as their default, so start everyone on System
@@ -286,6 +292,88 @@ class Api:
         return {"rated": len(rated), "passed_quality": len(keep), "checked": len(checked),
                 "skipped_no_prices": sum(1 for r in results if r.get("error")), "results": hits}
 
+    # ---------- 2.3: my trading rules, example plan ----------
+    def save_profile(self, answers):
+        """The six answers -> a profile and its rules; the trade plan's risk per trade follows the rules."""
+        try:
+            p = engine.risk_profile(answers)
+        except (TypeError, ValueError):
+            return {"error": "Answer all six questions."}
+        if p.get("error"):
+            return p
+        self.save_settings({"profile": {"answers": [int(x) for x in answers], **{k: p[k] for k in ("score", "label", "capped", "income")}},
+                            "rules": p["rules"], "risk_pct": p["rules"]["risk_pct"]})
+        return p
+
+    def save_rules(self, rules):
+        """Your own changes to the rules: each value inside its range."""
+        try:
+            clean = {k: float(rules[k]) for k in RULE_RANGES}
+        except (KeyError, TypeError, ValueError):
+            return {"error": "Fill in every rule with a number."}
+        bad = [k for k, (lo, hi) in RULE_RANGES.items() if not lo <= clean[k] <= hi]
+        if bad:
+            return {"error": "Some rules are outside their allowed range."}
+        for k in ("max_stocks", "min_quality", "min_rung"):
+            clean[k] = int(clean[k])
+        self.save_settings({"rules": clean, "risk_pct": clean["risk_pct"]})
+        return {"rules": clean}
+
+    def plan_builder(self, amount):
+        """An example split of the amount from the user's rules and today's course signals. Not a recommendation."""
+        s = self.get_settings()
+        rules, prof = s.get("rules"), s.get("profile") or {}
+        if not rules:
+            return {"error": "Answer the questions in My trading rules first."}
+        try:
+            amount = float(amount)
+        except (TypeError, ValueError):
+            amount = 0
+        if amount < 1000:
+            return {"error": "Enter an amount of at least 1,000 EGP."}
+        sc = self.screener(rules["min_quality"], rules["min_rung"])
+        if sc.get("error"):
+            return sc
+        try:
+            sectors = {r["symbol"]: r.get("sector") for r in fundamentals.market()}
+        except Exception:
+            sectors = {}
+        cands = []
+        for r in sc["results"]:
+            tp = engine.trade_plan(self._cache[r["symbol"]]) if r["symbol"] in self._cache else {"error": "no data"}
+            if not tp.get("error"):
+                cands.append({**r, "sector": sectors.get(r["symbol"]), "entry": tp["entry"], "stop": tp["stop"]})
+        return {**engine.build_plan(amount, rules, cands, prof.get("income")), "profile": prof.get("label"), "rules": rules}
+
+    # ---------- 2.3: dividends ----------
+    def _dividend(self, sym):
+        hit = self._divs.get(sym)
+        if hit and time.time() - hit[0] < 12 * 3600:
+            return hit[1]
+        try:
+            r = dividends.for_symbol(sym)
+        except Exception as e:
+            r = {"symbol": sym, "error": str(e)}
+        if not r.get("error"):
+            self._divs[sym] = (time.time(), r)
+        return r
+
+    def dividends(self, scope="watchlist"):
+        """Dividend history and the next expected payout. scope: "watchlist" (watchlist + portfolio) or "all" (every EGX company)."""
+        try:
+            rows = {r["symbol"]: r for r in fundamentals.market()}
+        except Exception:
+            rows = {}
+        s = self.get_settings()
+        syms = list(rows) if scope == "all" else list(dict.fromkeys(s["watchlist"] + [h["symbol"] for h in s["portfolio"]]))
+        syms = [x for x in syms if x not in metals.METALS]
+        with ThreadPoolExecutor(max_workers=8) as ex:
+            found = list(ex.map(self._dividend, syms))
+        out = [{**r, "name": (rows.get(r["symbol"]) or {}).get("name") or r["symbol"], "sector": (rows.get(r["symbol"]) or {}).get("sector")}
+               for r in found if not r.get("error") and r["kind"] != "None"]
+        out.sort(key=lambda r: ((r["expected"] or {}).get("month") or "9999", -(r["yield_pct"] or 0)))
+        return {"checked": len(syms), "failed": sum(1 for r in found if r.get("error")), "results": out}
+
     # ---------- weekly view, back-test ----------
     def _history(self, sym, rng):
         """Longer daily history for a stock; metals and CSV imports use the bars of the last analysis."""
@@ -306,24 +394,46 @@ class Api:
         except Exception as e:
             return {"error": str(e)}
 
-    def backtest(self, symbol):
+    def backtest(self, symbol, years=2, buy_at=2, sell_at=-2, fee_pct=0):
+        """years 1, 2 or 5; buy_at 3 (Confirm), 2 (First or Confirm) or 1 (any buy); sell_at the same below zero; fee per buy and sell, %."""
         try:
-            return engine.backtest(self._history(symbol, "2y"), lambda b: analyze.report(b, symbol, ""))
+            years, buy_at, sell_at, fee_pct = int(years or 2), int(buy_at or 2), int(sell_at or -2), float(fee_pct or 0)
+        except (TypeError, ValueError):
+            return {"error": "The back-test settings must be numbers."}
+        if years not in (1, 2, 5) or buy_at not in (1, 2, 3) or sell_at not in (-1, -2, -3) or not 0 <= fee_pct <= 5:
+            return {"error": "Back-test settings: 1, 2 or 5 years, a buy and a sell level, and a fee between 0 and 5%."}
+        try:
+            r = engine.backtest(self._history(symbol, f"{years}y"), lambda b: analyze.report(b, symbol, ""), buy_at, sell_at, fee_pct)
+            return {**r, "settings": {**r.get("settings", {}), "years": years}} if not r.get("error") else r
         except Exception as e:
             return {"error": str(e)}
 
-    def timemachine(self, symbol):
-        """Odds that the trade plan reaches its target or its stop first: 10,000 replays, plus the same plan on past days with the same signal."""
+    def timemachine(self, symbol, days=20, rr=2, entry=None, stop=None):
+        """Odds that a buy plan reaches its target or its stop first: 10,000 replays, plus the same plan on past days with the same signal.
+        By default the trade plan: entry at the last close, stop under support, target 2R. entry / stop: your own prices."""
         sym = (symbol or "").upper()
         try:
+            days, rr = int(days or 20), float(rr or 2)
+            entry = float(entry) if entry not in (None, "") else None
+            stop = float(stop) if stop not in (None, "") else None
+        except (TypeError, ValueError):
+            return {"error": "The time machine settings must be numbers."}
+        if days not in (10, 20, 40, 60) or not 0.5 <= rr <= 5:
+            return {"error": "Time machine settings: 10, 20, 40 or 60 days, and a target of 0.5 to 5 times the risk."}
+        try:
             p = self.plan(sym, None, 2)
-            if p.get("error"):
+            if p.get("error") and (entry is None or stop is None):
                 return p
+            entry = entry or p["entry"]
+            stop = stop or p["stop"]
+            if not 0 < stop < entry:
+                return {"error": "The stop must be below the entry price."}
             bars = self._history(sym, "2y")
-            days = engine.rungs(bars, lambda b: analyze.report(b, sym, ""))
-            today = days[-1][1]
-            starts = [i - 1 for i, r in days[:-1] if r == today]  # bars[i - 1] is the day that signal appeared
-            return {**timemachine.run(bars, p["entry"], p["stop"], p["target"], starts=starts), "signal": engine.RUNGS[today]}
+            rows = engine.rungs(bars, lambda b: analyze.report(b, sym, ""))
+            today = rows[-1][1]
+            starts = [i - 1 for i, r in rows[:-1] if r == today]  # bars[i - 1] is the day that signal appeared
+            target = round(entry + rr * (entry - stop), 2)
+            return {**timemachine.run(bars, entry, stop, target, days=days, starts=starts), "signal": engine.RUNGS[today]}
         except Exception as e:
             return {"error": str(e)}
 
@@ -380,13 +490,14 @@ class Api:
             with urllib.request.urlopen(req, timeout=8) as r:
                 latest = json.load(r)["tag_name"].lstrip("v")
             num = lambda v: tuple(int(x) for x in re.findall(r"\d+", v))
-            return {"latest": latest, "newer": num(latest) > num(VERSION), "url": f"https://github.com/{REPO}/releases/latest"}
+            # phones update from Google Play; Windows and Mac have no store, so they download from GitHub
+            return {"latest": latest, "newer": num(latest) > num(VERSION), "url": PLAY_URL if ANDROID else f"https://github.com/{REPO}/releases/latest"}
         except Exception as e:  # offline or rate-limited: say nothing
             return {"error": str(e)}
 
     def open_url(self, url):
         if str(url).startswith("https://"):
-            webbrowser.open(url)
+            OPEN_URL(url) if OPEN_URL else webbrowser.open(url)
 
     def open_guide(self):
         # Windows install: <app>\docs (installer). macOS: inside the app bundle. Developer checkout: app/packaging/guide

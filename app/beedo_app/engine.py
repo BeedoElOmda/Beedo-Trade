@@ -356,22 +356,26 @@ def rungs(bars, report, start=None):
     return [(i, evaluate(report(bars[:i]))["signal"]["rung"]) for i in range(start or analyze.min_bars(), len(bars) + 1)]
 
 
-def backtest(bars, report):
+BT_DEFAULTS = {"years": 2, "buy_at": 2, "sell_at": -2, "fee_pct": 0.0}  # the course: First or Confirm, no fees
+
+
+def backtest(bars, report, buy_at=2, sell_at=-2, fee_pct=0.0):
     """Replays the checklist day by day, each day seeing only the bars up to that day.
-    Buys at the close on a First or Confirm Buy, sells at the close on a First or Confirm Sell. No fees or taxes."""
+    Buys at the close when the signal reaches buy_at (2 = First or Confirm Buy), sells when it falls to sell_at
+    (-2 = First or Confirm Sell). fee_pct is paid on each buy and each sell (commission and taxes)."""
     START = analyze.min_bars()  # 60 bars, or slow MA + 6
     if len(bars) <= START:
         return {"error": "Not enough price history to back-test."}
-    trades, entry = [], None
+    trades, entry, f = [], None, fee_pct / 100
 
     def close_trade(b, still_open=False):
         trades.append({"buy_date": entry["d"], "buy": entry["c"], "sell_date": b["d"], "sell": b["c"],
-                       "pct": round((b["c"] / entry["c"] - 1) * 100, 2), "open": still_open})
+                       "pct": round((b["c"] * (1 - f) / (entry["c"] * (1 + f)) - 1) * 100, 2), "open": still_open})
 
     for i, rung in rungs(bars, report):
-        if entry is None and rung >= 2:
+        if entry is None and rung >= buy_at:
             entry = bars[i - 1]
-        elif entry is not None and rung <= -2:
+        elif entry is not None and rung <= sell_at:
             close_trade(bars[i - 1]); entry = None
     if entry is not None:
         close_trade(bars[-1], still_open=True)
@@ -381,7 +385,61 @@ def backtest(bars, report):
     return {"from": bars[START - 1]["d"], "to": bars[-1]["d"], "trades": trades,
             "wins": sum(1 for t in trades if t["pct"] > 0),
             "method_pct": round((total - 1) * 100, 1),
-            "hold_pct": round((bars[-1]["c"] / bars[START - 1]["c"] - 1) * 100, 1)}
+            "hold_pct": round((bars[-1]["c"] * (1 - f) / (bars[START - 1]["c"] * (1 + f)) - 1) * 100, 1),
+            "settings": {"buy_at": buy_at, "sell_at": sell_at, "fee_pct": fee_pct}}
+
+
+# ---------- 2.3: my trading rules and the example plan ----------
+# Six answers, 1 to 4 points each: goal, when the money is needed, reaction to a 20% fall, largest yearly loss accepted,
+# experience, share of savings. They only set rules; the plan builder applies the rules and the course method.
+PROFILES = ("Careful", "Balanced", "Bold")
+RULES = {  # risk per trade %, max in one stock %, number of stocks, cash kept aside %, max per sector %, quality, lowest buy rung
+    "Careful": {"risk_pct": 1, "max_stock_pct": 10, "max_stocks": 10, "cash_pct": 30, "max_sector_pct": 25, "min_quality": 2, "min_rung": 3},
+    "Balanced": {"risk_pct": 2, "max_stock_pct": 15, "max_stocks": 8, "cash_pct": 20, "max_sector_pct": 30, "min_quality": 1, "min_rung": 2},
+    "Bold": {"risk_pct": 3, "max_stock_pct": 20, "max_stocks": 6, "cash_pct": 10, "max_sector_pct": 40, "min_quality": 1, "min_rung": 2},
+}
+
+
+def risk_profile(answers):
+    """answers: six numbers 1-4. Careful 6-11, Balanced 12-18, Bold 19-24; capped at Careful when the money is needed
+    within a year (question 2) or is most of the savings (question 6)."""
+    a = [int(x) for x in answers]
+    if len(a) != 6 or not all(1 <= x <= 4 for x in a):
+        return {"error": "Answer all six questions."}
+    score = sum(a)
+    label = "Careful" if score <= 11 else "Balanced" if score <= 18 else "Bold"
+    capped = label != "Careful" and (a[1] == 1 or a[5] == 1)
+    if capped:
+        label = "Careful"
+    return {"score": score, "label": label, "capped": capped, "income": a[0] == 2, "rules": dict(RULES[label])}
+
+
+def build_plan(amount, rules, candidates, income=False):
+    """An example split of `amount` from the user's rules. candidates: [{symbol, name, sector, rung, label, quality,
+    quality_level, quality_score, entry, stop, dividend_yield}], already from the course checklist. Each position:
+    at most risk_pct of the amount lost at its stop, at most max_stock_pct of the amount, sectors capped, cash kept aside."""
+    amount = float(amount)
+    invest = amount * (1 - rules["cash_pct"] / 100)
+    picks = [c for c in candidates if c["rung"] >= rules["min_rung"] and (c.get("quality_level") or 0) >= rules["min_quality"]
+             and c.get("entry") and c.get("stop") and 0 < c["stop"] < c["entry"]]
+    picks.sort(key=lambda c: (-(bool(c.get("dividend_yield")) if income else 0), -c["rung"], -(c.get("quality_score") or 0)))
+    rows, spent, by_sector = [], 0.0, {}
+    for c in picks:
+        if len(rows) >= rules["max_stocks"]:
+            break
+        risk = c["entry"] - c["stop"]
+        sector_left = amount * rules["max_sector_pct"] / 100 - by_sector.get(c.get("sector"), 0)
+        room = min(amount * rules["max_stock_pct"] / 100, invest - spent, sector_left)
+        shares = int(min(amount * rules["risk_pct"] / 100 // risk, room // c["entry"]))
+        if shares < 1:
+            continue
+        cost = round(shares * c["entry"], 2)
+        spent += cost
+        by_sector[c.get("sector")] = by_sector.get(c.get("sector"), 0) + cost
+        rows.append({k: c.get(k) for k in ("symbol", "name", "sector", "rung", "label", "quality", "quality_level", "quality_score", "entry", "stop")}
+                    | {"shares": shares, "cost": cost, "loss_at_stop": round(shares * risk, 2), "pct": round(cost / amount * 100, 1)})
+    return {"amount": amount, "rows": rows, "invested": round(spent, 2), "cash": round(amount - spent, 2),
+            "cash_pct": round((amount - spent) / amount * 100, 1), "candidates": len(picks)}
 
 
 def alerts(rows, price_alerts, last_signals):
