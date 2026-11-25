@@ -16,7 +16,7 @@ from mcp.server.fastmcp import FastMCP
 
 HERE = Path(__file__).resolve().parent
 sys.path.insert(0, str(HERE))
-import analyze, fundamentals, metals, timemachine  # noqa: E402  (same folder)
+import analyze, dividends, fundamentals, metals, timemachine  # noqa: E402  (same folder)
 import threading  # noqa: E402
 _ma_lock = threading.Lock()
 
@@ -106,6 +106,17 @@ def beedo_metals() -> str:
         return json.dumps(metals.summary())
     except Exception as e:
         return f"Error: {e}"
+
+@mcp.tool()
+def beedo_dividends(symbol: str) -> str:
+    """Dividend history of one EGX stock over the last 5 years (Yahoo Finance): cash dividends and bonus shares (stock
+    dividends), Cash / Stock / Both, the usual month, the cash yield of the last 12 months, and the payout to expect next.
+    The expected payout is a pattern from history, not an announcement: the company's general assembly decides."""
+    try:
+        return dividends.text(dividends.for_symbol(symbol.strip().upper()))
+    except Exception as e:
+        return f"Error: {e}"
+
 
 @mcp.tool()
 def beedo_timemachine(symbol: str, entry: float, stop: float, target: float, days: int = 20) -> str:
