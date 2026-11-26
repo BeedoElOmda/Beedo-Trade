@@ -1,4 +1,4 @@
-// Builds "Beedo-Trade User Guide.docx" for the Windows app. Usage: node make_guide.js <shots-dir> <out.docx> <version>
+// Builds "Moashir-Trade User Guide.docx" for the Windows app. Usage: node make_guide.js <shots-dir> <out.docx> <version>
 const fs = require('fs'), path = require('path');
 const { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, ShadingType, HeadingLevel, LevelFormat,
   BorderStyle, AlignmentType, PageBreak, Footer, PageNumber, VerticalAlign, ImageRun, TableOfContents } = require('docx');
@@ -60,13 +60,13 @@ const steps = (...cards) => cards.flatMap((c, i) => [stepCard(i + 1, c[0], c[1])
 const cover = [
   gap(1500),
   table([W], [[cell([
-    P([run('BEEDO-TRADE', { bold: true, size: 64, color: 'FFFFFF' })], { alignment: AlignmentType.CENTER, spacing: { after: 100 } }),
+    P([run("MO'ASHIR TRADE", { bold: true, size: 64, color: 'FFFFFF' })], { alignment: AlignmentType.CENTER, spacing: { after: 100 } }),
     P([run('for Windows and Mac', { size: 32, color: 'D6EAF8' })], { alignment: AlignmentType.CENTER, spacing: { after: 0 } })],
     W, { fill: NAVY, borders: noB, margins: { top: 560, bottom: 560, left: 300, right: 300 } })]]),
   table([W], [[cell(P([run('User Guide', { bold: true, size: 26, color: 'FFFFFF' })], { alignment: AlignmentType.CENTER, spacing: { after: 0 } }),
     W, { fill: TEAL, borders: noB, margins: { top: 160, bottom: 160, left: 200, right: 200 } })]]),
   gap(500),
-  P([run('Analyse Egyptian Exchange stocks with the Beedo technical-analysis course method: one signal, clear actions, and the evidence behind them.', { size: 24, color: GREY })], { alignment: AlignmentType.CENTER }),
+  P([run('Analyse Egyptian Exchange stocks with a 12-indicator technical-analysis checklist: one signal, clear actions, and the evidence behind them.', { size: 24, color: GREY })], { alignment: AlignmentType.CENTER }),
   gap(1300),
   P([run(`Version ${VERSION}  \u2022  November 2026`, { size: 20, color: GREY })], { alignment: AlignmentType.CENTER }),
   new Paragraph({ children: [new PageBreak()] }),
@@ -77,11 +77,11 @@ const cover = [
 
 const welcome = [
   h1('1. Welcome'),
-  P('Beedo-Trade is a Windows program that applies the Beedo technical-analysis course to Egyptian Exchange (EGX) stocks. You type a stock code, and it shows:'),
-  bullet([b('One signal'), run(' on the course ladder, from Confirm Sell to Confirm Buy')]),
+  P('Mo'ashir Trade is a Windows program that applies technical analysis to Egyptian Exchange (EGX) stocks. You type a stock code, and it shows:'),
+  bullet([b('One signal'), run(' on the method ladder, from Confirm Sell to Confirm Buy')]),
   bullet([b('What to do'), run(' if you hold cash, and if you already own the stock')]),
   bullet([b('An interactive chart'), run(' with the moving averages, support and resistance lines, swing points, volume and RSI')]),
-  bullet([b('The 12-indicator checklist'), run(' (the 11 course indicators plus MACD), with the evidence for every indicator')]),
+  bullet([b('The 12-indicator checklist'), run(' (11 chart indicators plus MACD), with the evidence for every indicator')]),
   bullet([b('A trade plan'), run(' sized to your cash and risk')]),
   bullet([b('A watchlist'), run(' that scans all your stocks at once')]),
   bullet([b('A time machine'), run(' that shows how often the trade plan would reach its target before its stop')]),
@@ -93,32 +93,32 @@ const welcome = [
     ['Microsoft Edge WebView2', 'Built into Windows 11 and most Windows 10 PCs. Setup tells you if it is missing.'],
   ]),
   gap(),
-  callout('warn', 'Not investment advice', 'Beedo-Trade is a learning and decision-support tool. It never places orders, and free price data can be delayed. Always check the live price and the day\u2019s EGX disclosures before trading.'),
+  callout('warn', 'Not investment advice', 'Mo'ashir Trade is a learning and decision-support tool. It never places orders, and free price data can be delayed. Always check the live price and the day\u2019s EGX disclosures before trading.'),
 ];
 
 const install = [
-  h1('2. Installing Beedo-Trade'),
+  h1('2. Installing Mo'ashir Trade'),
   ...steps(
-    ['Download the installer', [P([run('Download '), b(`Beedo-Trade-Setup-${VERSION}.exe`), run(' from the Releases page of github.com/BeedoElOmda/Beedo-Trade, or use the copy you were given.')], { spacing: { after: 0 } })]],
+    ['Download the installer', [P([run('Download '), b(`Moashir-Trade-Setup-${VERSION}.exe`), run(' from the Releases page of github.com/BeedoElOmda/Beedo-Trade, or use the copy you were given.')], { spacing: { after: 0 } })]],
     ['Open it', [P([run('Double-click the file. If Windows shows '), b('"Windows protected your PC"'), run(', click '), ui('More info'), run(', then '), ui('Run anyway'), run('. This appears because the app isn\u2019t code-signed; it is normal for small independent programs.')], { spacing: { after: 0 } })]],
     ['Choose who to install for', [P([run('Pick '), ui('Install for me only (recommended)'), run('. It needs no administrator password and installs into your user folder. Choose '), ui('Install for all users'), run(' only if several people use this PC: Windows will ask for administrator approval, and it installs into Program Files.')], { spacing: { after: 0 } })]],
     ['Accept the notice', [P([run('Read the notice (not investment advice, plus the MIT license), select '), ui('I accept the agreement'), run(', then '), ui('Next'), run('.')], { spacing: { after: 0 } })]],
     ['Keep the suggested folder', [P([run('Click '), ui('Next'), run('. The suggested folder already matches your choice in step 3.')], { spacing: { after: 0 } })]],
     ['Shortcuts and install', [P([run('Tick '), ui('Create a desktop shortcut'), run(' if you want one, then click '), ui('Install'), run('.')], { spacing: { after: 0 } })]],
-    ['Finish', [P([run('Leave '), ui('Start Beedo-Trade now'), run(' ticked and click '), ui('Finish'), run('. You can also open this guide from here.')], { spacing: { after: 0 } })]],
+    ['Finish', [P([run('Leave '), ui('Start Mo'ashir Trade now'), run(' ticked and click '), ui('Finish'), run('. You can also open this guide from here.')], { spacing: { after: 0 } })]],
   ),
   callout('note', 'Error "Access is denied" (Error 5) during setup', [run('This happens when '), b('Install for me only'), run(' is combined with a folder inside C:\\Program Files, which only an administrator can write to. Setup now warns you before this can happen. Either keep the suggested folder, or start again and choose '), b('Install for all users'), run('.')]),
   gap(),
-  P([run('After installing you will find '), b('Beedo-Trade'), run(', '), b('Beedo-Trade User Guide'), run(' and '), b('Uninstall Beedo-Trade'), run(' in the Start menu. The first launch can take 10 to 20 seconds while Windows checks the new program; later launches are faster.')]),
+  P([run('After installing you will find '), b('Mo'ashir Trade'), run(', '), b('Mo'ashir Trade User Guide'), run(' and '), b('Uninstall Mo'ashir Trade'), run(' in the Start menu. The first launch can take 10 to 20 seconds while Windows checks the new program; later launches are faster.')]),
   h2('2.1  Installing on a Mac'),
   numR('num7', [run('Download the '), b('.dmg'), run(' file for your Mac from the Releases page: '), b('arm64'), run(' for Apple Silicon Macs (M1 and later), '), b('x86_64'), run(' for Intel Macs. To check, open the Apple menu and choose About This Mac.')]),
-  numR('num7', [run('Open the .dmg and drag '), b('Beedo-Trade'), run(' onto the '), b('Applications'), run(' folder.')]),
-  numR('num7', [run('Open Beedo-Trade from Applications. The first time, macOS shows '), b('"Beedo-Trade" Not Opened: Apple could not verify "Beedo-Trade" is free of malware'), run('. Click '), ui('Done'), run('.')]),
-  numR('num7', [run('Open '), ui('System Settings → Privacy & Security'), run(', scroll down to '), b('Security'), run(', and next to '), b('"Beedo-Trade" was blocked to protect your Mac'), run(' click '), ui('Open Anyway'), run('. Enter your Mac password or use Touch ID.')]),
-  numR('num7', [run('Open Beedo-Trade again and click '), ui('Open Anyway'), run(' once more. From now on it opens normally. On older macOS versions, right-click the app and choose '), ui('Open'), run(' instead.')]),
-  callout('note', 'Why the Mac warns about Beedo-Trade', [run('macOS shows this warning for every app that Apple has not checked (notarized), which needs a paid Apple developer account. It does not mean malware was found. If '), ui('Open Anyway'), run(' does not appear, open '), b('Terminal'), run(' and run: '), b('xattr -dr com.apple.quarantine /Applications/Beedo-Trade.app')]),
+  numR('num7', [run('Open the .dmg and drag '), b('Mo'ashir Trade'), run(' onto the '), b('Applications'), run(' folder.')]),
+  numR('num7', [run('Open Moashir Trade from Applications. The first time, macOS shows '), b('"Moashir Trade" Not Opened: Apple could not verify "Moashir Trade" is free of malware'), run('. Click '), ui('Done'), run('.')]),
+  numR('num7', [run('Open '), ui('System Settings → Privacy & Security'), run(', scroll down to '), b('Security'), run(', and next to '), b('"Moashir Trade" was blocked to protect your Mac'), run(' click '), ui('Open Anyway'), run('. Enter your Mac password or use Touch ID.')]),
+  numR('num7', [run('Open Moashir Trade again and click '), ui('Open Anyway'), run(' once more. From now on it opens normally. On older macOS versions, right-click the app and choose '), ui('Open'), run(' instead.')]),
+  callout('note', 'Why the Mac warns about Mo'ashir Trade', [run('macOS shows this warning for every app that Apple has not checked (notarized), which needs a paid Apple developer account. It does not mean malware was found. If '), ui('Open Anyway'), run(' does not appear, open '), b('Terminal'), run(' and run: '), b('xattr -dr com.apple.quarantine /Applications/Moashir Trade.app')]),
   gap(),
-  numR('num7', [run('To uninstall, drag Beedo-Trade from Applications to the Trash. Your settings are in '), b('~/Library/Application Support/BeedoTrade'), run('.')]),
+  numR('num7', [run('To uninstall, drag Moashir Trade from Applications to the Trash. Your settings are in '), b('~/Library/Application Support/BeedoTrade'), run('.')]),
 ];
 
 const first = [
@@ -136,7 +136,7 @@ const reading = [
   h1('4. Reading the result'),
   h2('4.1  The signal and what to do'),
   ...shot('g_signal.png', 'COMI: First Buy, with the actions for both positions, the key numbers and the combined view.'),
-  P('The coloured badge is the overall signal. The bar under it is the course\u2019s signal ladder, with your stock\u2019s position lit up:'),
+  P('The coloured badge is the overall signal. The bar under it is the method\u2019s signal ladder, with your stock\u2019s position lit up:'),
   dataTable([2000, 3700, 3326], ['Signal', 'Meaning', 'Typical action'], [
     ['Confirm Buy', 'Trend, moving averages, RSI and volume agree upward', 'Cash holder: buy the full position'],
     ['First Buy', 'An uptrend is starting but isn\u2019t confirmed', 'Cash holder: buy part (e.g. half)'],
@@ -163,7 +163,7 @@ const reading = [
   P([run('The bar underneath shows where today’s price sits between the 52-week low (left) and high (right). Hover over a figure for a short explanation. A dash (–) means the company hasn’t reported that figure.')]),
   h2('4.3  The chart'),
   ...shot('g_chart.png', 'Candles with MA 5 / 9 / 18, support (S) and resistance (R) lines, swing arrows, volume, RSI and MACD.'),
-  bullet([b('Moving averages: '), run('fast (pink), mid (yellow) and slow (blue), by default MA5, MA9 and MA18, the course\u2019s own. Their crossovers give the signals: fast\u00D7mid = Alarm, fast\u00D7slow = First, mid\u00D7slow = Confirm. See 4.5 to change them.')]),
+  bullet([b('Moving averages: '), run('fast (pink), mid (yellow) and slow (blue), by default MA5, MA9 and MA18, the method\u2019s own. Their crossovers give the signals: fast\u00D7mid = Alarm, fast\u00D7slow = First, mid\u00D7slow = Confirm. See 4.5 to change them.')]),
   bullet([b('Period buttons: '), ui('5D'), run(', '), ui('1M'), run(', '), ui('3M'), run(', '), ui('6M'), run(' (the default), '), ui('1Y'), run(' and '), ui('2Y'), run(' zoom the chart to that much history. Prices are daily, so 5D shows five candles.')]),
   bullet([b('S1 / S2 and R1 / R2: '), run('the nearest recent support (green) and resistance (red) levels.')]),
   bullet([b('Arrows: '), run('swing highs (red, pointing down) and swing lows (green, pointing up). Use them to judge patterns such as head and shoulders, double tops or triangles (checklist indicators 10 and 11).')]),
@@ -172,13 +172,13 @@ const reading = [
   bullet([b('Controls: '), run('scroll the mouse wheel over the chart to zoom, drag to move back in time, and use the tick boxes above the chart to show or hide each layer.')]),
   h2('4.4  Checklist, triggers and trade plan'),
   ...shot('g_checklist.png', 'The checklist (left), what would change the signal, and the trade plan (right).'),
-  P([b('12-indicator checklist: '), run('each course indicator with its reading and its rung on the ladder. Indicators 10 and 11 (chart patterns) are judged by you on the chart.')]),
+  P([b('12-indicator checklist: '), run('each indicator with its reading and its rung on the ladder. Indicators 10 and 11 (chart patterns) are judged by you on the chart.')]),
   P([b('Choosing the indicators: '), run('each scored indicator has a tick box beside its number. Untick an indicator you don\u2019t want to use: it stays on the list with its reading, greyed out, but no longer counts in the signal, the back-test, the time machine, the Watchlist, the Screener or the alerts. Tick it again to bring it back. Because the signal is the total of the ticked indicators\u2019 rungs (see 4.1), unticking a buy indicator lowers the score and unticking a sell indicator raises it; an indicator at Hold adds nothing either way. An indicator that would change today\u2019s signal shows it on the right, for example \u201cUntick \u2192 Alarm Buy\u201d. Each tick or untick shows the signal before and after. Your choice is kept for every stock.')]),
   P([b('Indicator 12, MACD: '), run('MACD above its signal line is a buy reading, below it a sell reading. On the same side of zero it counts as First (MACD above its signal and above zero = First Buy; below its signal and below zero = First Sell); on the other side of zero it is only an Alarm. Like every indicator, it adds its rung to the score.')]),
   P([b('What would change the signal: '), run('the next events up and down, such as "MA9 crossing above MA18 = Confirm Buy" or "a close below 126.81 = support broken".')]),
   P([b('Trade plan: '), run('enter your cash and the most you are willing to lose per trade (default 2%). It shows the entry (last close), a stop just below support, a 2R target, the number of shares, the cost and the loss if the stop is hit. Yellow notes warn when resistance is in the way. On weaker signals the plan is labelled as one to have ready, not a trade for today.')]),
   h2('4.5  Choosing your moving averages'),
-  P([run('Under the MACD panel are three boxes: the fast, mid and slow moving averages. Type new numbers (whole numbers from 2 to 250, fast smaller than mid, mid smaller than slow) and click '), ui('Apply'), run('. The stock is analysed again straight away, and your choice is kept for every stock until you change it. '), ui('Default 5 / 9 / 18'), run(' puts the course\u2019s averages back. For a longer-term view, try 8, 13 and 200.')]),
+  P([run('Under the MACD panel are three boxes: the fast, mid and slow moving averages. Type new numbers (whole numbers from 2 to 250, fast smaller than mid, mid smaller than slow) and click '), ui('Apply'), run('. The stock is analysed again straight away, and your choice is kept for every stock until you change it. '), ui('Default 5 / 9 / 18'), run(' puts the method\u2019s averages back. For a longer-term view, try 8, 13 and 200.')]),
   P('The three averages drive the chart lines, checklist indicator 5, the signal, the back-test and the time machine. A slow average of 200 needs at least 206 trading days of prices, so very new stocks show a message instead of a signal. The Claude skill also uses 5 / 9 / 18 unless you ask for other periods.'),
   callout('warn', 'Longer averages, fewer signals', 'With a 200-day slow average, First and Confirm signals come months apart, and the back-test and time machine cover fewer days. Short averages react faster but give more false alarms.'),
   h2('4.6  Market health'),
@@ -199,7 +199,7 @@ const watch = [
 
 const fund = [
   h1('6. Company fundamentals and the Screener'),
-  P('Your course tells you when to buy or sell. Fundamentals tell you whether the company is worth owning at all. Beedo-Trade rates every company with standard rules, then combines that rating with the course signal.'),
+  P('The 12-indicator checklist tells you when to buy or sell. Fundamentals tell you whether the company is worth owning at all. Mo'ashir Trade rates every company with standard rules, then combines that rating with the technical signal.'),
   h2('6.1  The company rating card'),
   ...shot('g_fund.png', 'COMI: rated Strong (83). Each tile shows the figure, its rating and the median of similar companies.'),
   P('Each figure is rated Good, Fair or Poor, and shown next to the median of similar companies (same industry where possible, otherwise the same sector or the whole market):'),
@@ -217,7 +217,7 @@ const fund = [
   callout('note', 'Why growth needs 20% to count as good', 'Egypt’s high inflation lifts every company’s sales and profits in pounds. Growth below inflation means the business is shrinking in real terms, so 20% a year is the bar for "Good".'),
   gap(),
   h2('6.2  The combined view'),
-  dataTable([2200, 2200, 4626], ['Company', 'Course signal', 'Combined view'], [
+  dataTable([2200, 2200, 4626], ['Company', 'Technical signal', 'Combined view'], [
     ['Strong', 'First / Confirm Buy', 'Best setup: a strong company with a buy signal'],
     ['Strong', 'Alarm Buy or Hold', 'Put it on your watchlist and wait for a buy signal'],
     ['Strong', 'Any sell', 'Wait for the chart to turn before buying'],
@@ -229,7 +229,7 @@ const fund = [
   ...shot('g_screener.png', 'The Screener: strong companies that are in a buy zone right now.', 470),
   numR('num5', [run('Open '), ui('Screener'), run(' in the left menu.')]),
   numR('num5', [run('Choose the '), ui('Company quality'), run(' (Strong only, or Strong or Fair), the '), ui('Technical signal'), run(' you want, and optionally a '), ui('Sector'), run('.')]),
-  numR('num5', [run('Click '), ui('Run screener'), run('. It rates every EGX company, then runs your course checklist on the best 40. This takes 10 to 40 seconds.')]),
+  numR('num5', [run('Click '), ui('Run screener'), run('. It rates every EGX company, then runs the 12-indicator checklist on the best 40. This takes 10 to 40 seconds.')]),
   numR('num5', 'The results show the same ratio columns as the Watchlist. Click a column header to sort, for example by P/E or dividend yield. Hover over a row to read its full combined view, and click it to open the full analysis.'),
   gap(80),
   P([b('Industry health: '), run('under the results, a second table rates every EGX industry from TradingView\u2019s end-of-day data: how many of its stocks are above their 50-day and 200-day averages, how many rose and fell today, and the average change. '), b('Healthy'), run(' means at least 60% are above both averages, '), b('Weak'), run(' 40% or fewer, '), b('Mixed'), run(' in between. Industries with fewer than 3 stocks get no label. The healthiest industries are at the top; it is a good place to look for stocks that the whole sector is carrying.')]),
@@ -239,7 +239,7 @@ const fund = [
 
 const metalsSec = [
   h1('7. Gold & Silver'),
-  P('The Gold & Silver page shows today’s international prices in Egyptian pounds, and lets you run your course method on each metal, exactly as for a stock.'),
+  P('The Gold & Silver page shows today’s international prices in Egyptian pounds, and lets you run the 12-indicator checklist on each metal, exactly as for a stock.'),
   ...shot('g_metals.png', 'The Gold & Silver page: gold per gram for 24k, 21k and 18k, silver per gram, the dollar rate and the gold/silver ratio.'),
   dataTable([2600, 6426], ['Card', 'What it shows'], [
     ['Gold', 'Price per gram for 24k, 21k and 18k in EGP, per ounce in USD and EGP, today’s change, 1-year performance and 52-week range'],
@@ -249,12 +249,12 @@ const metalsSec = [
   gap(80),
   callout('warn', 'International price, not the shop price', 'Prices come from the international gold and silver markets (Yahoo Finance), converted at the official dollar rate. Egyptian shops add a local premium and workmanship fees, so the 21k price at a jeweller is usually higher.'),
   gap(),
-  h2('7.1  Analyse gold or silver with your course method'),
-  numR('num6', [run('Click '), ui('Analyze with my course method'), run(' on the Gold or Silver card, or type '), b('GOLD'), run(' or '), b('SILVER'), run(' in the search box.')]),
+  h2('7.1  Analyse gold or silver'),
+  numR('num6', [run('Click '), ui('Analyze'), run(' on the Gold or Silver card, or type '), b('GOLD'), run(' or '), b('SILVER'), run(' in the search box.')]),
   numR('num6', 'You get the same signal, chart, checklist and trade plan as for a stock, on the price in EGP per gram (24k gold, 999 silver).'),
   numR('num6', [run('The trade plan counts '), b('grams'), run(' instead of shares. Key figures, the company rating and the combined view are hidden, because there is no company behind a metal.')]),
   numR('num6', [run('Click '), ui('Add to watchlist'), run(' to scan gold and silver together with your stocks.')]),
-  ...shot('g_gold.png', 'Gold analysed with the course method, in EGP per gram.'),
+  ...shot('g_gold.png', 'Gold analysed with the 12-indicator checklist, in EGP per gram.'),
   h2('7.2  The gold/silver ratio'),
   P('The ratio is how many ounces of silver one ounce of gold buys. Historically it moves roughly between 40 and 120. Above about 80, silver is cheap compared with gold; below about 50, gold is cheap compared with silver. It is a context indicator, not a buy or sell signal.'),
 ];
@@ -266,31 +266,31 @@ const csv = [
   ...shot('g_portfolio.png', 'The Portfolio page: cost, value and profit or loss of each holding, with the signal and the shareholder action.', 560),
   numR('num8', [run('Open '), ui('Portfolio'), run(' in the left menu.')]),
   numR('num8', [run('Type the stock code, the quantity you own and the average price you paid, then click '), ui('Add holding'), run('. For gold or silver, use GOLD or SILVER and enter the quantity in grams.')]),
-  numR('num8', [run('The table shows each holding at the last daily close: cost, value, profit or loss, the signal, and what the course says a shareholder should do. The boxes above the table show the totals.')]),
+  numR('num8', [run('The table shows each holding at the last daily close: cost, value, profit or loss, the signal, and what the signal says a shareholder should do. The boxes above the table show the totals.')]),
   numR('num8', [run('Click a row to open the full analysis. Click the ✕ at the end of a row to remove that holding.')]),
-  P('Your holdings are saved only on your computer. Beedo-Trade never connects to a broker and never places orders.'),
+  P('Your holdings are saved only on your computer. Mo'ashir Trade never connects to a broker and never places orders.'),
   h2('8.2  Alerts'),
   ...shot('g_alerts.png', 'Alerts, at the bottom of the Watchlist page: one alert has been reached.', 520),
   P([run('At the bottom of the '), ui('Watchlist'), run(' page, enter a stock code and a price, then click '), ui('Add alert'), run('. Fill '), b('at or above'), run(' to be told when the price rises to a level (a breakout or a target), '), b('at or below'), run(' for a fall to a level (a stop), or both. Fill '), b('Alert at score'), run(' to be told when the score reaches a level: 5 tells you at +5 or more (First Buy), -5 at -5 or less (First Sell).')]),
-  bullet([run('Beedo-Trade checks when it starts and every 15 minutes while it is open. A reached alert appears in the Alerts box and an orange dot shows next to '), ui('Watchlist'), run(' in the menu.')]),
+  bullet([run('Mo'ashir Trade checks when it starts and every 15 minutes while it is open. A reached alert appears in the Alerts box and an orange dot shows next to '), ui('Watchlist'), run(' in the menu.')]),
   bullet([run('You are also told when the '), b('signal changes'), run(' for any stock on your watchlist or in your portfolio, for example from Alarm Buy to First Buy.')]),
   bullet('Alerts use the latest daily close, not live prices. On Windows and Mac they work while the app is open.'),
-  bullet([b('On Android, '), run('alerts also arrive as phone notifications, each one once a day. The phone checks by itself every trading day at about 3 p.m. Cairo time, after the EGX closes, even when the app is closed. Allow notifications when the app asks. On Samsung and some other phones, set the app\u2019s battery use to '), b('Unrestricted'), run(' (Settings \u203a Apps \u203a Beedo-Trade \u203a Battery) so the daily check isn\u2019t delayed or skipped.')]),
+  bullet([b('On Android, '), run('alerts also arrive as phone notifications, each one once a day. The phone checks by itself every trading day at about 3 p.m. Cairo time, after the EGX closes, even when the app is closed. Allow notifications when the app asks. On Samsung and some other phones, set the app\u2019s battery use to '), b('Unrestricted'), run(' (Settings \u203a Apps \u203a Mo'ashir Trade \u203a Battery) so the daily check isn\u2019t delayed or skipped.')]),
   h2('8.3  Weekly chart'),
   ...shot('g_weekly.png', 'COMI on weekly candles: about five years of history.', 560),
   P([run('Above the chart, click '), ui('Weekly'), run(' to see one candle per week over about five years, with the same moving averages, swing points and RSI. It makes the long-term trend and the historical support and resistance easier to see. Click '), ui('Daily'), run(' to go back. The signal and the checklist always use daily prices.')]),
   P([b('Weekly signal: '), run('under the signal on the Analyze page, a line gives the same checklist on weekly candles, for example “Weekly candles: First Sell (score −5)”. When the daily and weekly signals point in opposite directions it says so in red: the short-term move is going against the longer trend, so be careful. It needs about 60 weeks of prices and is left out for shorter histories.')]),
   h2('8.4  Back-test'),
   ...shot('g_backtest.png', 'A back-test of COMI over two years, compared with buy and hold.', 560),
-  P([run('At the bottom of an analysis, click '), ui('Run back-test'), run('. Beedo-Trade replays the checklist day by day over the past two years, each day using only the prices known on that day. It buys at the close on a First or Confirm Buy and sells at the close on a First or Confirm Sell.')]),
-  bullet([b('Course method'), run(': the total result of following those signals.')]),
+  P([run('At the bottom of an analysis, click '), ui('Run back-test'), run('. Mo'ashir Trade replays the checklist day by day over the past two years, each day using only the prices known on that day. It buys at the close on a First or Confirm Buy and sells at the close on a First or Confirm Sell.')]),
+  bullet([b('Signal method'), run(': the total result of following those signals.')]),
   bullet([b('Buy and hold'), run(': the result of buying on the first day and doing nothing.')]),
   bullet('The table lists every trade with its dates, prices and result.'),
   P('In the example above the method made less than buy and hold, because the stock rose strongly and the method was out of it part of the time. A back-test shows how the method behaved on one stock in one period. It does not count fees or taxes, and it does not predict future results.'),
   h2('8.5  Time machine'),
   ...shot('g_timemachine.png', 'The time machine for the COMI trade plan: the odds, the verdict and the same signal on past days.', 560),
   P([run('Under the back-test, click '), ui('Run time machine'), run('. It answers one question about the trade plan on this page (entry, stop and 2R target): how often would the price reach the target before the stop?')]),
-  bullet([b('10,000 replays'), run(': Beedo-Trade builds the next 20 trading days 10,000 times, each day drawn at random from this stock’s real daily moves of the past two years. The four boxes show how often the target came first, the stop came first, or neither within 20 days, and the average result in R (1R = the amount you risk, from entry to stop).')]),
+  bullet([b('10,000 replays'), run(': Mo'ashir Trade builds the next 20 trading days 10,000 times, each day drawn at random from this stock’s real daily moves of the past two years. The four boxes show how often the target came first, the stop came first, or neither within 20 days, and the average result in R (1R = the amount you risk, from entry to stop).')]),
   bullet([b('The verdict'), run(': one line that weighs the target’s size. A 2R plan wins twice what it risks, so it breaks even if the target comes first only 1 time in 3. That is why 41% target first can still lean toward the target.')]),
   bullet([b('Same signal'), run(': the same plan tested on every past day that showed today’s signal, using only real prices. If the signal appeared fewer than 10 times, the card says there are too few cases to judge.')]),
   bullet([b('Price after 20 trading days'), run(': the middle result and the range that 90% of the replays ended in.')]),
@@ -305,7 +305,7 @@ const csv = [
   P([run('Click '), ui('العربية'), run(' at the bottom of the left menu to switch the app to Arabic, and '), ui('English'), run(' to switch back. Menus, signals, actions and key figures are translated. Detailed readings that are built from live numbers, such as the checklist readings, stay in English.')]),
   h1('9. Stocks without price history (Import CSV)'),
   P('Daily price history comes from Yahoo Finance, and the last two trading days from TradingView, 15 minutes delayed: during trading hours the latest candle is today\u2019s so far, marked \u201cToday so far\u201d. Yahoo covers the larger, widely traded EGX stocks but not every company. Sometimes Yahoo has the stock but its prices stopped updating (the same price, with no trading, for weeks, as with ORAS).'),
-  P([b('Snapshot from TradingView. '), run('In both cases Beedo-Trade switches by itself to TradingView\u2019s latest values and shows a yellow note: '), b('Snapshot only: the signal stops at Alarm'), run('. The moving averages (TradingView has no MA18, so MA20 is used), RSI, MACD, volume against its 10-day average, support and resistance from the monthly pivots and the 52-week range are all checked. Trend, candles, gaps and patterns need daily history and are marked '), b('Not checked'), run('. There is no chart, back-test or time machine. The course never gives a First or Confirm signal without the trend and moving-average history, so the signal stops at Alarm.')]),
+  P([b('Snapshot from TradingView. '), run('In both cases Mo'ashir Trade switches by itself to TradingView\u2019s latest values and shows a yellow note: '), b('Snapshot only: the signal stops at Alarm'), run('. The moving averages (TradingView has no MA18, so MA20 is used), RSI, MACD, volume against its 10-day average, support and resistance from the monthly pivots and the 52-week range are all checked. Trend, candles, gaps and patterns need daily history and are marked '), b('Not checked'), run('. There is no chart, back-test or time machine. The method never gives a First or Confirm signal without the trend and moving-average history, so the signal stops at Alarm.')]),
   P('For the full checklist, analyse the stock from a file of daily prices:'),
   numR('num3', [run('Export daily prices from your broker or a charting website as a '), b('CSV'), run(' file, with at least 60 trading days (a year is best).')]),
   numR('num3', [run('Type the stock code in the search box (optional, used as the name), then click '), ui('Import CSV'), run(' and choose the file.')]),
@@ -317,7 +317,7 @@ const csv = [
     ['Volume (optional)', 'Volume or Vol.; values like 1.2M or 850K are understood'],
   ]),
   gap(),
-  callout('tip', 'Getting a CSV from Investing.com', [run('On investing.com, open the stock, choose '), b('Historical Data'), run(', set the period to about one year and the time frame to '), b('Daily'), run(', then click '), b('Download'), run('. Beedo-Trade reads that file as it is: its Price and Vol. columns, volumes like 1.2M and its month/day dates. Investing.com doesn’t allow programs to fetch its data automatically, so this download is the way to use it.')]),
+  callout('tip', 'Getting a CSV from Investing.com', [run('On investing.com, open the stock, choose '), b('Historical Data'), run(', set the period to about one year and the time frame to '), b('Daily'), run(', then click '), b('Download'), run('. Mo'ashir Trade reads that file as it is: its Price and Vol. columns, volumes like 1.2M and its month/day dates. Investing.com doesn’t allow programs to fetch its data automatically, so this download is the way to use it.')]),
 ];
 
 const settings = [
@@ -326,23 +326,23 @@ const settings = [
   P([run('Click the '), ui('Theme'), run(' button at the bottom of the left menu to switch between '), b('Dark'), run(', '), b('Light'), run(' and '), b('System'), run('. System follows the light or dark setting of Windows or macOS and changes with it.')]),
   ...shot('light.png', 'Light theme (EAST, Confirm Buy).', 470),
   P('System is the default for a new installation.'),
-  h2('10.2  What Beedo-Trade remembers'),
-  P('Your watchlist, portfolio, alerts, cash, risk %, language and theme are saved automatically in your user profile, in the folder %APPDATA%\\BeedoTrade. The About page shows the exact folder. Your last eight analyses are also kept on the device: without internet, Beedo-Trade shows a stock as it was saved, with the date and time.'),
+  h2('10.2  What Mo'ashir Trade remembers'),
+  P('Your watchlist, portfolio, alerts, cash, risk %, language and theme are saved automatically in your user profile, in the folder %APPDATA%\\BeedoTrade. The About page shows the exact folder. Your last eight analyses are also kept on the device: without internet, Mo'ashir Trade shows a stock as it was saved, with the date and time.'),
   P([b('The same settings on your PC and phone: '), run('each device keeps its own settings, so the same stock can show a different signal if you ticked different indicators. On the '), ui('About'), run(' page, click '), ui('Show my code'), run(' and copy the code. On the other device, paste it into the same box and click '), ui('Apply pasted code'), run('. It copies your watchlist, alerts, portfolio, moving averages, ticked indicators, cash and risk %.')]),
   h2('10.3  Updating to a new version'),
   numR('num4', [run('When a newer version is published, a blue '), ui('Update available'), run(' button appears at the bottom of the left menu. Click it to open the download page. You can also click '), ui('Check for updates'), run(' on the '), ui('About'), run(' page at any time.')]),
-  numR('num4', 'Download the newer Beedo-Trade-Setup file and run it. It replaces the old version in place and closes Beedo-Trade first if it is open.'),
+  numR('num4', 'Download the newer Moashir-Trade-Setup file and run it. It replaces the old version in place and closes Mo'ashir Trade first if it is open.'),
   numR('num4', 'Your watchlist and settings are kept.'),
 ];
 
 const uninstall = [
   h1('11. Uninstalling'),
   P('Use either of the standard Windows ways:'),
-  stepCard('A', 'From Windows Settings', [P([run('Open '), ui('Settings \u2192 Apps \u2192 Installed apps'), run(', find '), b('Beedo-Trade'), run(', click the '), ui('\u22EF'), run(' button and choose '), ui('Uninstall'), run('.')], { spacing: { after: 0 } })]),
+  stepCard('A', 'From Windows Settings', [P([run('Open '), ui('Settings \u2192 Apps \u2192 Installed apps'), run(', find '), b('Mo'ashir Trade'), run(', click the '), ui('\u22EF'), run(' button and choose '), ui('Uninstall'), run('.')], { spacing: { after: 0 } })]),
   gap(80),
-  stepCard('B', 'From the Start menu', [P([run('Open the Start menu, find '), b('Uninstall Beedo-Trade'), run(' and click it.')], { spacing: { after: 0 } })]),
+  stepCard('B', 'From the Start menu', [P([run('Open the Start menu, find '), b('Uninstall Mo'ashir Trade'), run(' and click it.')], { spacing: { after: 0 } })]),
   gap(),
-  P([run('At the end, Beedo-Trade asks whether to '), b('also delete your settings and watchlist'), run('. Choose '), ui('No'), run(' to keep them for a future install, or '), ui('Yes'), run(' to remove everything. The program, its shortcuts and this guide are always removed.')]),
+  P([run('At the end, Mo'ashir Trade asks whether to '), b('also delete your settings and watchlist'), run('. Choose '), ui('No'), run(' to keep them for a future install, or '), ui('Yes'), run(' to remove everything. The program, its shortcuts and this guide are always removed.')]),
 ];
 
 const trouble = [
@@ -350,8 +350,8 @@ const trouble = [
   dataTable([3300, 5726], ['Problem', 'What to do'], [
     ['Setup: "Access is denied" (Error 5)', 'Choose "Install for me only" and keep the suggested folder, or choose "Install for all users" to install into Program Files (needs administrator approval).'],
     ['"Windows protected your PC"', 'Click More info, then Run anyway. The app isn\u2019t code-signed.'],
-    ['Mac: "Beedo-Trade" Not Opened (Apple could not verify…)', 'Click Done, then System Settings → Privacy & Security → Open Anyway, and open the app again (section 2.1).'],
-    ['The app window stays blank', 'Install Microsoft Edge WebView2 (free from Microsoft), then start Beedo-Trade again.'],
+    ['Mac: "Moashir Trade" Not Opened (Apple could not verify…)', 'Click Done, then System Settings → Privacy & Security → Open Anyway, and open the app again (section 2.1).'],
+    ['The app window stays blank', 'Install Microsoft Edge WebView2 (free from Microsoft), then start Mo'ashir Trade again.'],
     ['"Yahoo Finance has no price history"', 'Yahoo doesn\u2019t carry that stock. Use Import CSV (section 9).'],
     ['"Could not reach Yahoo Finance"', 'Check your internet connection, firewall or VPN, then try again.'],
     ['Prices look a day old', 'Free data can lag, and on Friday and Saturday the latest price is Thursday\u2019s close. Check the live price in your broker app.'],
@@ -361,7 +361,7 @@ const trouble = [
   gap(),
   P([run('Still stuck? On the About page, click '), ui('Report a problem'), run(' to open an issue on GitHub, and describe what you did and what you saw.')]),
   gap(),
-  callout('warn', 'Not investment advice', 'Beedo-Trade applies a technical-analysis method for learning and decision support. It does not know your full financial situation and does not place orders. You make every decision.'),
+  callout('warn', 'Not investment advice', 'Mo'ashir Trade applies a technical-analysis method for learning and decision support. It does not know your full financial situation and does not place orders. You make every decision.'),
 ];
 
 const doc = new Document({
@@ -381,7 +381,7 @@ const doc = new Document({
   ] },
   sections: [{
     properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1300, bottom: 1200, left: 1440, right: 1440 } } },
-    footers: { default: new Footer({ children: [P([run(`Beedo-Trade ${VERSION}  \u2022  page `, { size: 16, color: GREY }),
+    footers: { default: new Footer({ children: [P([run(`Mo'ashir Trade ${VERSION}  \u2022  page `, { size: 16, color: GREY }),
       new TextRun({ children: [PageNumber.CURRENT], size: 16, color: GREY })], { alignment: AlignmentType.CENTER, spacing: { after: 0 } })] }) },
     children: [...cover, ...welcome, ...install, ...first, ...reading, ...watch, ...fund, ...metalsSec, ...csv, ...settings, ...uninstall, ...trouble],
   }],
