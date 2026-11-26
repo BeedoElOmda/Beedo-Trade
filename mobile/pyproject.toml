@@ -10,8 +10,8 @@ license.file = "LICENSE"
 author = "BeedoElOmda"
 
 [tool.briefcase.app.beedotrade]
-formal_name = "Beedo-Trade"
-description = "Egyptian Exchange (EGX) technical analysis with the Beedo course method"
+formal_name = "Mo’ashir Trade"
+description = "Egyptian Exchange (EGX) technical analysis with 12 indicators"
 sources = ["src/beedotrade", "src/beedo_app"]
 requires = ["certifi"]
 icon = "icons/beedotrade"  # PNGs made from app/packaging/icon.png by make_icons.py

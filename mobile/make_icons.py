@@ -1,8 +1,8 @@
-"""Makes every Android icon Briefcase needs from app/packaging/icon.png (the one Beedo-Trade icon, 1024 px,
+"""Makes every Android icon Briefcase needs from app/packaging/icon.png (the one Mo'ashir Trade icon, 1024 px,
 transparent rounded corners). Run: python mobile/make_icons.py   (needs Pillow)
 Output: mobile/icons/beedotrade-{square,round,adaptive}-<size>.png"""
 from pathlib import Path
-from PIL import Image, ImageDraw
+from PIL import Image, ImageDraw, ImageFilter
 
 HERE = Path(__file__).parent
 SIZES = {"square": [48, 72, 96, 144, 192, 320, 480, 640, 960, 1280], "round": [48, 72, 96, 144, 192],
@@ -29,7 +29,15 @@ def adaptive(fb):
     put the whole icon in that middle and extend its gradient outwards, so the phone shows the same design."""
     n = fb.size[0]
     big = n * 3 // 2
-    canvas = fb.resize((big, big), Image.LANCZOS)  # stretched copy: only the gradient shows around the edges
+    # the background is one softened column of the gradient (inside the edge outline, left of the artwork) spread
+    # across, so no text, line or outline shows twice
+    col = fb.crop((n // 10, 0, n // 10 + 1, n))
+    pad = (big - n) // 2  # row for row with the icon in the middle; above and below, its top and bottom colours
+    tall = Image.new("RGBA", (1, big))
+    tall.paste(col.crop((0, 0, 1, 1)).resize((1, pad)), (0, 0))
+    tall.paste(col, (0, pad))
+    tall.paste(col.crop((0, n - 1, 1, n)).resize((1, big - pad - n)), (0, pad + n))
+    canvas = tall.filter(ImageFilter.GaussianBlur(n // 60)).resize((big, big), Image.NEAREST)
     canvas.paste(fb, ((big - n) // 2, (big - n) // 2))
     return canvas
 
