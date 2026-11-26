@@ -2,10 +2,10 @@
 # requires-python = ">=3.10"
 # dependencies = ["mcp>=1.6,<2"]  # mcp 2.x renamed FastMCP
 # ///
-"""Beedo-Trade as a standalone MCP server (for Claude Desktop and any MCP client).
+"""Mo'ashir Trade as a standalone MCP server (for Claude Desktop and any MCP client).
 
 Run:  uv run --script mcp_server.py
-Tools: beedo_method (the course method), beedo_analyze (indicators for one EGX stock, GOLD or SILVER),
+Tools: beedo_method (the 12-indicator method), beedo_analyze (indicators for one EGX stock, GOLD or SILVER),
 beedo_history (raw daily prices), beedo_fundamentals (company rating), beedo_metals (gold and silver in EGP), beedo_timemachine (odds that a plan hits its target or stop first),
 beedo_market_health (EGX30, market breadth and health per industry). It runs on the user's own computer, so it can reach Yahoo Finance
 even when Claude's sandbox cannot.
@@ -29,25 +29,25 @@ SKILL = HERE.parent / "SKILL.md"
 RULES = HERE.parent / "references" / "course-rules.md"
 
 mcp = FastMCP("beedo-trade", instructions=(
-    "Beedo-Trade analyses Egyptian Exchange (EGX) stocks with the user's own technical-analysis course. "
+    "Mo'ashir Trade analyses Egyptian Exchange (EGX) stocks with a 12-indicator technical-analysis method. "
     "For any question about an EGX stock (buy/sell/hold, signal, entry/stop/target), first call beedo_method "
     "once per conversation and follow it, then call beedo_analyze for each symbol. "
     "Pair it with the egx-mcp server's stock_data_egx for TradingView pivots if available."))
 
 @mcp.tool()
 def beedo_method() -> str:
-    """The Beedo-Trade workflow, report format and full course rulebook. Call once before analysing EGX stocks."""
+    """The Mo'ashir Trade workflow, report format and full rulebook. Call once before analysing EGX stocks."""
     # The skill's frontmatter is for Claude Code's skill loader; the body is the method.
     body = SKILL.read_text(encoding="utf-8").split("---", 2)[-1]
     return body + "\n\n---\n\n" + RULES.read_text(encoding="utf-8")
 
 @mcp.tool()
 def beedo_analyze(symbol: str, ma: str = "5,9,18") -> str:
-    """Course indicators for one EGX stock from two years of daily prices: S/R levels, trend swing steps,
+    """The 12 indicators for one EGX stock from two years of daily prices: S/R levels, trend swing steps,
     fast/mid/slow moving-average crossovers (Alarm/First/Confirm), volume vs 20-day average, reversal candles,
     RSI 14 zone and divergence, gaps, MACD 12/26/9 (step 12). symbol: 4-letter EGX code such as COMI, TMGH, SWDY,
     or GOLD / SILVER (EGP per gram, international price at the official dollar rate).
-    ma: fast,mid,slow moving averages, default "5,9,18" (the course's own); e.g. "8,13,200" for longer ones."""
+    ma: fast,mid,slow moving averages, default "5,9,18" (the method's own); e.g. "8,13,200" for longer ones."""
     sym = symbol.strip().upper()
     try:
         periods = tuple(int(x) for x in ma.split(","))
@@ -92,7 +92,7 @@ def beedo_history(symbol: str, bars: int = 130) -> str:
 def beedo_fundamentals(symbol: str) -> str:
     """Company rating for one EGX stock: Strong / Fair / Weak with a score, each rule (P/E, P/B, return on equity,
     margin, debt, growth, dividend) with its value and reason, the peer medians it was compared with, and 27 key
-    figures. Data: TradingView, last 12 months of reported results. A second opinion, not part of the technical course."""
+    figures. Data: TradingView, last 12 months of reported results. A second opinion, not part of the technical signal."""
     try:
         return json.dumps(fundamentals.for_symbol(symbol.strip().upper()), default=str)
     except Exception as e:
@@ -134,8 +134,8 @@ def beedo_timemachine(symbol: str, entry: float, stop: float, target: float, day
 
 @mcp.prompt()
 def beedo_trade_analysis(symbol: str, position: str = "unknown") -> str:
-    """Analyse one EGX stock with the Beedo course method."""
-    return (f"Analyse {symbol.upper()} with my Beedo-Trade course method. My position: {position} "
+    """Analyse one EGX stock with the 12-indicator method."""
+    return (f"Analyse {symbol.upper()} with my Mo'ashir Trade the 12-indicator method. My position: {position} "
             "(cash holder, shareholder or unknown). Call beedo_method first, then beedo_analyze, "
             "and give the full report with the signal, both roles' actions and the 12-step checklist.")
 
