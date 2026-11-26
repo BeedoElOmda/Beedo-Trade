@@ -1,10 +1,10 @@
-# Beedo-Trade privacy policy
+# Mo'ashir Trade privacy policy
 
-Last updated: 24 November 2026. Applies to the Beedo-Trade apps for Android, Windows and Mac.
+Last updated: 24 November 2026. Applies to the Mo'ashir Trade apps for Android, Windows and Mac.
 
 ## In short
 
-Beedo-Trade has no accounts, no ads and no analytics. It does not collect, sell or share your personal data. Everything you enter stays on your device.
+Mo'ashir Trade has no accounts, no ads and no analytics. It does not collect, sell or share your personal data. Everything you enter stays on your device.
 
 ## What stays on your device
 
@@ -18,9 +18,9 @@ To show prices and analyses, the app requests public market data from these serv
 |---|---|
 | Yahoo Finance | Daily prices of EGX stocks, gold, silver and the dollar rate |
 | TradingView | The latest prices (15 minutes delayed), company figures and market health |
-| GitHub | Checking whether a newer version of Beedo-Trade exists (desktop apps) |
+| GitHub | Checking whether a newer version of Mo'ashir Trade exists (desktop apps) |
 
-Their own privacy policies apply to those requests. Beedo-Trade does not send them your watchlist, portfolio or any personal information.
+Their own privacy policies apply to those requests. Mo'ashir Trade does not send them your watchlist, portfolio or any personal information.
 
 ## Notifications (Android)
 
@@ -33,11 +33,11 @@ If you allow notifications, the app checks your alerts on the phone itself once 
 
 ## Children
 
-Beedo-Trade is meant for adults learning about stock analysis. It is not directed at children.
+Mo'ashir Trade is meant for adults learning about stock analysis. It is not directed at children.
 
 ## Not investment advice
 
-Beedo-Trade is a learning and decision-support tool. It does not give personal financial advice and never places orders.
+Mo'ashir Trade is a learning and decision-support tool. It does not give personal financial advice and never places orders.
 
 ## Changes and contact
 
