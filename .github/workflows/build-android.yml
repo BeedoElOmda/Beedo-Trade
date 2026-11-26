@@ -54,7 +54,7 @@ jobs:
           grep -n "POST_NOTIFICATIONS" "$M"
           briefcase build android --no-input
           briefcase package android -p debug-apk --no-input
-          mkdir -p ../out && cp dist/*.apk "../out/Beedo-Trade-${VERSION}-android.apk"
+          mkdir -p ../out && cp dist/*.apk "../out/Moashir-Trade-${VERSION}-android.apk"
       # Google Play takes an .aab bundle signed with your upload key. Without the key (GitHub secrets PLAY_UPLOAD_KEYSTORE
       # and PLAY_UPLOAD_PASSWORD) the bundle is signed with a throwaway key, only to check that it builds and signs.
       - name: Build the Google Play bundle
@@ -76,7 +76,7 @@ jobs:
           jarsigner -verify "$AAB"
           rm upload.p12
           mkdir -p ../out-play
-          if [ "$HAS_PLAY_KEY" = "true" ]; then cp "$AAB" "../out-play/Beedo-Trade-${VERSION}-play.aab"; fi
+          if [ "$HAS_PLAY_KEY" = "true" ]; then cp "$AAB" "../out-play/Moashir-Trade-${VERSION}-play.aab"; fi
       - name: Attach the Play bundle to the release
         if: env.HAS_PLAY_KEY == 'true' && (github.event_name == 'release' || inputs.tag != '')
         env:
