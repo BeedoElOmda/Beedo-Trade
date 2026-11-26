@@ -1,7 +1,7 @@
 ; Beedo-Trade Windows installer (Inno Setup 6). Built by packaging\build.ps1, which passes
 ; AppVersion, SourceDir, OutDir, IconFile, LicenseFile and GuideFile.
-#define AppName "Beedo-Trade"
-#define AppExe "BeedoTrade.exe"
+#define AppName "Mo'ashir Trade"
+#define AppExe "MoashirTrade.exe"
 #define AppUrl "https://github.com/BeedoElOmda/Beedo-Trade"
 
 [Setup]
@@ -26,7 +26,7 @@ DisableProgramGroupPage=yes
 UsePreviousAppDir=yes
 LicenseFile={#LicenseFile}
 OutputDir={#OutDir}
-OutputBaseFilename=Beedo-Trade-Setup-{#AppVersion}
+OutputBaseFilename=Moashir-Trade-Setup-{#AppVersion}
 SetupIconFile={#IconFile}
 UninstallDisplayIcon={app}\{#AppExe}
 UninstallDisplayName={#AppName}
@@ -46,23 +46,28 @@ Name: "desktopicon"; Description: "Create a &desktop shortcut"; GroupDescription
 ; Older guides. A guide left open in a PDF viewer is locked: it is skipped here instead of aborting the upgrade.
 [InstallDelete]
 Type: files; Name: "{app}\docs\Beedo-Trade User Guide*.pdf"
+Type: files; Name: "{app}\docs\Moashir-Trade User Guide*.pdf"
+; 2.3.1: the app was renamed from Beedo-Trade: remove the old program file and shortcuts
+Type: files; Name: "{app}\BeedoTrade.exe"
+Type: files; Name: "{group}\Beedo-Trade*.lnk"
+Type: files; Name: "{autodesktop}\Beedo-Trade.lnk"
 
 [UninstallDelete]
-Type: files; Name: "{app}\docs\Beedo-Trade User Guide*.pdf"
+Type: files; Name: "{app}\docs\Moashir-Trade User Guide*.pdf"
 
 [Files]
 Source: "{#SourceDir}\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
-Source: "{#GuideFile}"; DestDir: "{app}\docs"; DestName: "Beedo-Trade User Guide {#AppVersion}.pdf"; Flags: ignoreversion
+Source: "{#GuideFile}"; DestDir: "{app}\docs"; DestName: "Moashir-Trade User Guide {#AppVersion}.pdf"; Flags: ignoreversion
 
 [Icons]
-Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"; Comment: "EGX technical analysis with the Beedo course method"
-Name: "{group}\{#AppName} User Guide"; Filename: "{app}\docs\Beedo-Trade User Guide {#AppVersion}.pdf"
+Name: "{group}\{#AppName}"; Filename: "{app}\{#AppExe}"; Comment: "EGX technical analysis with 12 indicators"
+Name: "{group}\{#AppName} User Guide"; Filename: "{app}\docs\Moashir-Trade User Guide {#AppVersion}.pdf"
 Name: "{group}\Uninstall {#AppName}"; Filename: "{uninstallexe}"
 Name: "{autodesktop}\{#AppName}"; Filename: "{app}\{#AppExe}"; Tasks: desktopicon
 
 [Run]
 Filename: "{app}\{#AppExe}"; Description: "Start {#AppName} now"; Flags: nowait postinstall skipifsilent
-Filename: "{app}\docs\Beedo-Trade User Guide {#AppVersion}.pdf"; Description: "Open the user guide"; Flags: shellexec nowait postinstall skipifsilent unchecked
+Filename: "{app}\docs\Moashir-Trade User Guide {#AppVersion}.pdf"; Description: "Open the user guide"; Flags: shellexec nowait postinstall skipifsilent unchecked
 
 [Code]
 const WebView2Key = 'SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}';
@@ -78,7 +83,7 @@ function InitializeSetup(): Boolean;
 begin
   Result := True;
   if not HasWebView2() then
-    SuppressibleMsgBox('Beedo-Trade uses Microsoft Edge WebView2, which this PC does not seem to have.' + #13#10#13#10 +
+    SuppressibleMsgBox('Mo''ashir Trade uses Microsoft Edge WebView2, which this PC does not seem to have.' + #13#10#13#10 +
       'Setup will continue. If the app window stays blank, install WebView2 free from Microsoft:' + #13#10 +
       'https://go.microsoft.com/fwlink/p/?LinkId=2124703', mbInformation, MB_OK, IDOK);
 end;
@@ -111,7 +116,7 @@ begin
   if CurUninstallStep = usPostUninstall then begin
     Data := ExpandConstant('{userappdata}\BeedoTrade');
     if DirExists(Data) then
-      if SuppressibleMsgBox('Also delete your Beedo-Trade settings and watchlist?' + #13#10 + '(' + Data + ')' + #13#10#13#10 +
+      if SuppressibleMsgBox('Also delete your Mo''ashir Trade settings and watchlist?' + #13#10 + '(' + Data + ')' + #13#10#13#10 +
          'Choose No to keep them for a future install.', mbConfirmation, MB_YESNO, IDNO) = IDYES then
         DelTree(Data, True, True, True);
   end;

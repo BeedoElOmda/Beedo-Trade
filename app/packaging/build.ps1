@@ -1,6 +1,6 @@
 # Builds BeedoTrade.exe (PyInstaller) and the Windows installer (Inno Setup).
 # Usage, from the app folder:  powershell -ExecutionPolicy Bypass -File packaging\build.ps1
-# Needs: uv, Inno Setup 6 (winget install JRSoftware.InnoSetup), and packaging\guide\Beedo-Trade User Guide.pdf
+# Needs: uv, Inno Setup 6 (winget install JRSoftware.InnoSetup), and packaging\guide\Moashir-Trade User Guide.pdf
 $ErrorActionPreference = "Stop"
 $App = Split-Path $PSScriptRoot -Parent
 # Build in a short folder: deep paths break Windows DLL loading and PyInstaller.
@@ -10,9 +10,9 @@ Set-Location $App
 
 $Version = ([regex]'__version__ = "([\d.]+)"').Match((Get-Content "$App\beedo_app\__init__.py" -Raw)).Groups[1].Value
 if (-not $Version) { throw "No __version__ in beedo_app\__init__.py" }
-$Guide = "$App\packaging\guide\Beedo-Trade User Guide.pdf"
+$Guide = "$App\packaging\guide\Moashir-Trade User Guide.pdf"
 if (-not (Test-Path $Guide)) { throw "Missing ${Guide}. Build the user guide first." }
-Write-Host "Building Beedo-Trade $Version"
+Write-Host "Building Mo'ashir Trade $Version"
 
 uv sync --quiet
 uv run pytest -q
@@ -24,16 +24,16 @@ New-Item -ItemType Directory -Force $Short | Out-Null
 @"
 VSVersionInfo(ffi=FixedFileInfo(filevers=($v), prodvers=($v)), kids=[
   StringFileInfo([StringTable('040904B0', [
-    StringStruct('CompanyName', 'Beedo El-Omda'), StringStruct('FileDescription', 'Beedo-Trade'),
-    StringStruct('FileVersion', '$Version'), StringStruct('InternalName', 'BeedoTrade'),
+    StringStruct('CompanyName', 'Beedo El-Omda'), StringStruct('FileDescription', 'Mo''ashir Trade'),
+    StringStruct('FileVersion', '$Version'), StringStruct('InternalName', 'MoashirTrade'),
     StringStruct('LegalCopyright', 'Copyright (c) 2026 Beedo El-Omda. MIT License.'),
-    StringStruct('OriginalFilename', 'BeedoTrade.exe'), StringStruct('ProductName', 'Beedo-Trade'),
+    StringStruct('OriginalFilename', 'MoashirTrade.exe'), StringStruct('ProductName', 'Mo''ashir Trade'),
     StringStruct('ProductVersion', '$Version')])]),
   VarFileInfo([VarStruct('Translation', [1033, 1200])])])
 "@ | Set-Content (Join-Path $Short "version_info.txt") -Encoding utf8
 
 # Absolute paths: PyInstaller resolves relative ones against --specpath.
-uv run pyinstaller --noconfirm --clean --windowed --name BeedoTrade `
+uv run pyinstaller --noconfirm --clean --windowed --name MoashirTrade `
   --icon "$App\packaging\beedo.ico" --version-file (Join-Path $Short "version_info.txt") --splash "$App\packaging\splash.png" `
   --add-data "$App\beedo_app\web;web" `
   --paths "$App\..\skills\beedo-trade\scripts" --paths "$App" --hidden-import analyze --hidden-import fundamentals --hidden-import metals --hidden-import timemachine --hidden-import dividends --collect-data certifi `
@@ -44,21 +44,21 @@ if ($LASTEXITCODE) { throw "PyInstaller failed" }
 
 $iscc = @("$env:LOCALAPPDATA\Programs\Inno Setup 6\ISCC.exe", "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe") | Where-Object { Test-Path $_ } | Select-Object -First 1
 if (-not $iscc) { Write-Host "Inno Setup not found: install it with  winget install JRSoftware.InnoSetup  then re-run."; exit 1 }
-& $iscc /Q "/DAppVersion=$Version" "/DSourceDir=$(Join-Path $Short 'dist\BeedoTrade')" "/DOutDir=$(Join-Path $Short 'out')" `
+& $iscc /Q "/DAppVersion=$Version" "/DSourceDir=$(Join-Path $Short 'dist\MoashirTrade')" "/DOutDir=$(Join-Path $Short 'out')" `
   "/DIconFile=$App\packaging\beedo.ico" "/DLicenseFile=$App\packaging\license.txt" "/DGuideFile=$Guide" packaging\installer.iss
 if ($LASTEXITCODE) { throw "Inno Setup failed" }
 New-Item -ItemType Directory -Force (Join-Path $App "dist") | Out-Null
 
-# Portable version: the same program as a zip. Unzip anywhere and run BeedoTrade.exe; no installer, no admin rights.
-$Portable = Join-Path $Short "portable\Beedo-Trade-Portable"
+# Portable version: the same program as a zip. Unzip anywhere and run MoashirTrade.exe; no installer, no admin rights.
+$Portable = Join-Path $Short "portable\Moashir-Trade-Portable"
 if (Test-Path (Split-Path $Portable)) { Remove-Item (Split-Path $Portable) -Recurse -Force }
-Copy-Item (Join-Path $Short "dist\BeedoTrade") $Portable -Recurse
+Copy-Item (Join-Path $Short "dist\MoashirTrade") $Portable -Recurse
 New-Item -ItemType Directory -Force (Join-Path $Portable "docs") | Out-Null
-Copy-Item $Guide (Join-Path $Portable "docs\Beedo-Trade User Guide $Version.pdf")
-"Beedo-Trade portable: settings are kept in the data folder beside this file. Delete this file to use the normal Windows settings folder instead." |
+Copy-Item $Guide (Join-Path $Portable "docs\Moashir-Trade User Guide $Version.pdf")
+"Mo'ashir Trade portable: settings are kept in the data folder beside this file. Delete this file to use the normal Windows settings folder instead." |
   Set-Content (Join-Path $Portable "portable.txt") -Encoding utf8
-$Zip = Join-Path $App "dist\Beedo-Trade-Portable-$Version.zip"
+$Zip = Join-Path $App "dist\Moashir-Trade-Portable-$Version.zip"
 if (Test-Path $Zip) { Remove-Item $Zip -Force }
 Compress-Archive -Path $Portable -DestinationPath $Zip -CompressionLevel Optimal
-Copy-Item (Join-Path $Short "out\Beedo-Trade-Setup-$Version.exe") (Join-Path $App "dist") -Force
+Copy-Item (Join-Path $Short "out\Moashir-Trade-Setup-$Version.exe") (Join-Path $App "dist") -Force
 Get-ChildItem (Join-Path $App "dist") | Select-Object Name, @{n = "MB"; e = { [math]::Round($_.Length / 1MB, 1) } }
