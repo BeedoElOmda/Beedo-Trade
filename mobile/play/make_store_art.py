@@ -1,4 +1,4 @@
-"""Google Play store pictures from the one Beedo-Trade icon (app/packaging/icon.png):
+"""Google Play store pictures from the one Mo'ashir Trade icon (app/packaging/icon.png):
 the 512 x 512 app icon (a full square: Play rounds the corners itself) and the 1024 x 500 feature graphic.
 Run on Windows: python mobile/play/make_store_art.py   (needs Pillow)"""
 import sys
@@ -41,9 +41,9 @@ def feature_graphic(icon):
     ImageDraw.Draw(mask).rounded_rectangle([0, 0, 260 * 4 - 1, 260 * 4 - 1], radius=58 * 4, fill=255)
     img.paste(logo, (80, 120), mask.resize((260, 260), Image.LANCZOS))
     d = ImageDraw.Draw(img)
-    d.text((390, 150), "Beedo-Trade", font=font(78, True), fill="white")
-    d.text((394, 255), "EGX stock analysis with your", font=font(34), fill=(235, 242, 255))
-    d.text((394, 300), "technical-analysis course method", font=font(34), fill=(235, 242, 255))
+    d.text((390, 150), "Mo'ashir Trade", font=font(78, True), fill="white")
+    d.text((394, 255), "EGX stock analysis with a", font=font(34), fill=(235, 242, 255))
+    d.text((394, 300), "12-indicator technical checklist", font=font(34), fill=(235, 242, 255))
     d.text((394, 362), "Signals · Watchlist · Alerts · Gold & Silver", font=font(26), fill=(205, 225, 250))
     return img
 

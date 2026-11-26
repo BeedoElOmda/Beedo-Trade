@@ -1,4 +1,4 @@
-# Publishing Beedo-Trade on Google Play
+# Publishing Mo'ashir Trade on Google Play
 
 Everything Google Play asks for, ready to copy, and the steps in order. The pictures are in `mobile/play/store/`.
 
@@ -6,31 +6,31 @@ Everything Google Play asks for, ready to copy, and the steps in order. The pict
 
 Google Play only accepts a bundle (`.aab`) signed with your own **upload key**. You create it on your PC; nobody else sees the password.
 
-1. In a terminal in the Beedo-Trade folder, run:
+1. In a terminal in the Mo'ashir Trade folder, run:
 
    ```
    uv run --with cryptography python mobile/play/make_upload_key.py
    ```
 
-2. Type a password twice (it isn't shown). The key is saved as `Documents\Beedo-Trade-keys\beedo-trade-upload-key.p12`, and the key itself is copied to the clipboard as text.
+2. Type a password twice (it isn't shown). The key is saved as `Documents\Moashir-Trade-keys\beedo-trade-upload-key.p12`, and the key itself is copied to the clipboard as text.
 3. **Back up** that file and the password (a USB stick or your password manager). Every future update needs the same key. If you lose it, Google can reset it, but that takes a support request and a few days.
 
 ## 2. Give the key to GitHub (once)
 
-On GitHub: **Beedo-Trade › Settings › Secrets and variables › Actions › New repository secret**. Add two secrets:
+On GitHub: **Mo'ashir Trade › Settings › Secrets and variables › Actions › New repository secret**. Add two secrets:
 
 | Name | Value |
 |---|---|
 | `PLAY_UPLOAD_KEYSTORE` | Paste the clipboard from step 1 (a long line of letters and numbers) |
 | `PLAY_UPLOAD_PASSWORD` | The password you chose |
 
-From then on, every release also gets `Beedo-Trade-<version>-play.aab`, signed with your key. That is the file you upload to Google Play. (The `.apk` stays for installing outside Play.)
+From then on, every release also gets `Mo'ashir Trade-<version>-play.aab`, signed with your key. That is the file you upload to Google Play. (The `.apk` stays for installing outside Play.)
 
 ## 3. Create the app in Play Console
 
 [play.google.com/console](https://play.google.com/console) › **Create app**:
 
-- App name: **Beedo-Trade**
+- App name: **Mo'ashir Trade**
 - Default language: **English (United States) – en-US**
 - App or game: **App** · Free or paid: **Free**
 - Tick the declarations (developer policies, US export laws) after reading them.
@@ -67,19 +67,19 @@ Why "No": the watchlist, portfolio and settings never leave the phone, and the r
 **App name** (30 characters max)
 
 ```
-Beedo-Trade
+Mo'ashir Trade
 ```
 
 **Short description, English** (80 max)
 
 ```
-EGX stock signals from your course method: score, alerts, weekly check, gold.
+EGX stock signals from the 12-indicator method: score, alerts, weekly check, gold.
 ```
 
 **Full description, English** (4,000 max)
 
 ```
-Beedo-Trade analyses Egyptian Exchange (EGX) stocks with a technical-analysis course method and turns it into a clear signal: Alarm, First or Confirm, Buy or Sell, with separate advice for a cash holder and a shareholder.
+Mo'ashir Trade analyses Egyptian Exchange (EGX) stocks with a 12-indicator technical-analysis method and turns it into a clear signal: Alarm, First or Confirm, Buy or Sell, with separate advice for a cash holder and a shareholder.
 
 HOW THE SIGNAL WORKS
 A 12-step checklist reads support and resistance, the trend (higher highs and lows), moving-average crossovers (5 / 9 / 18 by default, or your own), RSI zones and divergence, volume, reversal candles, gaps and MACD. Each step gives a score; the total sets the signal. Tick or untick any step and see the signal change.
@@ -96,7 +96,7 @@ WHAT YOU GET
 • Arabic and English, light and dark themes
 • Works without an account; your data stays on your phone
 
-Beedo-Trade is a learning and decision-support tool, not investment advice. It never places orders. Prices are 15 minutes delayed: always check the live price and the day's disclosures before trading.
+Mo'ashir Trade is a learning and decision-support tool, not investment advice. It never places orders. Prices are 15 minutes delayed: always check the live price and the day's disclosures before trading.
 ```
 
 **Short description, Arabic** (add a translation: Store listing › Manage translations › Arabic)
@@ -108,7 +108,7 @@ Beedo-Trade is a learning and decision-support tool, not investment advice. It n
 **Full description, Arabic**
 
 ```
-يحلل Beedo-Trade أسهم البورصة المصرية بطريقة كورس التحليل الفني، ويحوّل النتيجة إلى إشارة واضحة: تنبيه أو أولي أو تأكيد، شراء أو بيع، مع نصيحة منفصلة لصاحب السيولة ولحامل السهم.
+يحلل Mo'ashir Trade أسهم البورصة المصرية بطريقة كورس التحليل الفني، ويحوّل النتيجة إلى إشارة واضحة: تنبيه أو أولي أو تأكيد، شراء أو بيع، مع نصيحة منفصلة لصاحب السيولة ولحامل السهم.
 
 كيف تُحسب الإشارة
 قائمة من 12 خطوة تقرأ الدعم والمقاومة والاتجاه والمتوسطات المتحركة (5 / 9 / 18 افتراضيًا أو متوسطاتك أنت) ومؤشر RSI والحجم وشموع الانعكاس والفجوات وMACD. كل خطوة تعطي نقاطًا، ومجموعها يحدد الإشارة. يمكنك تحديد أي خطوة أو إلغاؤها ورؤية أثرها فورًا.
@@ -125,7 +125,7 @@ Beedo-Trade is a learning and decision-support tool, not investment advice. It n
 • العربية والإنجليزية، ومظهر فاتح وداكن
 • بدون حساب، وبياناتك تبقى على هاتفك
 
-Beedo-Trade أداة للتعلم ودعم القرار وليست نصيحة استثمارية، ولا تنفذ أي أوامر. الأسعار بنهاية اليوم وقد تتأخر: تحقق دائمًا من السعر الحالي وإفصاحات اليوم قبل التداول.
+Mo'ashir Trade أداة للتعلم ودعم القرار وليست نصيحة استثمارية، ولا تنفذ أي أوامر. الأسعار بنهاية اليوم وقد تتأخر: تحقق دائمًا من السعر الحالي وإفصاحات اليوم قبل التداول.
 ```
 
 **Graphics** (in `mobile/play/store/`)
