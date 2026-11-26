@@ -100,7 +100,7 @@ public class AlertWorker extends Worker {
         try {
             NotificationManagerCompat.from(ctx).notify(id, b.build());
         } catch (SecurityException e) {
-            Log.w(TAG, "Notifications are switched off for Beedo-Trade");
+            Log.w(TAG, "Notifications are switched off for Mo'ashir Trade");
         }
     }
 
