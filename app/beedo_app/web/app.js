@@ -1,4 +1,4 @@
-/* Beedo-Trade UI. Talks to Python through pywebview (desktop) or /api (dev server). */
+/* Mo'ashir Trade UI. Talks to Python through pywebview (desktop) or /api (dev server). */
 "use strict";
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
@@ -86,7 +86,7 @@ const badge = (r, big = false) => `<span class="badge ${big ? "big" : ""} ${rcls
 function show(id) { ["empty", "loading", "result"].forEach((x) => $(`#${x}`).classList.toggle("hidden", x !== id)); $("#printBtn").classList.toggle("hidden", id !== "result"); }
 function showError(e, symbol) {
   const box = $("#error");
-  const tips = /CERTIFICATE_VERIFY_FAILED|certificate verify/i.test(e) ? "Certificate problem: the app can't verify the secure connection. Update to the latest Beedo-Trade version, or reinstall it."
+  const tips = /CERTIFICATE_VERIFY_FAILED|certificate verify/i.test(e) ? "Certificate problem: the app can't verify the secure connection. Update to the latest Mo'ashir Trade version, or reinstall it."
     : /no price history|daily bars/i.test(e) ? "Yahoo Finance may not carry this stock. Try <b>Import CSV</b> with daily prices (date, open, high, low, close, volume)."
     : /reach Yahoo|urlopen|connection/i.test(e) ? "Check your internet connection, firewall or VPN, then try again." : "Check the code and try again.";
   box.innerHTML = `<b>Couldn't analyse ${esc(symbol || "this stock")}</b>${esc(e)}<div class="tiny" style="margin-top:6px">${tips}</div>`;
@@ -455,12 +455,12 @@ async function loadSectors() {
 $("#runScreener").addEventListener("click", async () => {
   const btn = $("#runScreener"), body = $("#sTable tbody");
   btn.disabled = true; btn.textContent = "Screening…";
-  body.innerHTML = `<tr><td colspan="14" class="muted center">Rating every EGX company, then checking the best ones with your course method…</td></tr>`;
+  body.innerHTML = `<tr><td colspan="14" class="muted center">Rating every EGX company, then checking the best ones with the 12-indicator checklist…</td></tr>`;
   $("#sSummary").textContent = "";
   try {
     const r = await api("screener", Number($("#fQuality").value), Number($("#fSignal").value), $("#fSector").value);
     if (r.error) { body.innerHTML = `<tr><td colspan="14" class="why">${esc(r.error)}</td></tr>`; return; }
-    $("#sSummary").textContent = `Rated ${r.rated} companies · ${r.passed_quality} met the quality filter · checked the top ${r.checked} with the course checklist` +
+    $("#sSummary").textContent = `Rated ${r.rated} companies · ${r.passed_quality} met the quality filter · checked the top ${r.checked} with the 12-indicator checklist` +
       (r.skipped_no_prices ? ` · ${r.skipped_no_prices} skipped (no price history)` : "") + ` · ${r.results.length} match. Click a column header to sort.`;
     fillTable("#sTable", r.results);
     if (!r.results.length) body.innerHTML = `<tr><td colspan="14" class="muted center">No company matches right now. Try "Strong or Fair" or "Any buy, including Alarm Buy".</td></tr>`;
@@ -583,9 +583,9 @@ $("#btBtn").addEventListener("click", async () => {
     if (!r || r.error) { out.innerHTML = `<div class="plan"><div class="warn">${esc(r ? r.error : "Back-test failed")}</div></div>`; return; }
     const stat = (k, v, s) => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
     const done = r.trades.filter((t) => !t.open).length;
-    out.innerHTML = `<div class="stats">${stat("Course method", signed(r.method_pct), "following the signals")}${stat("Buy and hold", signed(r.hold_pct), "bought on the first day")}
+    out.innerHTML = `<div class="stats">${stat("Signal method", signed(r.method_pct), "following the signals")}${stat("Buy and hold", signed(r.hold_pct), "bought on the first day")}
       ${stat("Trades", fmt(r.trades.length, 0), `${done} closed`)}${stat("Winners", `${r.wins} of ${r.trades.length}`, "trades in profit")}</div>
-      <p class="muted tiny">${esc(r.from)} to ${esc(r.to)}</p>${isCourse(bt, BT_COURSE) ? "" : `<p class="muted tiny">Your settings differ from the course defaults.</p>`}` +
+      <p class="muted tiny">${esc(r.from)} to ${esc(r.to)}</p>${isCourse(bt, BT_COURSE) ? "" : `<p class="muted tiny">Your settings differ from the defaults.</p>`}` +
       (r.trades.length ? `<div class="table-wrap"><table class="table"><thead><tr><th>Bought</th><th class="num">Price</th><th>Sold</th><th class="num">Price</th><th class="num">Result</th></tr></thead><tbody>${
         r.trades.map((t) => `<tr><td>${esc(t.buy_date)}</td><td class="num">${fmt(t.buy)}</td><td>${t.open ? "Still open" : esc(t.sell_date)}</td><td class="num">${fmt(t.sell)}</td><td class="num">${signed(t.pct)}</td></tr>`).join("")}</tbody></table></div>`
         : `<p class="muted">The method gave no buy signal at your buy level in this period, so it stayed in cash.</p>`);
@@ -622,7 +622,7 @@ $("#tmBtn").addEventListener("click", async () => {
       ${stat("Neither", `${fmt(r.neither_pct, 1)}%`, `within ${r.days} trading days`)}${stat("Average R", `<span class="${r.avg_r >= 0 ? "pos" : "neg"}">${r.avg_r > 0 ? "+" : ""}${fmt(r.avg_r, 2)}</span>`, `${fmt(r.rr, 1)}R plan`)}</div>
       <div class="plan"><p><b>${esc(r.verdict)}</b></p>${r.notes.map((n) => `<p class="muted">${esc(n)}</p>`).join("")}
       <p>${hist}</p><p>Price after ${r.days} trading days: median ${fmt(r.close.median)} EGP, 90% of replays between ${fmt(r.close.p5)} and ${fmt(r.close.p95)}.</p>
-      <p class="muted tiny">${fmt(r.replays, 0)} replays, seed ${r.seed}, daily moves from ${esc(r.from)} to ${esc(r.to)}. A day that touches both the stop and the target counts as the stop.</p>${isCourse(tm, TM_COURSE) ? "" : `<p class="muted tiny">Your settings differ from the course defaults.</p>`}</div>`;
+      <p class="muted tiny">${fmt(r.replays, 0)} replays, seed ${r.seed}, daily moves from ${esc(r.from)} to ${esc(r.to)}. A day that touches both the stop and the target counts as the stop.</p>${isCourse(tm, TM_COURSE) ? "" : `<p class="muted tiny">Your settings differ from the defaults.</p>`}</div>`;
   } finally { btn.disabled = false; btn.textContent = "Run time machine"; }
 });
 
@@ -718,7 +718,7 @@ $("#buildForm").addEventListener("submit", async (e) => {
   e.preventDefault();
   const btn = $("#buildBtn"), out = $("#buildOut"), amount = +$("#buildAmount").value;
   btn.disabled = true; btn.textContent = "Building…";
-  out.innerHTML = `<p class="muted">Rating every EGX company, then checking the best ones with your course method…</p>`;
+  out.innerHTML = `<p class="muted">Rating every EGX company, then checking the best ones with the 12-indicator checklist…</p>`;
   try {
     const r = await api("plan_builder", amount);
     if (!r || r.error) { out.innerHTML = `<div class="plan"><div class="warn">${esc(r ? r.error : "Couldn't build the plan")}</div></div>`; return; }

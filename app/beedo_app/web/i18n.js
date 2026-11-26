@@ -4,8 +4,9 @@
 "use strict";
 const AR = {
   // menu and common buttons
+  "Mo'ashir Trade": "مؤشر تريد",
   "Analyze": "تحليل", "Watchlist": "قائمة المتابعة", "Portfolio": "المحفظة", "Gold & Silver": "الذهب والفضة", "Screener": "فرز الأسهم", "About": "عن البرنامج",
-  "EGX course method": "منهج الدورة للبورصة المصرية", "User guide": "دليل المستخدم", "Open the user guide": "فتح دليل المستخدم",
+  "EGX technical analysis": "التحليل الفني للبورصة المصرية", "User guide": "دليل المستخدم", "Open the user guide": "فتح دليل المستخدم",
   "Special thanks to": "شكر خاص إلى", "Dr. Ahmed El Otefy": "د. احمد العطيفي", "Score": "النقاط", "Alert at score (5 or -5)": "تنبيه عند النقاط (5 أو -5)", "Weekly candles:": "الشموع الأسبوعية:",
   "· The daily and weekly signals disagree: be careful.": "· الإشارة اليومية والأسبوعية مختلفتان: توخَّ الحذر.",
   "Enter a price or a score to be alerted at": "أدخل سعرًا أو نقاطًا للتنبيه عندها",
@@ -54,12 +55,12 @@ const AR = {
   "Buy part of the position (e.g. half). Add the rest on Confirm Buy.": "اشترِ جزءًا من الكمية (النصف مثلًا) وأكمل الباقي عند تأكيد الشراء.",
   "Hold.": "احتفظ.", "Get ready, but don't buy yet. Wait for First Buy.": "استعد، لكن لا تشترِ بعد. انتظر إشارة الشراء الأولي.",
   "Stay in cash and wait for a clear signal.": "ابقَ في السيولة وانتظر إشارة واضحة.",
-  "Hold. In a sideways market the course says reduce or step out.": "احتفظ. في السوق العرضي تنصح الدورة بالتخفيف أو الخروج.",
+  "Hold. In a sideways market, reduce or step out.": "احتفظ. في السوق العرضي خفّف أو اخرج.",
   "Stay out.": "ابقَ خارج السهم.", "Get ready to sell: tighten your stop.": "استعد للبيع: قرّب وقف الخسارة.",
   "Sell part of the position (reduce).": "بِع جزءًا من الكمية (تخفيف).", "Sell.": "بِع.",
 
   // analyze page
-  "Analyse an EGX stock with your course method": "حلّل سهمًا في البورصة المصرية بمنهج دورتك",
+  "Analyse an EGX stock": "حلّل سهمًا في البورصة المصرية",
   "Type a 4-letter code, or pick one below. You get the signal, the actions for your position, the chart and the 12-indicator checklist.": "اكتب رمز السهم أو اختر من الأسماء أدناه. ستحصل على الإشارة، وما يجب فعله، والرسم البياني، وقائمة المؤشرات الاثني عشر.",
   "Volume": "حجم التداول", "Support": "الدعم", "Resistance": "المقاومة", "vs 20-day average": "مقارنة بمتوسط 20 يومًا",
   "none below": "لا يوجد دعم أدنى", "none above": "لا توجد مقاومة أعلى",
@@ -73,8 +74,8 @@ const AR = {
   "Entry (last close)": "الدخول (آخر إغلاق)", "Stop (below support)": "وقف الخسارة (تحت الدعم)", "Risk per share": "المخاطرة للسهم", "Risk per gram": "المخاطرة للجرام",
   "Target (2R)": "الهدف (ضعف المخاطرة)", "First resistance": "أول مقاومة", "Shares": "عدد الأسهم", "Grams": "عدد الجرامات", "Cost": "التكلفة", "Loss if stopped": "الخسارة عند الوقف",
   "The signal isn't a First or Confirm Buy: treat this as a plan to have ready, not a trade for today.": "الإشارة ليست شراء أوليًا ولا تأكيد شراء: اعتبر هذه خطة جاهزة، لا صفقة لليوم.",
-  "Learning and decision-support tool applying the Beedo technical-analysis course. Not investment advice. Free data can be delayed: check the live price and the day's EGX disclosures before trading.": "أداة للتعلّم ودعم القرار تطبّق دورة Beedo للتحليل الفني. ليست نصيحة استثمارية. البيانات المجانية قد تكون متأخرة: راجع السعر اللحظي وإفصاحات البورصة قبل التداول.",
-  "Standard rules on the last 12 months of reported results (TradingView). Each figure is compared with similar companies. Not part of the Beedo technical course.": "قواعد قياسية على نتائج آخر 12 شهرًا (TradingView). كل رقم يُقارن بالشركات المشابهة. ليست جزءًا من دورة Beedo الفنية.",
+  "Learning and decision-support tool for technical analysis. Not investment advice. Free data can be delayed: check the live price and the day's EGX disclosures before trading.": "أداة للتعلّم ودعم القرار في التحليل الفني. ليست نصيحة استثمارية. البيانات المجانية قد تكون متأخرة: راجع السعر اللحظي وإفصاحات البورصة قبل التداول.",
+  "Standard rules on the last 12 months of reported results (TradingView). Each figure is compared with similar companies. Not part of the technical signal.": "قواعد قياسية على نتائج آخر 12 شهرًا (TradingView). كل رقم يُقارن بالشركات المشابهة. ليست جزءًا من الإشارة الفنية.",
 
   // checklist step names
   "Historical support & resistance": "الدعم والمقاومة التاريخيان", "Recent support & resistance": "الدعم والمقاومة الحديثان", "Price location": "موقع السعر",
@@ -118,7 +119,7 @@ const AR = {
   "No alerts right now": "لا توجد تنبيهات الآن", "Enter a price to be alerted at": "أدخل السعر الذي تريد التنبيه عنده",
 
   // portfolio
-  "What you own, what it is worth at the last close, and what the course says a shareholder should do.": "ما تملكه، وقيمته عند آخر إغلاق، وما تنصح به الدورة حامل السهم.",
+  "What you own, what it is worth at the last close, and what the signal says a shareholder should do.": "ما تملكه، وقيمته عند آخر إغلاق، وما تقوله الإشارة لحامل السهم.",
   "Average buy price (EGP)": "متوسط سعر الشراء (جنيه)", "Add holding": "إضافة", "at the last close": "عند آخر إغلاق", "Loading prices…": "جارٍ تحميل الأسعار…",
   "Add what you own above. Use GOLD or SILVER with a quantity in grams for metals.": "أضف ما تملكه أعلاه. للمعادن استخدم GOLD أو SILVER مع الكمية بالجرام.",
   "Your holdings are saved only on this computer. Values use the last daily close, which can be delayed. Not investment advice.": "بياناتك محفوظة على هذا الجهاز فقط. القيم محسوبة على آخر إغلاق يومي وقد يكون متأخرًا. ليست نصيحة استثمارية.",
@@ -131,12 +132,12 @@ const AR = {
   // back-test
   "Back-test": "الاختبار التاريخي", "Run back-test": "تشغيل الاختبار التاريخي", "Running…": "جارٍ التشغيل…",
   "Replays the checklist day by day over the past two years. It buys at the close on a First or Confirm Buy and sells at the close on a First or Confirm Sell. Fees and taxes are not counted. Past results do not predict future results.": "يعيد تطبيق قائمة المؤشرات يومًا بيوم على العامين الماضيين: يشتري عند الإغلاق مع إشارة شراء أولي أو تأكيد شراء، ويبيع عند الإغلاق مع إشارة بيع أولي أو تأكيد بيع. لا تُحسب العمولات والضرائب. نتائج الماضي لا تتنبأ بالمستقبل.",
-  "Course method": "منهج الدورة", "following the signals": "باتباع الإشارات", "Buy and hold": "الشراء والاحتفاظ", "bought on the first day": "شراء من أول يوم",
+  "Signal method": "منهج الإشارات", "following the signals": "باتباع الإشارات", "Buy and hold": "الشراء والاحتفاظ", "bought on the first day": "شراء من أول يوم",
   "Trades": "الصفقات", "Winners": "الرابحة", "trades in profit": "صفقات رابحة", "Bought": "تاريخ الشراء", "Sold": "تاريخ البيع", "Price": "السعر", "Result": "النتيجة", "Still open": "ما زالت مفتوحة",
   "The method gave no First or Confirm Buy in this period, so it stayed in cash.": "لم يعطِ المنهج إشارة شراء أولي أو تأكيد شراء في هذه الفترة، فبقي في السيولة.",
 
   // gold & silver
-  "International prices in Egyptian pounds, with your course method applied to each metal.": "الأسعار العالمية بالجنيه المصري، مع تطبيق منهج دورتك على كل معدن.",
+  "International prices in Egyptian pounds, with the 12-indicator checklist applied to each metal.": "الأسعار العالمية بالجنيه المصري، مع تطبيق قائمة المؤشرات الاثني عشر على كل معدن.",
   "Gold": "الذهب", "Silver": "الفضة", "Market": "السوق", "24k, per gram": "عيار 24، للجرام", "999, per gram": "999، للجرام", "Per ounce": "للأوقية",
   "Change today (USD)": "تغيّر اليوم (دولار)", "1 year (USD)": "سنة (دولار)", "52-week range (USD/oz)": "نطاق 52 أسبوعًا (دولار/أوقية)",
   "US dollar, official rate": "الدولار الأمريكي، السعر الرسمي", "Gold / silver ratio": "نسبة الذهب إلى الفضة",
@@ -144,28 +145,28 @@ const AR = {
   "How many ounces of silver one ounce of gold buys. Above about 80, silver is cheap compared with gold; below about 50, gold is.": "عدد أوقيات الفضة التي تشتريها أوقية ذهب واحدة. فوق 80 تقريبًا تكون الفضة رخيصة مقارنة بالذهب، وتحت 50 تقريبًا يكون الذهب هو الأرخص.",
 
   // screener
-  "Find strong companies that your course method says are in a buy zone, across the whole Egyptian Exchange.": "ابحث في كل البورصة المصرية عن شركات قوية يقول منهج دورتك إنها في منطقة شراء.",
+  "Find strong companies that the 12-indicator checklist says are in a buy zone, across the whole Egyptian Exchange.": "ابحث في كل البورصة المصرية عن شركات قوية تقول قائمة المؤشرات الاثني عشر إنها في منطقة شراء.",
   "Company quality": "جودة الشركة", "Strong only": "القوية فقط", "Strong or Fair": "القوية أو المتوسطة", "Technical signal": "الإشارة الفنية",
   "First or Confirm Buy": "شراء أولي أو تأكيد شراء", "Any buy, including Alarm Buy": "أي شراء، ومنه تنبيه الشراء", "Any signal": "أي إشارة",
   "Sector": "القطاع", "All sectors": "كل القطاعات", "Run screener": "تشغيل الفرز", "Screening…": "جارٍ الفرز…",
   "Choose your filters and press \"Run screener\". It takes about 20 to 40 seconds.": "اختر الشروط واضغط «تشغيل الفرز». يستغرق من 20 إلى 40 ثانية تقريبًا.",
 
   // about
-  "About Beedo-Trade": "عن Beedo-Trade", "The signal ladder": "سلّم الإشارات", "Where the numbers come from": "مصدر الأرقام", "Important": "تنبيه مهم",
-  "Beedo-Trade applies the Beedo technical-analysis course to Egyptian Exchange stocks, the same way every time: 12 indicators (the 11 course indicators plus MACD), one signal, and separate advice for a cash holder and a shareholder.": "يطبّق Beedo-Trade دورة Beedo للتحليل الفني على أسهم البورصة المصرية بالطريقة نفسها في كل مرة: 12 مؤشرًا (مؤشرات الدورة الأحد عشر ومؤشر MACD)، إشارة واحدة، ونصيحة منفصلة لصاحب السيولة ولحامل السهم.",
+  "About Mo'ashir Trade": "عن مؤشر تريد", "The signal ladder": "سلّم الإشارات", "Where the numbers come from": "مصدر الأرقام", "Important": "تنبيه مهم",
+  "Mo'ashir Trade applies technical analysis to Egyptian Exchange stocks, the same way every time: 12 indicators (11 chart indicators plus MACD), one signal, and separate advice for a cash holder and a shareholder.": "يطبّق مؤشر تريد التحليل الفني على أسهم البورصة المصرية بالطريقة نفسها في كل مرة: 12 مؤشرًا (11 مؤشرًا على الرسم البياني ومؤشر MACD)، إشارة واحدة، ونصيحة منفصلة لصاحب السيولة ولحامل السهم.",
   "Alarm = early warning, get ready. First = start a position (or start reducing). Confirm = several signals agree, act fully. The signal is the score of the ticked indicators: each adds its rung (Confirm +3, First +2, Alarm +1, Hold 0, minus for sells); 9 or more = Confirm, 5 = First, 2 = Alarm.": "التنبيه = إنذار مبكر، استعد. الأولي = ابدأ الشراء (أو ابدأ التخفيف). التأكيد = عدة إشارات متفقة، نفّذ بالكامل. الإشارة هي مجموع نقاط المؤشرات المحددة: كل مؤشر يضيف درجته (تأكيد +3، أولي +2، تنبيه +1، انتظار 0، وبالسالب للبيع)؛ 9 فأكثر = تأكيد، 5 = أولي، 2 = تنبيه.",
   "This is a learning and decision-support tool. It is": "هذه أداة للتعلّم ودعم القرار. وهي", "not investment advice": "ليست نصيحة استثمارية",
   ", it does not know your full financial situation, and it never places orders. Free data can be delayed: always check the live price and the day's disclosures before trading.": "، ولا تعرف وضعك المالي الكامل، ولا تنفّذ أي أوامر. البيانات المجانية قد تكون متأخرة: راجع دائمًا السعر اللحظي وإفصاحات اليوم قبل التداول.",
   "Prices: daily history from Yahoo Finance (e.g. COMI → COMI.CA), and the last two trading days from TradingView, 15 minutes delayed (during trading hours, today so far). The larger, widely traded EGX stocks are covered; for others, use": "الأسعار: التاريخ اليومي من Yahoo Finance (مثال COMI ← COMI.CA)، وآخر يومي تداول من TradingView متأخرة 15 دقيقة (وأثناء التداول: اليوم حتى الآن). الأسهم الكبيرة الأكثر تداولًا مغطاة؛ ولغيرها استخدم",
   "with date, open, high, low, close and volume columns.": "بأعمدة التاريخ والافتتاح والأعلى والأدنى والإغلاق وحجم التداول.",
-  "Indicators: moving averages you choose (default 5 / 9 / 18, the course's own), MACD 12 / 26 / 9, RSI 14 (Wilder), swing highs and lows, support and resistance, 20-day volume average, reversal candles and gaps.": "المؤشرات: متوسطات متحركة تختارها (الافتراضي 5 / 9 / 18 كما في الدورة)، وMACD 12 / 26 / 9، وRSI 14 (طريقة وايلدر)، والقمم والقيعان، والدعم والمقاومة، ومتوسط حجم التداول لعشرين يومًا، والشموع الانعكاسية والفجوات.",
+  "Indicators: moving averages you choose (default 5 / 9 / 18), MACD 12 / 26 / 9, RSI 14 (Wilder), swing highs and lows, support and resistance, 20-day volume average, reversal candles and gaps.": "المؤشرات: متوسطات متحركة تختارها (الافتراضي 5 / 9 / 18)، وMACD 12 / 26 / 9، وRSI 14 (طريقة وايلدر)، والقمم والقيعان، والدعم والمقاومة، ومتوسط حجم التداول لعشرين يومًا، والشموع الانعكاسية والفجوات.",
   "Chart and pattern indicators 10 and 11 are judged on the chart: the swing points are marked for you.": "المؤشران 10 و11 (النماذج) يُقيَّمان على الرسم البياني: القمم والقيعان محددة لك عليه.",
   "Company fundamentals: TradingView's market data (last 12 months of reported results), rated with standard rules and compared with similar companies. Smaller companies often have too few reported figures to rate.": "بيانات الشركات: من بيانات TradingView (نتائج آخر 12 شهرًا)، تُقيَّم بقواعد قياسية وتُقارن بالشركات المشابهة. كثير من الشركات الصغيرة أرقامها المنشورة لا تكفي لتقييمها.",
   "Charts by": "الرسوم البيانية من", "Lightweight Charts™ (Apache 2.0). Source:": "Lightweight Charts™ (Apache 2.0). الكود المصدري:",
 
   // 2.2.2: tooltips and labels
   "Switch theme: dark, light or follow Windows / macOS": "تبديل المظهر: داكن أو فاتح أو حسب ويندوز / ماك", "EGX stock code": "رمز السهم في البورصة المصرية",
-  "Official US dollar rate (Yahoo Finance)": "سعر الدولار الرسمي (Yahoo Finance)", "Open the Beedo-Trade user guide": "فتح دليل مستخدم Beedo-Trade",
+  "Official US dollar rate (Yahoo Finance)": "سعر الدولار الرسمي (Yahoo Finance)", "Open the Mo'ashir Trade user guide": "فتح دليل مستخدم مؤشر تريد",
   "Open the download page": "فتح صفحة التحميل", "New alerts": "تنبيهات جديدة", "Analyse daily prices from a CSV file": "حلّل الأسعار اليومية من ملف CSV",
   "Print this analysis, or save it as a PDF file": "اطبع هذا التحليل أو احفظه ملف PDF", "Signal ladder": "سلّم الإشارات", "Chart period": "فترة الرسم البياني",
   "Charting by TradingView": "الرسوم البيانية من TradingView", "Add stock": "إضافة سهم", "Remove alert": "حذف التنبيه", "Settings code": "رمز الإعدادات",
@@ -177,9 +178,9 @@ const AR = {
   "Couldn't load company figures": "تعذّر تحميل أرقام الشركة", "Couldn't save": "تعذّر الحفظ", "Couldn't update the signal": "تعذّر تحديث الإشارة",
   "Couldn't load weekly prices": "تعذّر تحميل الأسعار الأسبوعية", "Couldn't load the portfolio": "تعذّر تحميل المحفظة", "Couldn't load prices": "تعذّر تحميل الأسعار",
   "Back-test failed": "تعذّر تشغيل الاختبار التاريخي", "Couldn't check for updates. Check your internet connection.": "تعذّر البحث عن تحديثات. تحقّق من اتصال الإنترنت.",
-  "Rating every EGX company, then checking the best ones with your course method…": "جارٍ تقييم كل شركات البورصة المصرية ثم فحص أفضلها بمنهج دورتك…",
+  "Rating every EGX company, then checking the best ones with the 12-indicator checklist…": "جارٍ تقييم كل شركات البورصة المصرية ثم فحص أفضلها بقائمة المؤشرات الاثني عشر…",
   "No company matches right now. Try \"Strong or Fair\" or \"Any buy, including Alarm Buy\".": "لا توجد شركة مطابقة الآن. جرّب «القوية أو المتوسطة» أو «أي شراء، ومنه تنبيه الشراء».",
-  "Certificate problem: the app can't verify the secure connection. Update to the latest Beedo-Trade version, or reinstall it.": "مشكلة في الشهادة: البرنامج لا يستطيع التحقق من الاتصال الآمن. حدّث إلى أحدث إصدار من Beedo-Trade أو أعد تثبيته.",
+  "Certificate problem: the app can't verify the secure connection. Update to the latest Mo'ashir Trade version, or reinstall it.": "مشكلة في الشهادة: البرنامج لا يستطيع التحقق من الاتصال الآمن. حدّث إلى أحدث إصدار من مؤشر تريد أو أعد تثبيته.",
   "Yahoo Finance may not carry this stock. Try": "قد لا يغطي Yahoo Finance هذا السهم. جرّب", "with daily prices (date, open, high, low, close, volume).": "بأسعار يومية (التاريخ، الافتتاح، الأعلى، الأدنى، الإغلاق، الحجم).",
   "Check your internet connection, firewall or VPN, then try again.": "تحقّق من اتصال الإنترنت أو الجدار الناري أو الـVPN ثم حاول مرة أخرى.", "Check the code and try again.": "تحقّق من الرمز وحاول مرة أخرى.",
   "40 · gold cheap": "40 · الذهب رخيص", "120 · silver cheap": "120 · الفضة رخيصة",
@@ -197,7 +198,7 @@ const AR = {
   "From the 52-week low and high (TradingView).": "من أدنى وأعلى سعر خلال 52 أسبوعًا (TradingView).", "From TradingView's monthly pivots.": "من نقاط الارتكاز الشهرية في TradingView.",
   "TradingView has no usable pivots for this stock.": "لا توجد في TradingView نقاط ارتكاز صالحة لهذا السهم.",
   "No recent support below the price to place a stop.": "لا يوجد دعم حديث أسفل السعر لوضع وقف الخسارة عنده.",
-  "The first resistance is less than 1R away: poor risk-reward. The course says don't buy near resistance.": "أول مقاومة على مسافة أقل من 1R: العائد ضعيف مقارنة بالمخاطرة. تنصح الدورة بعدم الشراء قرب المقاومة.",
+  "The first resistance is less than 1R away: poor risk-reward. Don't buy near resistance.": "أول مقاومة على مسافة أقل من 1R: العائد ضعيف مقارنة بالمخاطرة. لا تشترِ قرب المقاومة.",
   "Not enough price history to back-test.": "لا توجد أسعار تاريخية كافية للاختبار التاريخي.",
   "overbought >=70": "تشبّع شرائي ≥ 70", "oversold <=30": "تشبّع بيعي ≤ 30", "bullish 50-70": "إيجابية 50-70", "bearish 30-50": "سلبية 30-50", "centerline 50": "عند خط المنتصف 50",
   "Doji (indecision)": "دوجي (تردد)", "Hammer (bullish reversal)": "مطرقة (انعكاس صاعد)", "Hanging Man (bearish reversal)": "الرجل المشنوق (انعكاس هابط)",
@@ -224,15 +225,15 @@ const AR = {
   "TradingView has no company data for this code.": "لا توجد في TradingView بيانات شركة لهذا الرمز.",
 
   // 2.3: back-test and time machine settings
-  "Replays the checklist day by day over the period you choose. The course setting buys at the close on a First or Confirm Buy and sells on a First or Confirm Sell. Enter your broker's commission plus taxes as the fee: it is paid on each buy and each sell. Past results do not predict future results.":
-    "يعيد تطبيق قائمة المؤشرات يومًا بيوم على الفترة التي تختارها. إعداد الدورة يشتري عند الإغلاق مع إشارة شراء أولي أو تأكيد شراء، ويبيع مع إشارة بيع أولي أو تأكيد بيع. أدخل عمولة السمسار مع الضرائب كرسوم: تُدفع عند كل شراء وكل بيع. نتائج الماضي لا تتنبأ بالمستقبل.",
+  "Replays the checklist day by day over the period you choose. The default setting buys at the close on a First or Confirm Buy and sells on a First or Confirm Sell. Enter your broker's commission plus taxes as the fee: it is paid on each buy and each sell. Past results do not predict future results.":
+    "يعيد تطبيق قائمة المؤشرات يومًا بيوم على الفترة التي تختارها. الإعداد الافتراضي يشتري عند الإغلاق مع إشارة شراء أولي أو تأكيد شراء، ويبيع مع إشارة بيع أولي أو تأكيد بيع. أدخل عمولة السمسار مع الضرائب كرسوم: تُدفع عند كل شراء وكل بيع. نتائج الماضي لا تتنبأ بالمستقبل.",
   "Period": "الفترة", "1 year": "سنة", "2 years": "سنتان", "5 years": "5 سنوات", "Buy on": "الشراء عند", "Sell on": "البيع عند",
   "Confirm Buy only": "تأكيد الشراء فقط", "Confirm Sell only": "تأكيد البيع فقط", "First or Confirm Sell": "بيع أولي أو تأكيد بيع",
   "Any sell, including Alarm Sell": "أي بيع، ومنه تنبيه البيع", "Fee per buy and per sell (%)": "الرسوم لكل شراء ولكل بيع (%)",
-  "Reset to course defaults": "العودة لإعدادات الدورة", "Your settings differ from the course defaults.": "إعداداتك تختلف عن إعدادات الدورة.",
+  "Reset to defaults": "العودة للإعدادات الافتراضية", "Your settings differ from the defaults.": "إعداداتك تختلف عن الإعدادات الافتراضية.",
   "The method gave no buy signal at your buy level in this period, so it stayed in cash.": "لم يعطِ المنهج إشارة شراء عند المستوى الذي اخترته في هذه الفترة، فبقي في السيولة.",
-  "How often would a buy plan reach its target before its stop? The course setting uses the trade plan above (entry at the last close, stop below support, target 2 times the risk) over the next 20 trading days. It replays those days 10,000 times from this stock's own daily moves of the past two years, and checks the same plan on past days that had the same signal. A simulation, not a prediction.":
-    "كم مرة تصل خطة الشراء إلى الهدف قبل وقف الخسارة؟ إعداد الدورة يستخدم خطة الصفقة أعلاه (الدخول عند آخر إغلاق، ووقف الخسارة تحت الدعم، والهدف ضعف المخاطرة) خلال أيام التداول العشرين القادمة. تعيد آلة الزمن تشغيل هذه الأيام 10,000 مرة من حركات السهم اليومية خلال العامين الماضيين، وتختبر نفس الخطة في الأيام السابقة التي ظهرت فيها نفس الإشارة. هذه محاكاة وليست توقعًا.",
+  "How often would a buy plan reach its target before its stop? The default setting uses the trade plan above (entry at the last close, stop below support, target 2 times the risk) over the next 20 trading days. It replays those days 10,000 times from this stock's own daily moves of the past two years, and checks the same plan on past days that had the same signal. A simulation, not a prediction.":
+    "كم مرة تصل خطة الشراء إلى الهدف قبل وقف الخسارة؟ الإعداد الافتراضي يستخدم خطة الصفقة أعلاه (الدخول عند آخر إغلاق، ووقف الخسارة تحت الدعم، والهدف ضعف المخاطرة) خلال أيام التداول العشرين القادمة. تعيد آلة الزمن تشغيل هذه الأيام 10,000 مرة من حركات السهم اليومية خلال العامين الماضيين، وتختبر نفس الخطة في الأيام السابقة التي ظهرت فيها نفس الإشارة. هذه محاكاة وليست توقعًا.",
   "Days ahead": "عدد الأيام القادمة", "Target (times the risk)": "الهدف (مضاعف المخاطرة)", "Entry (EGP)": "الدخول (جنيه)", "Stop (EGP)": "وقف الخسارة (جنيه)",
   "Last close": "آخر إغلاق", "Below support": "تحت الدعم", "The stop must be below the entry price.": "يجب أن يكون وقف الخسارة أقل من سعر الدخول.",
   "The back-test settings must be numbers.": "إعدادات الاختبار التاريخي يجب أن تكون أرقامًا.", "The time machine settings must be numbers.": "إعدادات آلة الزمن يجب أن تكون أرقامًا.",
@@ -270,8 +271,8 @@ const AR = {
   "Fill in every rule with a number.": "اكتب رقمًا في كل قاعدة.", "Some rules are outside their allowed range.": "بعض القواعد خارج الحدود المسموحة.",
   "Example plan from your rules": "خطة مثال من قواعدك", "Amount to plan (EGP)": "المبلغ المراد التخطيط له (جنيه)", "Build example plan": "ابنِ الخطة المثال", "Building…": "جارٍ البناء…",
   "This is an example, not a recommendation.": "هذا مثال وليس توصية.",
-  "It applies the rules you chose and the course method to today's data. It does not know your full financial situation and is not investment advice. Check each stock yourself; you decide what to buy.":
-    "يطبّق القواعد التي اخترتها ومنهج الدورة على بيانات اليوم. لا يعرف وضعك المالي الكامل وليس نصيحة استثمارية. راجع كل سهم بنفسك، والقرار لك.",
+  "It applies the rules you chose and the 12-indicator checklist to today's data. It does not know your full financial situation and is not investment advice. Check each stock yourself; you decide what to buy.":
+    "يطبّق القواعد التي اخترتها وقائمة المؤشرات الاثني عشر على بيانات اليوم. لا يعرف وضعك المالي الكامل وليس نصيحة استثمارية. راجع كل سهم بنفسك، والقرار لك.",
   "Amount": "المبلغ", "Invested": "المستثمر", "Cash kept aside": "السيولة الاحتياطية", "Entry": "الدخول", "Stop": "وقف الخسارة", "Share of the total": "النسبة من الإجمالي",
   "Answer the questions in My trading rules first.": "أجب أولًا عن أسئلة «قواعد التداول الخاصة بي».", "Enter an amount of at least 1,000 EGP.": "أدخل مبلغًا لا يقل عن 1,000 جنيه.",
   "Couldn't build the plan": "تعذّر بناء الخطة",
@@ -363,8 +364,8 @@ const AR_RULES = [
   [/^(\d{4}-\d\d-\d\d) to (\d{4}-\d\d-\d\d)$/, (m) => `من ${m[1]} إلى ${m[2]}`],
   [/^([\d,]+) replays, seed (\d+), daily moves from (\S+) to (\S+)\. A day that touches both the stop and the target counts as the stop\.$/,
     (m) => `${m[1]} محاكاة، البذرة ${m[2]}، من حركات يومية بين ${m[3]} و${m[4]}. اليوم الذي يلمس وقف الخسارة والهدف معًا يُحسب وقف خسارة.`],
-  [/^Rated (\d+) companies · (\d+) met the quality filter · checked the top (\d+) with the course checklist(?: · (\d+) skipped \(no price history\))? · (\d+) match\. Click a column header to sort\.$/,
-    (m) => `قُيّمت ${m[1]} شركة · ${m[2]} اجتازت شرط الجودة · فُحصت أفضل ${m[3]} بقائمة الدورة${m[4] ? ` · تُجووزت ${m[4]} (بلا أسعار تاريخية)` : ""} · ${m[5]} مطابقة. اضغط عنوان أي عمود للترتيب.`],
+  [/^Rated (\d+) companies · (\d+) met the quality filter · checked the top (\d+) with the 12-indicator checklist(?: · (\d+) skipped \(no price history\))? · (\d+) match\. Click a column header to sort\.$/,
+    (m) => `قُيّمت ${m[1]} شركة · ${m[2]} اجتازت شرط الجودة · فُحصت أفضل ${m[3]} بقائمة المؤشرات الاثني عشر${m[4] ? ` · تُجووزت ${m[4]} (بلا أسعار تاريخية)` : ""} · ${m[5]} مطابقة. اضغط عنوان أي عمود للترتيب.`],
   [/^Checking (\d+) stocks…$/, (m) => `جارٍ فحص ${m[1]} أسهم…`],
   [/^Version (\S+)\. Your settings are saved in (.+)\.$/, (m) => `الإصدار ${m[1]}. إعداداتك محفوظة في ${m[2]}.`],
   [/^Remove (\S+)$/, (m) => `حذف ${m[1]}`],

@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Beedo-Trade</title>
+<title>Mo'ashir Trade</title>
 <link rel="stylesheet" href="app.css">
 </head>
 <body>
@@ -11,7 +11,7 @@
   <aside class="sidebar">
     <div class="brand">
       <img class="logo" src="icon.png" alt="" aria-hidden="true">
-      <div><div class="brand-name">Beedo-Trade <span class="ver" id="verTag"></span></div><div class="brand-sub">EGX course method</div></div>
+      <div><div class="brand-name">Mo'ashir Trade <span class="ver" id="verTag"></span></div><div class="brand-sub">EGX technical analysis</div></div>
     </div>
     <nav>
       <button class="nav-item active" data-page="analyze"><svg viewBox="0 0 24 24"><path d="M4 19V5M4 19h16M8 15l3-4 3 2 5-6"/></svg>Analyze</button>
@@ -24,7 +24,7 @@
     <div class="sidebar-foot">
       <div class="fx hidden" id="fxBox" title="Official US dollar rate (Yahoo Finance)"><span class="k">USD / EGP</span><b id="fxRate"></b><span class="tiny" id="fxChg"></span></div>
       <button id="updateBtn" class="primary small hidden" title="Open the download page"></button>
-      <button id="guideBtn" class="ghost small" title="Open the Beedo-Trade user guide">User guide</button>
+      <button id="guideBtn" class="ghost small" title="Open the Mo'ashir Trade user guide">User guide</button>
       <button id="themeBtn" class="ghost small" title="Switch theme: dark, light or follow Windows / macOS">Theme</button>
       <button id="langBtn" class="ghost small" title="Switch language / تغيير اللغة">العربية</button>
       <div class="muted tiny" id="version"></div>
@@ -48,7 +48,7 @@
       <div id="health" class="health hidden" aria-live="polite"></div>
 
       <div id="empty" class="empty">
-        <h1>Analyse an EGX stock with your course method</h1>
+        <h1>Analyse an EGX stock</h1>
         <p class="muted">Type a 4-letter code, or pick one below. You get the signal, the actions for your position, the chart and the 12-indicator checklist.</p>
         <div id="quick" class="chips"></div>
       </div>
@@ -130,7 +130,7 @@
             </div>
             <p class="muted" id="fundWhy"></p>
             <div class="fund-grid" id="fundGrid"></div>
-            <p class="muted tiny" id="fundNote">Standard rules on the last 12 months of reported results (TradingView). Each figure is compared with similar companies. Not part of the Beedo technical course.</p>
+            <p class="muted tiny" id="fundNote">Standard rules on the last 12 months of reported results (TradingView). Each figure is compared with similar companies. Not part of the technical signal.</p>
           </div>
 
           <div class="card span2">
@@ -156,29 +156,29 @@
         </div>
         <div class="card" id="btCard" style="margin-top:16px">
           <div class="card-head"><h3>Back-test</h3><button id="btBtn" class="ghost small">Run back-test</button></div>
-          <p class="muted">Replays the checklist day by day over the period you choose. The course setting buys at the close on a First or Confirm Buy and sells on a First or Confirm Sell. Enter your broker's commission plus taxes as the fee: it is paid on each buy and each sell. Past results do not predict future results.</p>
+          <p class="muted">Replays the checklist day by day over the period you choose. The default setting buys at the close on a First or Confirm Buy and sells on a First or Confirm Sell. Enter your broker's commission plus taxes as the fee: it is paid on each buy and each sell. Past results do not predict future results.</p>
           <form id="btForm" class="filters settings-row">
             <label>Period<select id="btYears"><option value="1">1 year</option><option value="2" selected>2 years</option><option value="5">5 years</option></select></label>
             <label>Buy on<select id="btBuy"><option value="3">Confirm Buy only</option><option value="2" selected>First or Confirm Buy</option><option value="1">Any buy, including Alarm Buy</option></select></label>
             <label>Sell on<select id="btSell"><option value="-3">Confirm Sell only</option><option value="-2" selected>First or Confirm Sell</option><option value="-1">Any sell, including Alarm Sell</option></select></label>
             <label>Fee per buy and per sell (%)<input id="btFee" type="number" min="0" max="5" step="0.05" value="0"></label>
-            <button type="button" id="btReset" class="ghost small">Reset to course defaults</button>
+            <button type="button" id="btReset" class="ghost small">Reset to defaults</button>
           </form>
           <div id="btOut"></div>
         </div>
         <div class="card" id="tmCard" style="margin-top:16px">
           <div class="card-head"><h3>Time machine</h3><button id="tmBtn" class="ghost small">Run time machine</button></div>
-          <p class="muted">How often would a buy plan reach its target before its stop? The course setting uses the trade plan above (entry at the last close, stop below support, target 2 times the risk) over the next 20 trading days. It replays those days 10,000 times from this stock's own daily moves of the past two years, and checks the same plan on past days that had the same signal. A simulation, not a prediction.</p>
+          <p class="muted">How often would a buy plan reach its target before its stop? The default setting uses the trade plan above (entry at the last close, stop below support, target 2 times the risk) over the next 20 trading days. It replays those days 10,000 times from this stock's own daily moves of the past two years, and checks the same plan on past days that had the same signal. A simulation, not a prediction.</p>
           <form id="tmForm" class="filters settings-row">
             <label>Days ahead<select id="tmDays"><option value="10">10</option><option value="20" selected>20</option><option value="40">40</option><option value="60">60</option></select></label>
             <label>Target (times the risk)<select id="tmRR"><option value="1.5">1.5</option><option value="2" selected>2</option><option value="3">3</option></select></label>
             <label>Entry (EGP)<input id="tmEntry" type="number" min="0" step="any" placeholder="Last close"></label>
             <label>Stop (EGP)<input id="tmStop" type="number" min="0" step="any" placeholder="Below support"></label>
-            <button type="button" id="tmReset" class="ghost small">Reset to course defaults</button>
+            <button type="button" id="tmReset" class="ghost small">Reset to defaults</button>
           </form>
           <div id="tmOut"></div>
         </div>
-        <p class="muted tiny disclaimer">Learning and decision-support tool applying the Beedo technical-analysis course. Not investment advice. Free data can be delayed: check the live price and the day's EGX disclosures before trading.</p>
+        <p class="muted tiny disclaimer">Learning and decision-support tool for technical analysis. Not investment advice. Free data can be delayed: check the live price and the day's EGX disclosures before trading.</p>
       </div>
     </section>
 
@@ -190,7 +190,7 @@
           <input id="addSym" placeholder="Add EGX code" maxlength="6" spellcheck="false" aria-label="Add stock">
           <button class="ghost" type="submit">Add</button>
         </form>
-        <button id="wExport" class="ghost" data-export="#wTable" data-name="Beedo-Trade-watchlist">Export to Excel</button>
+        <button id="wExport" class="ghost" data-export="#wTable" data-name="Moashir-Trade-watchlist">Export to Excel</button>
         <button id="scanBtn" class="primary">Scan all</button>
       </header>
       <div id="wChips" class="chips editable"></div>
@@ -219,8 +219,8 @@
     <section class="page" id="page-portfolio">
       <header class="page-head">
         <div><h1>Portfolio</h1>
-        <p class="muted">What you own, what it is worth at the last close, and what the course says a shareholder should do.</p></div>
-        <div class="btn-row"><button class="ghost" data-export="#pTable" data-name="Beedo-Trade-portfolio">Export to Excel</button>
+        <p class="muted">What you own, what it is worth at the last close, and what the signal says a shareholder should do.</p></div>
+        <div class="btn-row"><button class="ghost" data-export="#pTable" data-name="Moashir-Trade-portfolio">Export to Excel</button>
         <button id="pRefresh" class="primary">Refresh</button></div>
       </header>
       <form id="pForm" class="card filters">
@@ -248,7 +248,7 @@
           <label>Amount to plan (EGP)<input id="buildAmount" type="number" min="1000" step="1000"></label>
           <button id="buildBtn" class="primary" type="submit">Build example plan</button>
         </form>
-        <div class="notice"><b>This is an example, not a recommendation.</b> It applies the rules you chose and the course method to today's data. It does not know your full financial situation and is not investment advice. Check each stock yourself; you decide what to buy.</div>
+        <div class="notice"><b>This is an example, not a recommendation.</b> It applies the rules you chose and the 12-indicator checklist to today's data. It does not know your full financial situation and is not investment advice. Check each stock yourself; you decide what to buy.</div>
         <div id="buildOut"></div>
       </div>
       <p class="muted tiny disclaimer">Your holdings are saved only on this computer. Values use the last daily close, which can be delayed. Not investment advice.</p>
@@ -258,7 +258,7 @@
     <section class="page" id="page-metals">
       <header class="page-head">
         <div><h1>Gold &amp; Silver</h1>
-        <p class="muted">International prices in Egyptian pounds, with your course method applied to each metal.</p></div>
+        <p class="muted">International prices in Egyptian pounds, with the 12-indicator checklist applied to each metal.</p></div>
         <button id="metalsRefresh" class="ghost">Refresh</button>
       </header>
       <div id="metalsError" class="notice error hidden"></div>
@@ -271,7 +271,7 @@
     <!-- ================= SCREENER ================= -->
     <section class="page" id="page-screener">
       <h1>Screener</h1>
-      <p class="muted">Find strong companies that your course method says are in a buy zone, across the whole Egyptian Exchange.</p>
+      <p class="muted">Find strong companies that the 12-indicator checklist says are in a buy zone, across the whole Egyptian Exchange.</p>
       <div class="card filters">
         <label>Company quality
           <select id="fQuality"><option value="2">Strong only</option><option value="1">Strong or Fair</option></select></label>
@@ -280,7 +280,7 @@
         <label>Sector
           <select id="fSector"><option value="">All sectors</option></select></label>
         <button id="runScreener" class="primary">Run screener</button>
-        <button class="ghost" data-export="#sTable" data-name="Beedo-Trade-screener">Export to Excel</button>
+        <button class="ghost" data-export="#sTable" data-name="Moashir-Trade-screener">Export to Excel</button>
       </div>
       <p class="muted tiny" id="sSummary"></p>
       <div class="card table-wrap">
@@ -290,7 +290,7 @@
         </table>
       </div>
       <div class="card table-wrap" style="margin-top:16px">
-        <div class="card-head"><h3>Industry health</h3><button class="ghost small" data-export="#iTable" data-name="Beedo-Trade-industries">Export to Excel</button></div>
+        <div class="card-head"><h3>Industry health</h3><button class="ghost small" data-export="#iTable" data-name="Moashir-Trade-industries">Export to Excel</button></div>
         <p class="muted tiny">Healthy: at least 60% of the industry's stocks are above both their 50-day and 200-day averages. Weak: 40% or fewer above both. Industries with fewer than 3 stocks get no label. TradingView, end of day.</p>
         <table class="table" id="iTable">
           <thead><tr><th>Industry</th><th class="num">Stocks</th><th class="num">Above 50-day</th><th class="num">Above 200-day</th><th class="num">Up / down today</th><th class="num">Avg change</th><th>Health</th></tr></thead>
@@ -298,7 +298,7 @@
         </table>
       </div>
       <div class="card table-wrap" style="margin-top:16px">
-        <div class="card-head"><h3>Dividends</h3><button class="ghost small" data-export="#dTable" data-name="Beedo-Trade-dividends">Export to Excel</button></div>
+        <div class="card-head"><h3>Dividends</h3><button class="ghost small" data-export="#dTable" data-name="Moashir-Trade-dividends">Export to Excel</button></div>
         <p class="muted tiny">Cash dividends and bonus shares of the last 5 years, from Yahoo Finance, and the payout to expect next from that history. Expected payouts are a pattern from history, not an announcement: the company's general assembly decides. Past amounts are adjusted for later bonus shares.</p>
         <div class="filters">
           <label>Show<select id="dKind"><option value="">All payers</option><option value="Cash">Cash</option><option value="Stock">Bonus shares</option><option value="Both">Both</option></select></label>
@@ -316,8 +316,8 @@
     <!-- ================= ABOUT ================= -->
     <section class="page" id="page-about">
       <div class="about">
-        <h1>About Beedo-Trade</h1>
-        <p>Beedo-Trade applies the Beedo technical-analysis course to Egyptian Exchange stocks, the same way every time: 12 indicators (the 11 course indicators plus MACD), one signal, and separate advice for a cash holder and a shareholder.</p>
+        <h1>About Mo'ashir Trade</h1>
+        <p>Mo'ashir Trade applies technical analysis to Egyptian Exchange stocks, the same way every time: 12 indicators (11 chart indicators plus MACD), one signal, and separate advice for a cash holder and a shareholder.</p>
         <div class="grid">
           <div class="card span3">
             <h3>The signal ladder</h3>
@@ -328,7 +328,7 @@
             <h3>Where the numbers come from</h3>
             <ul class="plain">
               <li>Prices: daily history from Yahoo Finance (e.g. COMI → COMI.CA), and the last two trading days from TradingView, 15 minutes delayed (during trading hours, today so far). The larger, widely traded EGX stocks are covered; for others, use <b>Import CSV</b> with date, open, high, low, close and volume columns.</li>
-              <li>Indicators: moving averages you choose (default 5 / 9 / 18, the course's own), MACD 12 / 26 / 9, RSI 14 (Wilder), swing highs and lows, support and resistance, 20-day volume average, reversal candles and gaps.</li>
+              <li>Indicators: moving averages you choose (default 5 / 9 / 18), MACD 12 / 26 / 9, RSI 14 (Wilder), swing highs and lows, support and resistance, 20-day volume average, reversal candles and gaps.</li>
               <li>Chart and pattern indicators 10 and 11 are judged on the chart: the swing points are marked for you.</li>
               <li>Company fundamentals: TradingView's market data (last 12 months of reported results), rated with standard rules and compared with similar companies. Smaller companies often have too few reported figures to rate.</li>
             </ul>
