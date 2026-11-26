@@ -561,13 +561,14 @@ document.addEventListener("click", async (e) => {
 $$("#tf button").forEach((b) => b.addEventListener("click", async () => {
   if (!current) return;
   const weekly = b.dataset.tf === "w";
-  if (weekly && !current.weekly) {
+  // weeklyChart, not weekly: current.weekly is the weekly signal from the analysis
+  if (weekly && !current.weeklyChart) {
     const w = await api("weekly", current.symbol);
     if (!w || w.error) return toast(w ? w.error : "Couldn't load weekly prices");
-    current.weekly = w;
+    current.weeklyChart = w;
   }
   $$("#tf button").forEach((x) => x.setAttribute("aria-checked", String(x === b)));
-  drawCharts(current, weekly ? current.weekly : current.chart);
+  drawCharts(current, weekly ? current.weeklyChart : current.chart);
 }));
 
 /* ---------- 1.5: back-test ---------- */
