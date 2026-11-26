@@ -33,7 +33,7 @@ def fetch(symbol, rng="2y"):  # 2 years: a 200-day MA needs 206 trading days
     ysym = symbol.upper() if ("." in symbol or "=" in symbol) else symbol.upper() + ".CA"  # GC=F, EGP=X etc. are passed as-is
     data, err = None, None
     for host in ("query1", "query2"):  # query2 sometimes answers when query1 is blocked
-        url = f"https://{host}.finance.yahoo.com/v8/finance/chart/{ysym}?range={rng}&interval=1d"
+        url = f"https://{host}.finance.yahoo.com/v8/finance/chart/{ysym}?range={rng}&interval=1d&events=div"
         req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0"})
         try:
             with urllib.request.urlopen(req, timeout=20) as r:
@@ -64,6 +64,12 @@ def fetch(symbol, rng="2y"):  # 2 years: a 200-day MA needs 206 trading days
         h, l = max(o, h, l, c), min(o, h, l, c)  # Yahoo sometimes reports a low above the open
         bars.append(dict(d=dt.datetime.fromtimestamp(t, dt.timezone.utc).date().isoformat(),
                          o=round(o, 2), h=round(h, 2), l=round(l, 2), c=round(c, 2), v=v or 0))
+    # ex-dividend days: the price drops by about the dividend, which is not a market gap (see the gap step)
+    exdiv = {dt.datetime.fromtimestamp(v["date"], dt.timezone.utc).date().isoformat(): v["amount"]
+             for v in ((res.get("events") or {}).get("dividends") or {}).values() if v.get("amount")}
+    for b in bars:
+        if b["d"] in exdiv:
+            b["div"] = round(exdiv[b["d"]], 4)
     name = res["meta"].get("longName") or ysym
     if ysym.endswith(".CA"):  # EGX: the latest sessions from TradingView, 15 minutes delayed
         bars = with_latest(bars, ysym[:-3])
@@ -351,8 +357,11 @@ def analyze(bars):
                          "vol_ratio": round(b["v"] / avg20, 2) if avg20 else None, "filled_since": filled})
         elif b["h"] < p["l"]:
             filled = any(x["h"] >= p["l"] for x in bars[j + 1:])
-            gaps.append({"date": b["d"], "dir": "DOWN", "from": p["l"], "to": b["h"],
-                         "vol_ratio": round(b["v"] / avg20, 2) if avg20 else None, "filled_since": filled})
+            g = {"date": b["d"], "dir": "DOWN", "from": p["l"], "to": b["h"],
+                 "vol_ratio": round(b["v"] / avg20, 2) if avg20 else None, "filled_since": filled}
+            if b.get("div") and p["l"] - b["h"] <= 1.2 * b["div"]:
+                g["ex_dividend"] = b["div"]  # the dividend came off the price: not a selling gap
+            gaps.append(g)
     r["gaps_30d"] = gaps or "none"
     r["closes_last10"] = [(b["d"], round(b["c"], 2)) for b in bars[-10:]]
 

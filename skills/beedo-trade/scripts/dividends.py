@@ -88,7 +88,7 @@ def text(r):
     if r["last_bonus"]:
         lines.append(f"  Last bonus shares: 1 free share for every {r['last_bonus']['one_for']:g} on {r['last_bonus']['date']}.")
     e = r["expected"]
-    lines.append(f"  Expected next: {e['kind'].lower()} around {e['month']} ({'a regular payer' if e['regular'] else 'pays often'}). "
+    lines.append(f"  Expected next ex-dividend month: {e['kind'].lower()} around {e['month']} ({'a regular payer' if e['regular'] else 'pays often'}). "
                  "A pattern from history, not an announcement." if e else "  No regular pattern: no payout to expect.")
     return "\n".join(lines)
 
