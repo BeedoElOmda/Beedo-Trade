@@ -61,7 +61,7 @@ class BeedoTrade(toga.App):
             self.web._impl.native.getSettings().setDomStorageEnabled(True)
         except Exception:
             traceback.print_exc()
-        self.web.set_content("http://127.0.0.1/", STARTING.replace("{msg}", "Starting Beedo-Trade…"))
+        self.web.set_content("http://127.0.0.1/", STARTING.replace("{msg}", "Starting Mo'ashir Trade…"))
         self.main_window = toga.MainWindow(title=self.formal_name)
         self.main_window.content = self.web
         self.main_window.show()
@@ -89,7 +89,7 @@ class BeedoTrade(toga.App):
                 self.web.url = f"http://127.0.0.1:{PORT}/index.html"
                 return
             await asyncio.sleep(0.2)
-        self.web.set_content("http://127.0.0.1/", STARTING.replace("{msg}", "Beedo-Trade could not start its engine. Close the app and open it again."))
+        self.web.set_content("http://127.0.0.1/", STARTING.replace("{msg}", "Mo'ashir Trade could not start its engine. Close the app and open it again."))
 
 
 def main():

@@ -13,7 +13,7 @@ def notifier(ctx):
     worker = jclass(WORKER)
 
     def notify(hit):
-        worker.show(ctx, zlib.crc32(hit["text"].encode()) & 0x7FFFFFFF, f"Beedo-Trade: {hit['symbol']}", hit["text"])
+        worker.show(ctx, zlib.crc32(hit["text"].encode()) & 0x7FFFFFFF, f"Mo'ashir Trade: {hit['symbol']}", hit["text"])
     return notify
 
 
