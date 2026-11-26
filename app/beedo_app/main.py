@@ -23,7 +23,7 @@ else:
 
 import analyze  # noqa: E402  (shared with the Claude skill, so numbers always match)
 import dividends, fundamentals, metals, timemachine  # noqa: E402  (also shared with the skill)
-from beedo_app import engine  # noqa: E402
+from beedo_app import engine, licence  # noqa: E402
 
 from beedo_app import __version__ as VERSION  # noqa: E402  (single source: beedo_app/__init__.py)
 MAC = sys.platform == "darwin"
@@ -42,7 +42,7 @@ OPEN_URL = None  # the phone app sets this: Python's webbrowser can't open links
 ANDROID = hasattr(sys, "getandroidapilevel") or "ANDROID_ROOT" in os.environ
 PLAY_URL = "https://play.google.com/store/apps/details?id=io.github.beedoelomda.beedotrade"
 RULE_RANGES = {"risk_pct": (0.25, 5), "max_stock_pct": (5, 50), "max_stocks": (1, 15), "cash_pct": (0, 90),
-               "max_sector_pct": (10, 100), "min_quality": (0, 2), "min_rung": (1, 3)}  # my trading rules: allowed values
+               "max_sector_pct": (10, 100), "min_quality": (0, 2), "min_rung": (1, 3), "max_loss_pct": (2, 50)}  # my trading rules: allowed values
 
 
 def _valid_ma(ma):
@@ -170,7 +170,30 @@ class Api:
         except Exception as e:
             return {"error": str(e), "quality": {"label": "Not enough data", "level": None, "score": None, "why": str(e)}, "rules": []}
 
+    # ---------- trial version ----------
+    def trial(self):
+        """Trial end date, days left, this device's code, and whether an unlock code opens it."""
+        s = self.get_settings()
+        if not s.get("install_id"):  # Android has no machine id: a random id, kept with the settings
+            s = self.save_settings({"install_id": licence.new_install_id()})
+        return licence.status(licence.device_code(s["install_id"]), s.get("unlock"))
+
+    def unlock(self, code):
+        t = self.trial()
+        ok, until = licence.read_code(code, t["device"])
+        if not ok:
+            return {"error": "That unlock code isn't valid for this device."}
+        if until and until < licence.dt.date.today():
+            return {"error": "This unlock code has expired."}
+        self.save_settings({"unlock": "".join(ch for ch in code.upper() if ch.isalnum())})
+        return self.trial()
+
+    def _locked(self):
+        return licence.dt.date.today() > licence.TRIAL_END and self.trial()["locked"]
+
     def analyze(self, symbol):
+        if self._locked():
+            return {"error": "The trial has ended. Enter an unlock code."}
         sym = (symbol or "").strip().upper()
         if not sym.isalnum() or not 2 <= len(sym) <= 6:
             return {"error": "Enter an EGX code such as COMI, TMGH or SWDY."}
@@ -188,6 +211,8 @@ class Api:
             return {"error": str(e), "symbol": sym}
 
     def analyze_csv(self, symbol=""):
+        if self._locked():
+            return {"error": "The trial has ended. Enter an unlock code."}
         paths = self._window.create_file_dialog(webview.OPEN_DIALOG, file_types=("CSV files (*.csv)", "All files (*.*)"))
         if not paths:
             return {"cancelled": True}
@@ -253,6 +278,8 @@ class Api:
             return {"symbol": sym, "error": str(e)}
 
     def scan(self, symbols):
+        if self._locked():
+            return []
         syms = [s.strip().upper() for s in symbols or [] if s.strip()][:40]
         with ThreadPoolExecutor(max_workers=6) as ex:
             return list(ex.map(self._technical_row, syms))
@@ -301,7 +328,7 @@ class Api:
             return {"error": "Answer all six questions."}
         if p.get("error"):
             return p
-        self.save_settings({"profile": {"answers": [int(x) for x in answers], **{k: p[k] for k in ("score", "label", "capped", "income")}},
+        self.save_settings({"profile": {"answers": [int(x) for x in answers], **{k: p[k] for k in ("score", "label", "willingness", "ability", "capped", "income")}},
                             "rules": p["rules"], "risk_pct": p["rules"]["risk_pct"]})
         return p
 
@@ -443,6 +470,8 @@ class Api:
 
     def check_alerts(self):
         """Price alerts reached, and signals that changed since the last check, for the watchlist, alerts and portfolio."""
+        if self._locked():
+            return {"hits": []}  # no phone notifications after the trial
         s = self.get_settings()
         rows = {k: r for k, r in self._rows(s["watchlist"] + [a["symbol"] for a in s["alerts"]] +
                                             [h["symbol"] for h in s["portfolio"]]).items() if not r.get("error")}

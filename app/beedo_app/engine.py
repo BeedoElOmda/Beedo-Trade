@@ -143,8 +143,11 @@ def evaluate(r):
 
     # 9. Gaps: newest real gap still open
     gaps = r["gaps_30d"] if isinstance(r["gaps_30d"], list) else []
-    open_gaps = [g for g in gaps if not g["filled_since"]]
+    open_gaps = [g for g in gaps if not g["filled_since"] and not g.get("ex_dividend")]
     rung, txt, note = 0, "No open gaps in the last 30 days", ""
+    exd = [g for g in gaps if g.get("ex_dividend")]
+    if exd and not open_gaps:
+        txt = f"Ex-dividend drop on {exd[-1]['date']} ({exd[-1]['ex_dividend']} EGP dividend), not a signal"
     if open_gaps:
         g = open_gaps[-1]
         strong = (g["vol_ratio"] or 0) >= 1.5
@@ -400,30 +403,42 @@ RULES = {  # risk per trade %, max in one stock %, number of stocks, cash kept a
 }
 
 
+MAX_LOSS = {1: 5, 2: 10, 3: 20, 4: 30}  # question 4, the largest yearly loss accepted -> total loss allowed at the stops (%)
+
+
+def _level(answers):
+    avg = sum(answers) / len(answers)
+    return "Careful" if avg < 2 else "Balanced" if avg <= 3 else "Bold"
+
+
 def risk_profile(answers):
-    """answers: six numbers 1-4. Careful 6-11, Balanced 12-18, Bold 19-24; capped at Careful when the money is needed
-    within a year (question 2) or is most of the savings (question 6)."""
+    """answers: six numbers 1-4. Willingness (goal, reaction to a fall, loss accepted, experience: questions 1, 3, 4, 5)
+    and ability (when the money is needed, share of savings: questions 2 and 6) are scored apart, and the more careful
+    of the two sets the rules, as portfolio planning does. Either ability answer at its lowest means Careful."""
     a = [int(x) for x in answers]
     if len(a) != 6 or not all(1 <= x <= 4 for x in a):
         return {"error": "Answer all six questions."}
-    score = sum(a)
-    label = "Careful" if score <= 11 else "Balanced" if score <= 18 else "Bold"
-    capped = label != "Careful" and (a[1] == 1 or a[5] == 1)
-    if capped:
-        label = "Careful"
-    return {"score": score, "label": label, "capped": capped, "income": a[0] == 2, "rules": dict(RULES[label])}
+    willingness = _level([a[0], a[2], a[3], a[4]])
+    ability = "Careful" if 1 in (a[1], a[5]) else _level([a[1], a[5]])
+    label = min(willingness, ability, key=PROFILES.index)
+    rules = dict(RULES[label], max_loss_pct=MAX_LOSS[a[3]])
+    return {"score": sum(a), "label": label, "willingness": willingness, "ability": ability,
+            "capped": PROFILES.index(ability) < PROFILES.index(willingness), "income": a[0] == 2, "rules": rules}
 
 
 def build_plan(amount, rules, candidates, income=False):
     """An example split of `amount` from the user's rules. candidates: [{symbol, name, sector, rung, label, quality,
     quality_level, quality_score, entry, stop, dividend_yield}], already from the course checklist. Each position:
-    at most risk_pct of the amount lost at its stop, at most max_stock_pct of the amount, sectors capped, cash kept aside."""
+    at most risk_pct of the amount lost at its stop, at most max_stock_pct of the amount, sectors capped, cash kept aside,
+    and all stops together lose at most max_loss_pct of the amount (the largest yearly loss accepted), when it is set."""
     amount = float(amount)
     invest = amount * (1 - rules["cash_pct"] / 100)
     picks = [c for c in candidates if c["rung"] >= rules["min_rung"] and (c.get("quality_level") or 0) >= rules["min_quality"]
              and c.get("entry") and c.get("stop") and 0 < c["stop"] < c["entry"]]
     picks.sort(key=lambda c: (-(bool(c.get("dividend_yield")) if income else 0), -c["rung"], -(c.get("quality_score") or 0)))
-    rows, spent, by_sector = [], 0.0, {}
+    rows, spent, by_sector, lost = [], 0.0, {}, 0.0
+    loss_cap = amount * rules["max_loss_pct"] / 100 if rules.get("max_loss_pct") else None
+    loss_capped = False
     for c in picks:
         if len(rows) >= rules["max_stocks"]:
             break
@@ -431,15 +446,19 @@ def build_plan(amount, rules, candidates, income=False):
         sector_left = amount * rules["max_sector_pct"] / 100 - by_sector.get(c.get("sector"), 0)
         room = min(amount * rules["max_stock_pct"] / 100, invest - spent, sector_left)
         shares = int(min(amount * rules["risk_pct"] / 100 // risk, room // c["entry"]))
+        if loss_cap is not None and shares * risk > loss_cap - lost:
+            shares, loss_capped = int((loss_cap - lost) // risk), True
         if shares < 1:
             continue
         cost = round(shares * c["entry"], 2)
         spent += cost
+        lost += shares * risk
         by_sector[c.get("sector")] = by_sector.get(c.get("sector"), 0) + cost
         rows.append({k: c.get(k) for k in ("symbol", "name", "sector", "rung", "label", "quality", "quality_level", "quality_score", "entry", "stop")}
                     | {"shares": shares, "cost": cost, "loss_at_stop": round(shares * risk, 2), "pct": round(cost / amount * 100, 1)})
     return {"amount": amount, "rows": rows, "invested": round(spent, 2), "cash": round(amount - spent, 2),
-            "cash_pct": round((amount - spent) / amount * 100, 1), "candidates": len(picks)}
+            "cash_pct": round((amount - spent) / amount * 100, 1), "candidates": len(picks),
+            "loss_total": round(lost, 2), "loss_pct": round(lost / amount * 100, 1), "loss_capped": loss_capped}
 
 
 def alerts(rows, price_alerts, last_signals):
