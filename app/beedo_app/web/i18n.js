@@ -243,10 +243,10 @@ const AR = {
 
   // 2.3: dividends
   "Dividends": "التوزيعات",
-  "Cash dividends and bonus shares of the last 5 years, from Yahoo Finance, and the payout to expect next from that history. Expected payouts are a pattern from history, not an announcement: the company's general assembly decides. Past amounts are adjusted for later bonus shares.":
-    "التوزيعات النقدية وأسهم المنحة في آخر 5 سنوات من Yahoo Finance، والتوزيع المتوقع التالي بناءً على هذا التاريخ. التوزيع المتوقع نمط من الماضي وليس إعلانًا: الجمعية العامة للشركة هي التي تقرر. المبالغ القديمة معدّلة بأسهم المنحة اللاحقة.",
+  "Cash dividends and bonus shares of the last 5 years, from Yahoo Finance, and the payout to expect next from that history. Expected payouts are a pattern from history, not an announcement: the company's general assembly decides. Past amounts are adjusted for later bonus shares. The months are ex-dividend months: buy before the ex-dividend date to receive the dividend.":
+    "التوزيعات النقدية وأسهم المنحة في آخر 5 سنوات من Yahoo Finance، والتوزيع المتوقع التالي بناءً على هذا التاريخ. التوزيع المتوقع نمط من الماضي وليس إعلانًا: الجمعية العامة للشركة هي التي تقرر. المبالغ القديمة معدّلة بأسهم المنحة اللاحقة. الأشهر هي أشهر الاستحقاق (Ex-dividend): اشترِ قبل تاريخ الاستحقاق لتحصل على التوزيع.",
   "Show": "عرض", "All payers": "كل الموزِّعين", "Cash": "نقدي", "Bonus shares": "أسهم منحة", "Both": "كلاهما", "Cash and bonus shares": "نقدي وأسهم منحة",
-  "My watchlist and portfolio": "قائمتي ومحفظتي", "Whole EGX": "كل البورصة", "Pays": "يوزّع", "Expected next": "التوزيع المتوقع",
+  "My watchlist and portfolio": "قائمتي ومحفظتي", "Whole EGX": "كل البورصة", "Pays": "يوزّع", "Expected next": "التوزيع المتوقع", "Expected next (ex-dividend)": "التوزيع المتوقع (شهر الاستحقاق)",
   "Last cash (EGP)": "آخر توزيع نقدي (جنيه)", "Cash yield (12 m)": "العائد النقدي (12 شهرًا)", "Last bonus shares": "آخر أسهم منحة", "Years paid (of 5)": "سنوات التوزيع (من 5)",
   "Choose \"My watchlist and portfolio\", or \"Whole EGX\" (about 20 seconds).": "اختر «قائمتي ومحفظتي» أو «كل البورصة» (20 ثانية تقريبًا).",
   "Checking dividend histories…": "جارٍ فحص تاريخ التوزيعات…", "No dividend payers found.": "لا توجد شركات موزِّعة.", "Couldn't load dividends": "تعذّر تحميل التوزيعات",
@@ -276,6 +276,21 @@ const AR = {
   "Amount": "المبلغ", "Invested": "المستثمر", "Cash kept aside": "السيولة الاحتياطية", "Entry": "الدخول", "Stop": "وقف الخسارة", "Share of the total": "النسبة من الإجمالي",
   "Answer the questions in My trading rules first.": "أجب أولًا عن أسئلة «قواعد التداول الخاصة بي».", "Enter an amount of at least 1,000 EGP.": "أدخل مبلغًا لا يقل عن 1,000 جنيه.",
   "Couldn't build the plan": "تعذّر بناء الخطة",
+  // 2.3.2: trial version
+  "Trial version": "نسخة تجريبية", "This trial version works until": "تعمل هذه النسخة التجريبية حتى", "Days left:": "الأيام المتبقية:",
+  "Device code:": "رمز الجهاز:", "Unlocked on this device": "مفتوحة على هذا الجهاز", "until": "حتى",
+  "The trial has ended": "انتهت الفترة التجريبية", "This trial version worked until": "عملت هذه النسخة التجريبية حتى",
+  "Your watchlist and settings are kept.": "قائمة المتابعة والإعدادات محفوظة.",
+  "To keep using it, send this device code to the developer and enter the unlock code you receive:": "لمواصلة الاستخدام، أرسل رمز الجهاز هذا إلى المطوّر وأدخل رمز الفتح الذي تتلقاه:",
+  "Copy": "نسخ", "Unlock code": "رمز الفتح", "Paste your unlock code": "الصق رمز الفتح هنا", "Unlock": "فتح", "Check for a newer version": "ابحث عن نسخة أحدث",
+  "Unlocked. Thank you!": "تم الفتح. شكرًا لك!", "Couldn't unlock": "تعذّر الفتح",
+  "That unlock code isn't valid for this device.": "رمز الفتح هذا غير صالح لهذا الجهاز.", "This unlock code has expired.": "انتهت صلاحية رمز الفتح هذا.",
+  "The trial has ended. Enter an unlock code.": "انتهت الفترة التجريبية. أدخل رمز الفتح.",
+  // 2.3.2: willingness and ability, the total-loss limit
+  "Willingness:": "الرغبة في المخاطرة:", "Ability:": "القدرة على المخاطرة:",
+  "Your ability to take risk (when you need the money and how much of your savings it is) is lower than your willingness, so your rules follow the more careful of the two.":
+    "قدرتك على تحمّل المخاطرة (متى تحتاج المال ونسبته من مدخراتك) أقل من رغبتك فيها، لذلك تتبع قواعدك الأكثر حذرًا بين الاثنين.",
+  "Max total loss at stops (%)": "أقصى خسارة إجمالية عند وقف الخسارة (%)", "Loss if every stop is hit": "الخسارة إذا نُفّذت كل أوامر الوقف",
 
   // TradingView sectors and industries
   "Commercial Services": "الخدمات التجارية", "Communications": "الاتصالات", "Consumer Durables": "السلع المعمّرة", "Consumer Non-Durables": "السلع الاستهلاكية",
@@ -319,6 +334,9 @@ const AR_RULES = [
   [/^\(score (\d+) of 24\)$/, (m) => `(النقاط ${m[1]} من 24)`],
   [/^Your profile: (Careful|Balanced|Bold)$/, (m) => `ملفك: ${AR[m[1]]}`],
   [/^(\d+) stocks$/, (m) => `${m[1]} أسهم`],
+  [/^Trial: (\d+) days left$/, (m) => `الفترة التجريبية: متبقٍ ${m[1]} يومًا`],
+  [/^Your limit of ([\d.]+)% total loss at the stops was reached, so the rest stays in cash\.$/, (m) => `بلغت حدك للخسارة الإجمالية عند وقف الخسارة (${m[1]}%)، فيبقى الباقي سيولة.`],
+  [/^Ex-dividend drop on (\S+) \(([\d.]+) EGP dividend\), not a signal$/, (m) => `هبوط بسبب استحقاق توزيع في ${m[1]} (توزيع ${m[2]} جنيه)، وليس إشارة`],
   [/^Only (\d+) stocks meet your rules today, so the rest stays in cash\. That is normal in a weak market\.$/, (m) => `${m[1]} أسهم فقط تطابق قواعدك اليوم، فيبقى الباقي سيولة. هذا طبيعي في السوق الضعيف.`],
   [/^(\d+)\. (.+)$/, (m) => (AR[m[2]] ? `${m[1]}. ${AR[m[2]]}` : null)],
   [/^(\S+)% of the replays reached neither within (\d+) trading days; the price then decides those\.$/, (m) => `${m[1]}% من عمليات المحاكاة لم تصل إلى أيٍّ منهما خلال ${m[2]} يوم تداول؛ والسعر وقتها هو الذي يحسمها.`],

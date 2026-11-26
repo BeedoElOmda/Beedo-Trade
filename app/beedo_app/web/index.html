@@ -299,7 +299,7 @@
       </div>
       <div class="card table-wrap" style="margin-top:16px">
         <div class="card-head"><h3>Dividends</h3><button class="ghost small" data-export="#dTable" data-name="Moashir-Trade-dividends">Export to Excel</button></div>
-        <p class="muted tiny">Cash dividends and bonus shares of the last 5 years, from Yahoo Finance, and the payout to expect next from that history. Expected payouts are a pattern from history, not an announcement: the company's general assembly decides. Past amounts are adjusted for later bonus shares.</p>
+        <p class="muted tiny">Cash dividends and bonus shares of the last 5 years, from Yahoo Finance, and the payout to expect next from that history. Expected payouts are a pattern from history, not an announcement: the company's general assembly decides. Past amounts are adjusted for later bonus shares. The months are ex-dividend months: buy before the ex-dividend date to receive the dividend.</p>
         <div class="filters">
           <label>Show<select id="dKind"><option value="">All payers</option><option value="Cash">Cash</option><option value="Stock">Bonus shares</option><option value="Both">Both</option></select></label>
           <button id="dWatch" class="ghost">My watchlist and portfolio</button>
@@ -307,7 +307,7 @@
         </div>
         <p class="muted tiny" id="dSummary"></p>
         <table class="table" id="dTable">
-          <thead><tr><th data-sort="symbol">Stock</th><th data-sort="kind">Pays</th><th data-sort="expected_m">Expected next</th><th data-sort="cash">Last cash (EGP)</th><th data-sort="yield_pct" class="num">Cash yield (12 m)</th><th data-sort="bonus">Last bonus shares</th><th data-sort="years" class="num">Years paid (of 5)</th></tr></thead>
+          <thead><tr><th data-sort="symbol">Stock</th><th data-sort="kind">Pays</th><th data-sort="expected_m">Expected next (ex-dividend)</th><th data-sort="cash">Last cash (EGP)</th><th data-sort="yield_pct" class="num">Cash yield (12 m)</th><th data-sort="bonus">Last bonus shares</th><th data-sort="years" class="num">Years paid (of 5)</th></tr></thead>
           <tbody><tr><td colspan="7" class="muted center">Choose "My watchlist and portfolio", or "Whole EGX" (about 20 seconds).</td></tr></tbody>
         </table>
       </div>
@@ -317,6 +317,7 @@
     <section class="page" id="page-about">
       <div class="about">
         <h1>About Mo'ashir Trade</h1>
+        <div class="notice alertish" id="trialCard"><b>Trial version</b><span id="trialText"></span></div>
         <p>Mo'ashir Trade applies technical analysis to Egyptian Exchange stocks, the same way every time: 12 indicators (11 chart indicators plus MACD), one signal, and separate advice for a cash holder and a shareholder.</p>
         <div class="grid">
           <div class="card span3">
@@ -355,6 +356,18 @@
   </main>
 </div>
 <div id="toast" class="toast hidden" role="status"></div>
+<div id="trialLock" class="lock hidden" role="dialog" aria-modal="true" aria-labelledby="lockTitle">
+    <div class="card lock-card">
+      <h1 id="lockTitle">The trial has ended</h1>
+      <p><span>This trial version worked until</span> <b id="lockEnd"></b></p>
+      <p class="muted">Your watchlist and settings are kept.</p>
+      <p>To keep using it, send this device code to the developer and enter the unlock code you receive:</p>
+      <p class="dev-code"><b id="lockDevice"></b> <button class="ghost small" id="lockCopy">Copy</button></p>
+      <label for="lockCode" class="muted tiny">Unlock code</label>
+      <textarea id="lockCode" rows="3" placeholder="Paste your unlock code"></textarea>
+      <div class="links"><button class="primary" id="lockBtn">Unlock</button><button class="ghost" id="lockUpdate">Check for a newer version</button></div>
+    </div>
+  </div>
 <script src="vendor/lightweight-charts.standalone.production.js"></script>
 <script src="i18n.js"></script>
 <script src="app.js"></script>

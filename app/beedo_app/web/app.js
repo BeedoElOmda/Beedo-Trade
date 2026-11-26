@@ -486,7 +486,7 @@ $("#wTable").addEventListener("keydown", (e) => { const tr = e.target.closest("t
   const h = new URLSearchParams(location.hash.slice(1));
   if ((h.get("lang") || settings.lang) === "ar") { settings.lang = "ar"; startArabic(); }
   $("#langBtn").textContent = settings.lang === "ar" ? "English" : "العربية";
-  applyTheme(h.get("theme") || settings.theme); drawChips(); drawAlerts(); fillRunSettings(); drawRules();
+  applyTheme(h.get("theme") || settings.theme); drawChips(); drawAlerts(); fillRunSettings(); drawRules(); checkTrial();
   checkUpdate(false);
   if (!h.has("noalerts")) { checkAlerts(false); setInterval(() => checkAlerts(false), 15 * 60 * 1000); }
   if (h.get("a")) analyse(h.get("a")).then(() => { if (h.has("weekly")) $('#tf [data-tf="w"]').click(); if (h.has("bt")) $("#btBtn").click(); if (h.has("tm")) $("#tmBtn").click(); });
@@ -555,6 +555,36 @@ document.addEventListener("click", async (e) => {
   if (rows.length < 2) return toast("Nothing to export yet");
   const r = await api("export_csv", b.dataset.name, rows);
   if (r && r.error) toast(r.error); else if (r && r.ok) toast("Saved. Open the file with Excel.");
+});
+
+/* ---------- 2.3.2: trial version ---------- */
+function drawTrial(t) {
+  const b = (x) => `<b>${esc(String(x))}</b>`;
+  $("#trialText").innerHTML = t.unlocked
+    ? `<span>Unlocked on this device</span>${t.until ? ` <span>until</span> ${b(t.until)}` : ""} · <span>Device code:</span> ${b(t.device)}`
+    : `<span>This trial version works until</span> ${b(t.end)} · <span>Days left:</span> ${b(t.days_left)} · <span>Device code:</span> ${b(t.device)}`;
+  $("#lockEnd").textContent = t.end; $("#lockDevice").textContent = t.device;
+  $("#trialLock").classList.toggle("hidden", !t.locked);
+  document.querySelector(".shell").inert = !!t.locked;
+  if (t.locked) $("#lockCode").focus();
+}
+async function checkTrial() {
+  const t = await api("trial");
+  if (!t || t.error) return;
+  drawTrial(t);
+  if (!t.unlocked && !t.locked && t.days_left <= 14) toast(`Trial: ${t.days_left} days left`);
+}
+$("#lockBtn").addEventListener("click", async () => {
+  const r = await api("unlock", $("#lockCode").value);
+  if (!r || r.error) return toast(r ? r.error : "Couldn't unlock");
+  drawTrial(r); toast("Unlocked. Thank you!");
+});
+$("#lockCopy").addEventListener("click", async () => {
+  try { await navigator.clipboard.writeText($("#lockDevice").textContent); toast("Code copied"); } catch { toast($("#lockDevice").textContent); }
+});
+$("#lockUpdate").addEventListener("click", async () => {  // the menu is behind the lock screen: open the download page from here
+  const u = await api("check_update");
+  if (u && u.newer) api("open_url", u.url); else checkUpdate(true);
 });
 
 /* ---------- 1.5: weekly chart ---------- */
@@ -672,6 +702,7 @@ const QUESTIONS = [
 const RULE_FIELDS = [
   ["risk_pct", "Risk per trade (%)", 0.25, 5, 0.25], ["max_stock_pct", "Max in one stock (%)", 5, 50, 1], ["max_stocks", "Number of stocks", 1, 15, 1],
   ["cash_pct", "Cash kept aside (%)", 0, 90, 5], ["max_sector_pct", "Max per sector (%)", 10, 100, 5],
+  ["max_loss_pct", "Max total loss at stops (%)", 2, 50, 1],
 ];
 const QUALITY_OPTS = [[2, "Strong only"], [1, "Strong or Fair"], [0, "Any rated company"]];
 const RUNG_OPTS = [[3, "Confirm Buy only"], [2, "First or Confirm Buy"], [1, "Any buy, including Alarm Buy"]];
@@ -684,10 +715,14 @@ function drawRules(showQuiz = false) {
   const quizOn = showQuiz || !p;
   quiz.classList.toggle("hidden", !quizOn); $("#rulesRedo").classList.toggle("hidden", quizOn);
   if (quizOn || !r) { out.innerHTML = ""; return; }
+  // rules saved before 2.3.2 have no total-loss limit: start from the answer to question 4
+  const val = (k) => r[k] ?? (k === "max_loss_pct" ? [5, 10, 20, 30][(ans[3] || 3) - 1] : "");
   const sel = (id, opts, v) => `<select id="${id}">${opts.map(([k, t]) => `<option value="${k}" ${+v === k ? "selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
   out.innerHTML = `<p class="profile-line"><span class="k">Your profile:</span> <b>${esc(p.label)}</b> <span class="muted">(score ${p.score} of 24)</span></p>` +
-    (p.capped ? `<p class="muted">Because you may need this money soon (or it is most of your savings), your rules are set to Careful.</p>` : "") +
-    `<form id="rulesForm" class="filters">${RULE_FIELDS.map(([k, t, lo, hi, st]) => `<label>${esc(t)}<input id="r_${k}" type="number" min="${lo}" max="${hi}" step="${st}" value="${r[k]}"></label>`).join("")}
+    (p.ability ? `<p class="profile-line"><span class="k">Willingness:</span> <b>${esc(p.willingness)}</b> · <span class="k">Ability:</span> <b>${esc(p.ability)}</b></p>` : "") +
+    (p.capped ? `<p class="muted">${p.ability ? "Your ability to take risk (when you need the money and how much of your savings it is) is lower than your willingness, so your rules follow the more careful of the two."
+      : "Because you may need this money soon (or it is most of your savings), your rules are set to Careful."}</p>` : "") +
+    `<form id="rulesForm" class="filters">${RULE_FIELDS.map(([k, t, lo, hi, st]) => `<label>${esc(t)}<input id="r_${k}" type="number" min="${lo}" max="${hi}" step="${st}" value="${val(k)}"></label>`).join("")}
       <label>Company quality${sel("r_min_quality", QUALITY_OPTS, r.min_quality)}</label>
       <label>Buy signals used${sel("r_min_rung", RUNG_OPTS, r.min_rung)}</label>
       <button class="ghost" type="submit">Save my rules</button></form>`;
@@ -698,7 +733,7 @@ $("#rulesQuiz").addEventListener("submit", async (e) => {
   if (a.includes(0)) return toast("Answer all six questions.");
   const r = await api("save_profile", a);
   if (!r || r.error) return toast(r ? r.error : "Couldn't save");
-  settings.profile = { answers: a, score: r.score, label: r.label, capped: r.capped, income: r.income };
+  settings.profile = { answers: a, score: r.score, label: r.label, willingness: r.willingness, ability: r.ability, capped: r.capped, income: r.income };
   settings.rules = r.rules; settings.risk_pct = r.rules.risk_pct; $("#risk").value = r.rules.risk_pct;
   drawRules(); toast(`Your profile: ${r.label}`);
 });
@@ -725,7 +760,8 @@ $("#buildForm").addEventListener("submit", async (e) => {
     if (!r || r.error) { out.innerHTML = `<div class="plan"><div class="warn">${esc(r ? r.error : "Couldn't build the plan")}</div></div>`; return; }
     save({ plan_amount: amount });
     const stat = (k, v, s = "") => `<div class="stat"><div class="k">${k}</div><div class="v">${v}</div><div class="s">${s}</div></div>`;
-    out.innerHTML = `<div class="stats">${stat("Amount", `${fmt(r.amount, 0)} EGP`, esc(r.profile || ""))}${stat("Invested", `${fmt(r.invested, 0)} EGP`, `${r.rows.length} stocks`)}${stat("Cash kept aside", `${fmt(r.cash, 0)} EGP`, pct(r.cash_pct))}</div>` +
+    out.innerHTML = `<div class="stats">${stat("Amount", `${fmt(r.amount, 0)} EGP`, esc(r.profile || ""))}${stat("Invested", `${fmt(r.invested, 0)} EGP`, `${r.rows.length} stocks`)}${stat("Cash kept aside", `${fmt(r.cash, 0)} EGP`, pct(r.cash_pct))}${stat("Loss if every stop is hit", `${fmt(r.loss_total, 0)} EGP`, pct(r.loss_pct))}</div>` +
+      (r.loss_capped ? `<p class="muted">Your limit of ${r.rules.max_loss_pct}% total loss at the stops was reached, so the rest stays in cash.</p>` : "") +
       (r.rows.length < r.rules.max_stocks ? `<p class="muted">Only ${r.rows.length} stocks meet your rules today, so the rest stays in cash. That is normal in a weak market.</p>` : "") +
       `<div class="table-wrap"><table class="table" id="bTable"><thead><tr><th>Stock</th><th>Signal</th><th>Company</th><th class="num">Shares</th><th class="num">Entry</th><th class="num">Stop</th><th class="num">Cost</th><th class="num">Share of the total</th></tr></thead><tbody></tbody></table></div>`;
     fillTable("#bTable", r.rows);
