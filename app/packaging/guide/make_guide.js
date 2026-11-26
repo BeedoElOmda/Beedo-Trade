@@ -239,9 +239,10 @@ const fund = [
   ...shot('g_dividends.png', 'Dividends for the watchlist and portfolio: what each company paid and when it usually pays next.', 560),
   P([run('At the bottom of the '), ui('Screener'), run(' page, click '), ui('My watchlist and portfolio'), run(', or '), ui('Whole EGX'), run(' to check every company (about 20 seconds). Use '), ui('Show'), run(' to list only cash payers, bonus-share payers, or companies that pay both.')]),
   bullet([b('Pays'), run(': cash, bonus shares, or both, over the last five calendar years.')]),
-  bullet([b('Expected next'), run(': the month the company usually pays, from its own history, and whether it pays regularly or only sometimes.')]),
+  bullet([b('Expected next (ex-dividend)'), run(': the month of the next ex-dividend date the company usually has, from its own history, and whether it pays regularly or only sometimes. To receive a dividend you must buy before the ex-dividend date: buy on or after it and the dividend goes to the seller.')]),
   bullet([b('Last cash'), run(' and '), b('Cash yield (12 m)'), run(': the last cash dividend per share and the cash paid in the past 12 months as a percentage of today\u2019s price.')]),
   bullet([b('Last bonus shares'), run(': for example 1 for every 10 means one free share for each ten you own. Past cash amounts are adjusted for later bonus shares.')]),
+  P([b('Ex-dividend drop: '), run('on the ex-dividend date the price falls by about the dividend, which can open a gap down on the chart. The checklist knows the dividend dates: a gap down on an ex-dividend day that is no bigger than the dividend is shown as '), b('Ex-dividend drop, not a signal'), run(' and is not counted as a sell gap.')]),
   callout('warn', 'A pattern, not an announcement', 'Expected payouts come from history. The company\u2019s general assembly decides each dividend, and it can change or skip it. Check the EGX disclosures before you count on a payout.'),
 ];
 
@@ -310,7 +311,10 @@ const csv = [
   gap(),
   h2('8.6  My trading rules'),
   ...shot('g_rules.png', 'My trading rules for a Balanced profile: each rule can be changed.', 560),
-  P([run('At the bottom of the '), ui('Portfolio'), run(' page, answer six short questions (your goal, when you may need the money, what you do after a 20% fall, the largest yearly loss you accept, your experience and how much of your savings this is), then click '), ui('Set my rules'), run('. Your answers give one of three profiles:')]),
+  P([run('At the bottom of the '), ui('Portfolio'), run(' page, answer six short questions (your goal, when you may need the money, what you do after a 20% fall, the largest yearly loss you accept, your experience and how much of your savings this is), then click '), ui('Set my rules'), run('. Your answers are scored on two sides, as in portfolio planning:')]),
+  bullet([b('Willingness'), run(' to take risk (your goal, what you do after a fall, the loss you accept, your experience).')]),
+  bullet([b('Ability'), run(' to take risk (when you may need the money, and how much of your savings it is).')]),
+  P('Each side gives a profile, and your rules follow the more careful of the two. Someone who would buy more after a 20% fall, but needs the money in two years, gets Balanced rules, not Bold. The three profiles:'),
   gap(80),
   dataTable([1900, 1300, 1400, 1250, 1350, 1826], ['Profile', 'Risk per trade', 'Max in one stock', 'Stocks', 'Cash aside', 'Buy signals'], [
     ['Careful', '1%', '10%', '10', '30%', 'Confirm Buy, Strong companies'],
@@ -318,10 +322,10 @@ const csv = [
     ['Bold', '3%', '20%', '6', '10%', 'First or Confirm Buy'],
   ]),
   gap(80),
-  P('If you may need the money within a year, or it is most of your savings, the rules are set to Careful whatever your other answers. You can change any rule and click Save my rules, or click Answer again. The risk per trade also sets the Risk % used by every trade plan. Your answers stay on this device.'),
+  P('If you may need the money within a year, or it is most of your savings, the rules are set to Careful whatever your other answers. Your answer to the largest yearly loss becomes the rule Max total loss at stops: 5%, 10%, 20% or 30% of the amount. You can change any rule and click Save my rules, or click Answer again. The risk per trade also sets the Risk % used by every trade plan. Your answers stay on this device.'),
   h2('8.7  Example plan from your rules'),
   ...shot('g_plan.png', 'An example plan for 200,000 EGP with Balanced rules: only three stocks qualified today, so the rest stays in cash.', 560),
-  P([run('Under your rules, type an amount and click '), ui('Build example plan'), run('. The app rates every EGX company, keeps those that meet your quality and signal rules, and sizes each one so a fall to its stop loses no more than your risk per trade, within your limits per stock and per sector. The table shows the shares, entry, stop and cost of each stock. When few stocks qualify, the rest stays in cash.')]),
+  P([run('Under your rules, type an amount and click '), ui('Build example plan'), run('. The app rates every EGX company, keeps those that meet your quality and signal rules, and sizes each one so a fall to its stop loses no more than your risk per trade, within your limits per stock and per sector. It stops adding stocks once the loss if every stop is hit reaches your Max total loss at stops. The table shows the shares, entry, stop and cost of each stock. When few stocks qualify, or the loss limit is reached, the rest stays in cash.')]),
   callout('warn', 'An example, not a recommendation', 'The plan applies your rules and the checklist to today\u2019s data. It does not know your full financial situation. Open and check each stock yourself; you decide what to buy.'),
   gap(),
   h2('8.8  Save as PDF and export to Excel'),
@@ -361,6 +365,12 @@ const settings = [
   numR('num4', 'Download the newer Moashir-Trade-Setup file and run it. It replaces the old version in place and closes Mo\'ashir Trade first if it is open.'),
   numR('num4', 'Your watchlist and settings are kept.'),
   P([b('On Android, '), run('the app comes from Google Play, which updates it by itself. The '), ui('Update available'), run(' button opens the app\u2019s page on Google Play.')]),
+  h2('10.4  Trial version and unlock code'),
+  P([run('This is a trial version. It works fully until '), b('26 January 2027'), run('. The '), ui('About'), run(' page shows the end date, the days left and your '), b('device code'), run(' (eight letters and digits, such as 3VNC-7X4H). From 14 days before the end, the app reminds you when it starts.')]),
+  P('After the end date, a lock screen replaces the app. Your watchlist, portfolio and settings are kept. To keep using it:'),
+  numR('num9', [run('Click '), ui('Copy'), run(' next to the device code on the lock screen and send it to the developer.')]),
+  numR('num9', [run('Paste the unlock code you receive into the box and click '), ui('Unlock'), run('.')]),
+  P('An unlock code works only on the device it was made for. Some codes have their own end date. On Windows and Mac the device code stays the same if you reinstall; on a phone, reinstalling the app gives a new device code. A newer version of the app may also move the trial date.'),
 ];
 
 const uninstall = [
@@ -405,7 +415,7 @@ const doc = new Document({
   },
   numbering: { config: [
     { reference: 'bul', levels: [{ level: 0, format: LevelFormat.BULLET, text: '\u2022', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 270 } } } }] },
-    ...['num', 'num2', 'num3', 'num4', 'num5', 'num6', 'num7', 'num8'].map((reference) => ({ reference, levels: [{ level: 0, format: LevelFormat.DECIMAL, text: '%1.', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 300 } } } }] })),
+    ...['num', 'num2', 'num3', 'num4', 'num5', 'num6', 'num7', 'num8', 'num9'].map((reference) => ({ reference, levels: [{ level: 0, format: LevelFormat.DECIMAL, text: '%1.', alignment: AlignmentType.LEFT, style: { paragraph: { indent: { left: 540, hanging: 300 } } } }] })),
   ] },
   sections: [{
     properties: { page: { size: { width: 11906, height: 16838 }, margin: { top: 1300, bottom: 1200, left: 1440, right: 1440 } } },
