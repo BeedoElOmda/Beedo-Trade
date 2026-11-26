@@ -60,3 +60,31 @@ def test_example_plan_keeps_cash_and_caps():
     assert sum(r["cost"] for r in p["rows"] if r["sector"] == "Finance") <= 30_000  # max per sector
     assert all(r["loss_at_stop"] <= 2_000 for r in p["rows"])  # 2% risk per trade
     assert engine.build_plan(100_000, rules, [])["rows"] == []  # nothing qualifies: all cash
+
+
+# ---------- 2.3.2: willingness vs ability, total loss at the stops, ex-dividend gaps ----------
+def test_profile_takes_the_more_careful_of_willingness_and_ability():
+    p = engine.risk_profile([4, 2, 4, 4, 4, 4])  # bold attitude, money needed in 1 to 3 years: the sum alone gave Bold
+    assert (p["willingness"], p["ability"], p["label"], p["capped"]) == ("Bold", "Balanced", "Balanced", True)
+    p = engine.risk_profile([1, 4, 1, 1, 1, 4])  # careful attitude, strong capacity: willingness decides
+    assert (p["willingness"], p["ability"], p["label"], p["capped"]) == ("Careful", "Bold", "Careful", False)
+    assert [engine.risk_profile([3, 3, 3, a, 3, 3])["rules"]["max_loss_pct"] for a in (1, 2, 3, 4)] == [5, 10, 20, 30]
+
+
+def test_example_plan_stops_at_the_total_loss_limit():
+    rules = dict(engine.RULES["Balanced"], max_loss_pct=5)  # 2% per trade, but at most 5% lost if every stop is hit
+    p = engine.build_plan(100_000, rules, [cand(f"S{i}", f"Sector{i}", stop=80.0) for i in range(8)])  # 2,000 EGP lost per stock
+    assert p["loss_total"] <= 5_000 and p["loss_capped"] and len(p["rows"]) < 8
+    p = engine.build_plan(100_000, dict(engine.RULES["Balanced"]), [cand(f"S{i}", f"Sector{i}") for i in range(8)])
+    assert not p["loss_capped"]  # rules saved before 2.3.2 have no limit
+
+
+def test_ex_dividend_drop_is_not_a_sell_gap():
+    import analyze
+    bars = [dict(d=f"2026-{1 + i // 28:02d}-{1 + i % 28:02d}", o=100.0, h=101.0, l=99.0, c=100.0, v=1000) for i in range(80)]
+    bars[-5:] = [dict(b, o=94.0, h=95.0, l=93.0, c=94.0) for b in bars[-5:]]  # 4 EGP below the previous low
+    bars[-5]["div"] = 6.0  # the ex-dividend day of a 6 EGP dividend
+    g = [x for x in analyze.analyze(bars)["gaps_30d"] if x["dir"] == "DOWN"][-1]
+    assert g["ex_dividend"] == 6.0
+    del bars[-5]["div"]
+    assert "ex_dividend" not in [x for x in analyze.analyze(bars)["gaps_30d"] if x["dir"] == "DOWN"][-1]
