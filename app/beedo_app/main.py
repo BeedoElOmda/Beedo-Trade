@@ -486,7 +486,7 @@ class Api:
 
     def check_update(self):
         try:
-            req = urllib.request.Request(f"https://api.github.com/repos/{REPO}/releases/latest", headers={"User-Agent": "Beedo-Trade"})
+            req = urllib.request.Request(f"https://api.github.com/repos/{REPO}/releases/latest", headers={"User-Agent": "Moashir-Trade"})
             with urllib.request.urlopen(req, timeout=8) as r:
                 latest = json.load(r)["tag_name"].lstrip("v")
             num = lambda v: tuple(int(x) for x in re.findall(r"\d+", v))
@@ -503,7 +503,7 @@ class Api:
         # Windows install: <app>\docs (installer). macOS: inside the app bundle. Developer checkout: app/packaging/guide
         here = Path(sys.executable).parent if getattr(sys, "frozen", False) else BASE.parent / "packaging" / "guide"
         for d in (here / "docs", here, BASE / "docs"):
-            for p in sorted(d.glob("Beedo-Trade User Guide*.pdf"), key=lambda f: f.stat().st_mtime, reverse=True)[:1]:  # newest guide
+            for p in sorted(d.glob("*User Guide*.pdf"), key=lambda f: f.stat().st_mtime, reverse=True)[:1]:  # newest guide
                 subprocess.run(["open", str(p)]) if MAC else os.startfile(p)
                 return {"ok": True}
         webbrowser.open("https://github.com/BeedoElOmda/Beedo-Trade#standalone-app-for-windows-and-mac-no-claude-needed")
@@ -549,7 +549,7 @@ def main():
     if "--serve" in sys.argv:
         return serve()
     api = Api()
-    api._window = webview.create_window(f"Beedo-Trade {VERSION}", str(BASE / "web" / "index.html"), js_api=api,
+    api._window = webview.create_window(f"Mo'ashir Trade {VERSION}", str(BASE / "web" / "index.html"), js_api=api,
                                        width=1360, height=880, min_size=(1024, 680), background_color="#0B1220")
     try:  # the launcher's splash screen (packaged build only) stays up until the window is ready
         import pyi_splash

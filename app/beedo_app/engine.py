@@ -16,7 +16,7 @@ ACTIONS = {  # course: trend tables, RSI table and pricing-zone table
     3: ("Buy the full position.", "Hold, or add on pullbacks."),
     2: ("Buy part of the position (e.g. half). Add the rest on Confirm Buy.", "Hold."),
     1: ("Get ready, but don't buy yet. Wait for First Buy.", "Hold."),
-    0: ("Stay in cash and wait for a clear signal.", "Hold. In a sideways market the course says reduce or step out."),
+    0: ("Stay in cash and wait for a clear signal.", "Hold. In a sideways market, reduce or step out."),
     -1: ("Stay out.", "Get ready to sell: tighten your stop."),
     -2: ("Stay out.", "Sell part of the position (reduce)."),
     -3: ("Stay out.", "Sell."),
@@ -339,7 +339,7 @@ def trade_plan(r, cash=None, risk_pct=2.0):
     if res and res[0] < target:
         plan["warnings"].append(f"Resistance at {res[0]} comes before the target: take partial profit there if bearish candles appear.")
         if (res[0] - close) < risk:
-            plan["warnings"].append("The first resistance is less than 1R away: poor risk-reward. The course says don't buy near resistance.")
+            plan["warnings"].append("The first resistance is less than 1R away: poor risk-reward. Don't buy near resistance.")
     if cash:
         max_loss = cash * risk_pct / 100
         shares = int(min(max_loss // risk if risk > 0 else 0, cash // close))
