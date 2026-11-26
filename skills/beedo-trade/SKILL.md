@@ -5,7 +5,7 @@ description: Mo'ashir Trade analyses Egyptian Exchange (EGX) stocks with a 12-in
 
 # Mo'ashir Trade
 
-Version 2.3.1, the same method as the Mo'ashir Trade app 2.3.1 (score signal, 12 steps, weekly check).
+Version 2.3.2, the same method as the Mo'ashir Trade app 2.3.2 (score signal, 12 steps, weekly check).
 
 Analyse an EGX stock the way the 12-indicator method teaches, then turn the result into a clear signal and, if wanted, a trade plan. The user built this method; the value of this skill is applying *their* rules consistently, not general TA opinions.
 
